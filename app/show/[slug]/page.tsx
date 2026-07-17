@@ -36,13 +36,7 @@ export default async function ShowPage({
     .single();
 
   if (error || !event) {
-    return (
-      <div style={{ padding: 40, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
-        DEBUG: Event query failed or returned nothing.{"\n"}
-        slug requested: {params.slug}
-        {"\n"}error: {error ? JSON.stringify(error, null, 2) : "none"}
-      </div>
-    );
+    notFound();
   }
 
   const now = new Date();
@@ -51,7 +45,6 @@ export default async function ShowPage({
   let state = getEventState(now, countdownStartsAt, showAt);
   let liveShowLink: string | null = state === "live" ? event.live_show_link : null;
   let previewMode = false;
-  let debugAuthNote = "no preview param present";
   const initialRemainingMs = showAt.getTime() - now.getTime();
 
   const requestedPreview = searchParams.preview;
@@ -59,30 +52,17 @@ export default async function ShowPage({
     const supabase = createServerSupabaseClient();
     const {
       data: { user },
-      error: authError,
     } = await supabase.auth.getUser();
 
     if (user) {
       state = requestedPreview as EventState;
       previewMode = true;
       liveShowLink = null;
-      debugAuthNote = `preview honored for user: ${user.email}`;
-    } else {
-      debugAuthNote = `preview param present but no valid session. authError: ${
-        authError ? authError.message : "none, user just null"
-      }`;
     }
   }
 
   if (!previewMode && event.status !== "published") {
-    return (
-      <div style={{ padding: 40, fontFamily: "monospace", whiteSpace: "pre-wrap" }}>
-        DEBUG: Blocked - event status is &quot;{event.status}&quot;, not
-        &quot;published&quot;, and preview was not honored.{"\n"}
-        {"\n"}requested preview param: {requestedPreview ?? "(none)"}
-        {"\n"}auth check result: {debugAuthNote}
-      </div>
-    );
+    notFound();
   }
 
   return (
