@@ -67,7 +67,11 @@ export async function setEventStatus(id: string, status: "draft" | "published" |
   revalidatePath("/show", "layout");
 }
 
-export async function uploadFeaturedImage(id: string, formData: FormData) {
+export async function uploadImage(
+  id: string,
+  formData: FormData,
+  targetColumn: "featured_image_url" | "banner_image_url"
+) {
   await requireAdminSession();
 
   const file = formData.get("file") as File | null;
@@ -75,7 +79,7 @@ export async function uploadFeaturedImage(id: string, formData: FormData) {
 
   const admin = createAdminClient();
   const fileExt = file.name.split(".").pop();
-  const filePath = `${id}-${Date.now()}.${fileExt}`;
+  const filePath = `${id}-${targetColumn}-${Date.now()}.${fileExt}`;
 
   const { error: uploadError } = await admin.storage
     .from("event-images")
@@ -89,7 +93,7 @@ export async function uploadFeaturedImage(id: string, formData: FormData) {
 
   const { error: updateError } = await admin
     .from("events")
-    .update({ featured_image_url: publicUrl, updated_at: new Date().toISOString() })
+    .update({ [targetColumn]: publicUrl, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (updateError) throw new Error(updateError.message);
@@ -100,13 +104,16 @@ export async function uploadFeaturedImage(id: string, formData: FormData) {
   return publicUrl;
 }
 
-export async function removeFeaturedImage(id: string) {
+export async function removeImage(
+  id: string,
+  targetColumn: "featured_image_url" | "banner_image_url"
+) {
   await requireAdminSession();
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("events")
-    .update({ featured_image_url: null, updated_at: new Date().toISOString() })
+    .update({ [targetColumn]: null, updated_at: new Date().toISOString() })
     .eq("id", id);
 
   if (error) throw new Error(error.message);

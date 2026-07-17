@@ -10,13 +10,14 @@ import LiveLinkField from "./LiveLinkField";
 import PreviewButtons from "./PreviewButtons";
 import PublishControls from "./PublishControls";
 import PublicLinkDisplay from "./PublicLinkDisplay";
+import ToggleField from "./ToggleField";
 import type { EventRow } from "../../lib/eventTypes";
 import { localToUtcIso, utcToLocalParts } from "../../lib/zonedTime";
 import {
   saveEventDraft,
   setEventStatus,
-  uploadFeaturedImage,
-  removeFeaturedImage,
+  uploadImage,
+  removeImage,
 } from "../../app/admin/actions";
 
 interface AdminDashboardFormProps {
@@ -96,13 +97,25 @@ export default function AdminDashboardForm({ initialEvent }: AdminDashboardFormP
   async function handleImageUpload(file: File) {
     const formData = new FormData();
     formData.append("file", file);
-    const publicUrl = await uploadFeaturedImage(event.id, formData);
+    const publicUrl = await uploadImage(event.id, formData, "featured_image_url");
     setEvent((prev) => ({ ...prev, featured_image_url: publicUrl }));
   }
 
   async function handleImageRemove() {
-    await removeFeaturedImage(event.id);
+    await removeImage(event.id, "featured_image_url");
     setEvent((prev) => ({ ...prev, featured_image_url: null }));
+  }
+
+  async function handleBannerUpload(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const publicUrl = await uploadImage(event.id, formData, "banner_image_url");
+    setEvent((prev) => ({ ...prev, banner_image_url: publicUrl }));
+  }
+
+  async function handleBannerRemove() {
+    await removeImage(event.id, "banner_image_url");
+    setEvent((prev) => ({ ...prev, banner_image_url: null }));
   }
 
   return (
@@ -213,6 +226,37 @@ export default function AdminDashboardForm({ initialEvent }: AdminDashboardFormP
         <LiveLinkField
           value={event.live_show_link ?? ""}
           onChange={(v) => update("live_show_link", v)}
+        />
+      </AdminSectionCard>
+
+      <AdminSectionCard title="Homepage Display">
+        <MessageEditor
+          label="Event title (shown above the homepage countdown box)"
+          value={event.event_title ?? ""}
+          onChange={(v) => update("event_title", v)}
+        />
+        <MessageEditor
+          label="Registration link (homepage 'Reserve Your FREE Seat' button)"
+          value={event.registration_link ?? ""}
+          onChange={(v) => update("registration_link", v)}
+        />
+        <div className="admin-field">
+          <label className="admin-field__label">Banner image (homepage)</label>
+          <ImageUploader
+            currentUrl={event.banner_image_url}
+            onUpload={handleBannerUpload}
+            onRemove={handleBannerRemove}
+          />
+        </div>
+        <ToggleField
+          label="Show banner on homepage"
+          checked={event.banner_visible}
+          onChange={(v) => update("banner_visible", v)}
+        />
+        <ToggleField
+          label="Show countdown on homepage"
+          checked={event.countdown_visible}
+          onChange={(v) => update("countdown_visible", v)}
         />
       </AdminSectionCard>
 

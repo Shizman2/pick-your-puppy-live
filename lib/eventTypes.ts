@@ -26,6 +26,12 @@ export interface EventRow {
   live_show_link: string | null;
   timer_completion_behavior: string;
 
+  event_title: string | null;
+  banner_image_url: string | null;
+  banner_visible: boolean;
+  countdown_visible: boolean;
+  registration_link: string | null;
+
   created_at: string;
   updated_at: string;
 }
