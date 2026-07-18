@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Logo from "../../components/public/Logo";
 import SignOutButton from "../../components/admin/SignOutButton";
 import AdminDashboardForm from "../../components/admin/AdminDashboardForm";
@@ -17,7 +18,9 @@ export default async function AdminPage() {
     <div className="admin-shell">
       <div className="admin-inner">
         <div className="admin-header" style={{ justifyContent: "space-between" }}>
-          <div style={{ width: "40px" }} />
+          <Link href="/admin/contacts" className="admin-btn">
+            Contacts
+          </Link>
           <Logo />
           <SignOutButton />
         </div>

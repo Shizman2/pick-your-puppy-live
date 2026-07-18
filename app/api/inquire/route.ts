@@ -200,6 +200,7 @@ export async function POST(request: NextRequest) {
     channel: "website_form",
     body: messageBody,
     status: "logged",
+    is_read: false,
   });
 
   await admin
