@@ -78,7 +78,7 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
       // Optimistic local update so the note shows up immediately
       // without waiting on a full server round-trip re-fetch.
       setNotes((prev) => [
-        { id: `temp-${Date.now()}`, contact_id: contact.id, author: "You", body: trimmed, created_at: new Date().toISOString() },
+        { id: `temp-${Date.now()}`, contact_id: contact.id, created_by: "You", body: trimmed, created_at: new Date().toISOString() },
         ...prev,
       ]);
       setNoteBody("");
@@ -271,7 +271,7 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
               <li key={note.id} className="profile-note-item">
                 <p className="profile-note-body">{note.body}</p>
                 <span className="profile-timeline-time">
-                  {note.author || "Staff"} · {formatRelativeTime(note.created_at)}
+                  {note.created_by || "Staff"} · {formatRelativeTime(note.created_at)}
                 </span>
               </li>
             ))}

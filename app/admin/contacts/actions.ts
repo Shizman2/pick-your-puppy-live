@@ -86,7 +86,7 @@ export async function addContactNote(contactId: string, body: string): Promise<A
   const admin = createAdminClient();
   const { error } = await admin.from("notes").insert({
     contact_id: contactId,
-    author: auth.user.email || "Staff",
+    created_by: auth.user.email || "Staff",
     body: trimmed,
   });
 

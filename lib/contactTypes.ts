@@ -71,7 +71,7 @@ export interface TimelineEventRow {
 export interface NoteRow {
   id: string;
   contact_id: string;
-  author: string | null;
+  created_by: string | null;
   body: string;
   created_at: string;
 }
