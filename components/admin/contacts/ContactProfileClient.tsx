@@ -204,17 +204,18 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
         </div>
       </div>
 
-      {/* Messages placeholder - intentionally not a real conversation
-          UI. The Message Center (next checkpoint) is where
-          conversations actually happen; this just links out to it. */}
+      {/* Links out to the Message Center (built this checkpoint) rather
+          than building a second conversation UI on this page. */}
       <div className="profile-card">
         <h2 className="admin-card__title">Messages</h2>
-        <p className="admin-hint" style={{ marginBottom: 0 }}>
+        <p className="admin-hint" style={{ marginBottom: 8 }}>
           {profile.unreadCount > 0
-            ? `${profile.unreadCount} unread message${profile.unreadCount === 1 ? "" : "s"}. `
-            : "No unread messages. "}
-          Message Center coming in the next checkpoint.
+            ? `${profile.unreadCount} unread message${profile.unreadCount === 1 ? "" : "s"}.`
+            : "No unread messages."}
         </p>
+        <a href={`/admin/messages#${contact.id}`} className="admin-btn">
+          Open in Message Center →
+        </a>
       </div>
 
       {/* Timeline */}

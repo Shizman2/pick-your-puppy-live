@@ -18,9 +18,14 @@ export default async function AdminPage() {
     <div className="admin-shell">
       <div className="admin-inner">
         <div className="admin-header" style={{ justifyContent: "space-between" }}>
-          <Link href="/admin/contacts" className="admin-btn">
-            Contacts
-          </Link>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <Link href="/admin/contacts" className="admin-btn">
+              Contacts
+            </Link>
+            <Link href="/admin/messages" className="admin-btn">
+              Messages
+            </Link>
+          </div>
           <Logo />
           <SignOutButton />
         </div>
