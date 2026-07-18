@@ -1,21 +1,14 @@
-import Link from "next/link";
-import Logo from "../../../../components/public/Logo";
-import SignOutButton from "../../../../components/admin/SignOutButton";
+import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import ContactProfileClient from "../../../../components/admin/contacts/ContactProfileClient";
 import { getContactProfileData } from "../../../../lib/contactProfile";
 import type { ContactProfileData } from "../../../../lib/contactTypes";
+import { getAdminUserEmail } from "../../../../lib/getAdminUser";
+import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Checkpoint 3, part 2: Contact Profile. Answers "who is this person,
- * what are they interested in, what's happened, what's next" - it
- * does NOT include the message thread. That's the Message Center
- * (next checkpoint), which will be the one place conversations
- * actually happen, so this page only links out to it rather than
- * building a second inbox UI here.
- */
 export default async function ContactProfilePage({ params }: { params: { id: string } }) {
   let profile: ContactProfileData | null = null;
   let loadError: string | null = null;
@@ -26,16 +19,11 @@ export default async function ContactProfilePage({ params }: { params: { id: str
     loadError = err instanceof Error ? err.message : "Unknown error loading contact.";
   }
 
-  return (
-    <div className="contacts-shell">
-      <div className="contacts-topbar">
-        <Link href="/admin/contacts" className="contacts-back-link">
-          ← Contacts
-        </Link>
-        <Logo />
-        <SignOutButton />
-      </div>
+  const userEmail = await getAdminUserEmail();
+  const unreadMessageCount = await getUnreadMessageCount();
 
+  return (
+    <AdminSidebar active="contacts" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>
       <div className="contacts-page">
         {loadError ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>
@@ -52,6 +40,6 @@ export default async function ContactProfilePage({ params }: { params: { id: str
           <ContactProfileClient profile={profile} />
         )}
       </div>
-    </div>
+    </AdminSidebar>
   );
 }
