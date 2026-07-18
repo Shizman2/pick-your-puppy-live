@@ -54,17 +54,13 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
 
   function handleSaveStatus() {
     startTransition(async () => {
-      try {
-        await updateContactStatus(contact.id, {
-          status,
-          interest_level: interestLevel || null,
-          next_follow_up_at: nextFollowUp ? new Date(nextFollowUp).toISOString() : null,
-          closed_reason: closedReason.trim() || null,
-        });
-        setSavedMessage("Saved.");
-      } catch (err) {
-        setSavedMessage(err instanceof Error ? err.message : "Couldn't save.");
-      }
+      const result = await updateContactStatus(contact.id, {
+        status,
+        interest_level: interestLevel || null,
+        next_follow_up_at: nextFollowUp ? new Date(nextFollowUp).toISOString() : null,
+        closed_reason: closedReason.trim() || null,
+      });
+      setSavedMessage(result.success ? "Saved." : result.error);
     });
   }
 
@@ -74,18 +70,18 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
 
     setNoteError(null);
     startTransition(async () => {
-      try {
-        await addContactNote(contact.id, trimmed);
-        // Optimistic local update so the note shows up immediately
-        // without waiting on a full server round-trip re-fetch.
-        setNotes((prev) => [
-          { id: `temp-${Date.now()}`, contact_id: contact.id, author: "You", body: trimmed, created_at: new Date().toISOString() },
-          ...prev,
-        ]);
-        setNoteBody("");
-      } catch (err) {
-        setNoteError(err instanceof Error ? err.message : "Couldn't save note.");
+      const result = await addContactNote(contact.id, trimmed);
+      if (!result.success) {
+        setNoteError(result.error);
+        return;
       }
+      // Optimistic local update so the note shows up immediately
+      // without waiting on a full server round-trip re-fetch.
+      setNotes((prev) => [
+        { id: `temp-${Date.now()}`, contact_id: contact.id, author: "You", body: trimmed, created_at: new Date().toISOString() },
+        ...prev,
+      ]);
+      setNoteBody("");
     });
   }
 

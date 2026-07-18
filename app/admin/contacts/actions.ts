@@ -5,17 +5,33 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import type { ContactStatus, InterestLevel } from "../../../lib/contactTypes";
 
-async function requireAdminUser() {
+/**
+ * Next.js redacts thrown-error messages from Server Actions before
+ * they reach the client in production builds (a deliberate security
+ * measure, to avoid leaking internal details by default). That means
+ * `throw new Error(...)` here would show up in the browser as a
+ * generic "An error occurred..." message with no way to see what
+ * actually broke - useless for debugging a real Postgres error like a
+ * missing column. So instead of throwing, every action below returns
+ * a plain { success, error? } object, and the actual message is sent
+ * back to the client on purpose, since these are internal admin-only
+ * actions, not public-facing.
+ */
+export type ActionResult = { success: true } | { success: false; error: string };
+
+async function requireAdminUser(): Promise<
+  { ok: true; user: { email: string | null } } | { ok: false; error: string }
+> {
   const supabase = createServerSupabaseClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    throw new Error("Not authenticated");
+    return { ok: false, error: "Not authenticated" };
   }
 
-  return user;
+  return { ok: true, user: { email: user.email ?? null } };
 }
 
 export interface ContactStatusFields {
@@ -31,8 +47,12 @@ export interface ContactStatusFields {
  * related to messages or conversations - that stays out of this page
  * on purpose (see Message Center note in contactProfile.ts).
  */
-export async function updateContactStatus(contactId: string, fields: ContactStatusFields) {
-  await requireAdminUser();
+export async function updateContactStatus(
+  contactId: string,
+  fields: ContactStatusFields
+): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
 
   const admin = createAdminClient();
   const { error } = await admin
@@ -49,26 +69,29 @@ export async function updateContactStatus(contactId: string, fields: ContactStat
     })
     .eq("id", contactId);
 
-  if (error) throw new Error(error.message);
+  if (error) return { success: false, error: error.message };
 
   revalidatePath(`/admin/contacts/${contactId}`);
   revalidatePath("/admin/contacts");
+  return { success: true };
 }
 
-export async function addContactNote(contactId: string, body: string) {
-  const user = await requireAdminUser();
+export async function addContactNote(contactId: string, body: string): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
 
   const trimmed = body.trim();
-  if (!trimmed) throw new Error("Note can't be empty");
+  if (!trimmed) return { success: false, error: "Note can't be empty" };
 
   const admin = createAdminClient();
   const { error } = await admin.from("notes").insert({
     contact_id: contactId,
-    author: user.email || "Staff",
+    author: auth.user.email || "Staff",
     body: trimmed,
   });
 
-  if (error) throw new Error(error.message);
+  if (error) return { success: false, error: error.message };
 
   revalidatePath(`/admin/contacts/${contactId}`);
+  return { success: true };
 }
