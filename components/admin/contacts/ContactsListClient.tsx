@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import type { ContactListItem } from "../../../lib/contactTypes";
 import { STATUS_CLASS, STATUS_LABEL } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate, isFollowUpDue } from "../../../lib/formatRelative";
@@ -205,7 +206,12 @@ export default function ContactsListClient({ contacts }: { contacts: ContactList
           {visibleContacts.map((contact) => {
             const due = isFollowUpDue(contact.next_follow_up_at);
             return (
-              <div className="contacts-row" role="row" key={contact.id}>
+              <Link
+                href={`/admin/contacts/${contact.id}`}
+                className="contacts-row"
+                role="row"
+                key={contact.id}
+              >
                 <div data-label="Name" className="contacts-cell contacts-cell--name" role="cell">
                   <span className="contacts-name">{contactDisplayName(contact)}</span>
                   {contact.needs_duplicate_review && (
@@ -266,7 +272,7 @@ export default function ContactsListClient({ contacts }: { contacts: ContactList
                 <div data-label="Source" className="contacts-cell" role="cell">
                   {contact.source || "—"}
                 </div>
-              </div>
+              </Link>
             );
           })}
         </div>

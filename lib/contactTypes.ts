@@ -58,3 +58,35 @@ export interface ContactListItem extends ContactRow {
   inquiryTypes: InquiryType[];
   unreadCount: number;
 }
+
+export interface TimelineEventRow {
+  id: string;
+  contact_id: string;
+  event_type: string;
+  description: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+export interface NoteRow {
+  id: string;
+  contact_id: string;
+  author: string | null;
+  body: string;
+  created_at: string;
+}
+
+/**
+ * The Contact Profile page's shaped view: the contact row plus badges
+ * and everything Phase 1A's profile actually shows (timeline, notes,
+ * unread count for the Messages placeholder). Deliberately does NOT
+ * include the message thread itself - that's the Message Center's
+ * job, not the profile's. See lib/contactProfile.ts.
+ */
+export interface ContactProfileData {
+  contact: ContactRow;
+  badges: ContactBadge[];
+  timelineEvents: TimelineEventRow[];
+  notes: NoteRow[];
+  unreadCount: number;
+}

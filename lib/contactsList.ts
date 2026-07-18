@@ -1,91 +1,7 @@
 import "server-only";
 import { createAdminClient } from "./supabase/admin";
-import type { ContactBadge, ContactListItem, ContactRow, InquiryType } from "./contactTypes";
-
-const INQUIRY_TYPE_BADGE: Record<InquiryType, { icon: string; label: string } | null> = {
-  // puppy_interest doesn't get its own generic badge - the specific
-  // puppy-name interest badge below already communicates it, and a
-  // second "Puppy Interest" chip next to "Leo" would just be noise.
-  puppy_interest: null,
-  puppy_finder: { icon: "🐶", label: "Puppy Finder" },
-  pypl: { icon: "📺", label: "PYPL Registered" },
-  general: { icon: "💬", label: "General Question" },
-};
-
-interface InquiryForBadges {
-  id: string;
-  contact_id: string;
-  inquiry_type: InquiryType;
-  puppy_name: string | null;
-  breed: string | null;
-  subject: string | null;
-}
-
-/**
- * Turns one contact's full inquiry history into the set of badges the
- * Contacts list shows for them. Every still-active inquiry contributes
- * its badge(s) - nothing here drops an older inquiry just because a
- * newer one came in. An inquiry only stops contributing badges if its
- * paired interests row was explicitly marked inactive (see
- * `interests.is_active` in the schema).
- */
-function badgesForContact(
-  inquiries: InquiryForBadges[],
-  activeInquiryIds: Set<string>
-): ContactBadge[] {
-  const badges: ContactBadge[] = [];
-  const seenKeys = new Set<string>();
-
-  const addBadge = (badge: ContactBadge) => {
-    if (seenKeys.has(badge.key)) return;
-    seenKeys.add(badge.key);
-    badges.push(badge);
-  };
-
-  for (const inquiry of inquiries) {
-    if (!activeInquiryIds.has(inquiry.id)) continue;
-
-    const typeBadge = INQUIRY_TYPE_BADGE[inquiry.inquiry_type];
-    if (typeBadge) {
-      addBadge({
-        key: `type:${inquiry.inquiry_type}`,
-        icon: typeBadge.icon,
-        label: typeBadge.label,
-        kind: "inquiry_type",
-      });
-    }
-
-    if (inquiry.inquiry_type === "puppy_interest" && inquiry.puppy_name) {
-      addBadge({
-        key: `interest:puppy:${inquiry.puppy_name.toLowerCase()}`,
-        icon: "❤️",
-        label: inquiry.puppy_name,
-        kind: "interest",
-      });
-    }
-
-    if (inquiry.inquiry_type === "puppy_finder" && inquiry.breed) {
-      addBadge({
-        key: `interest:breed:${inquiry.breed.toLowerCase()}`,
-        icon: "🐕",
-        label: inquiry.breed,
-        kind: "interest",
-      });
-    }
-
-    if (inquiry.inquiry_type === "general" && inquiry.subject) {
-      // Replace the generic "General Question" badge with the actual
-      // subject when we have one - more useful at a glance.
-      const genericKey = "type:general";
-      const idx = badges.findIndex((b) => b.key === genericKey);
-      if (idx !== -1) {
-        badges[idx] = { ...badges[idx], label: inquiry.subject };
-      }
-    }
-  }
-
-  return badges;
-}
+import type { ContactListItem, ContactRow } from "./contactTypes";
+import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./contactBadges";
 
 /**
  * Fetches every contact plus enough of their inquiries/interests/
@@ -132,18 +48,7 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
   if (unreadError) throw new Error(unreadError.message);
 
   const inquiries = (inquiriesData || []) as InquiryForBadges[];
-
-  // An inquiry counts as "active" unless it has a matching interests
-  // row that was explicitly deactivated. No matching row at all (or no
-  // is_active info) defaults to active - conservative, since hiding an
-  // otherwise-real inquiry is worse than showing one that should have
-  // been retired.
-  const inactiveInquiryIds = new Set(
-    (interestsData || [])
-      .filter((row: { inquiry_id: string | null; is_active: boolean }) => row.is_active === false)
-      .map((row: { inquiry_id: string | null }) => row.inquiry_id)
-      .filter((id): id is string => Boolean(id))
-  );
+  const interestRows = (interestsData || []) as { inquiry_id: string | null; is_active: boolean }[];
 
   const inquiriesByContact = new Map<string, InquiryForBadges[]>();
   for (const inquiry of inquiries) {
@@ -157,11 +62,9 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
     unreadCountByContact.set(row.contact_id, (unreadCountByContact.get(row.contact_id) || 0) + 1);
   }
 
-  const shaped: ContactListItem[] = contacts.map((contact) => {
+  return contacts.map((contact) => {
     const contactInquiries = inquiriesByContact.get(contact.id) || [];
-    const activeInquiryIds = new Set(
-      contactInquiries.filter((i) => !inactiveInquiryIds.has(i.id)).map((i) => i.id)
-    );
+    const activeInquiryIds = activeInquiryIdsFor(contactInquiries, interestRows);
 
     const inquiryTypes = Array.from(
       new Set(
@@ -185,6 +88,4 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
       unreadCount: unreadCountByContact.get(contact.id) || 0,
     };
   });
-
-  return shaped;
 }
