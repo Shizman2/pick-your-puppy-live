@@ -76,6 +76,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (!consentToContact) {
+    return NextResponse.json(
+      { error: "Consent to contact is required before we can save this inquiry." },
+      { status: 400 }
+    );
+  }
+
   const phoneNormalized = normalizePhone(phone);
   const emailNormalized = normalizeEmail(email);
 
@@ -114,8 +121,11 @@ export async function POST(request: NextRequest) {
   } else if (inquiryType === "puppy_finder") {
     inquiryColumns.breed = body.breed || null;
     inquiryColumns.gender_preference = body.genderPreference || null;
-    inquiryColumns.budget_min = body.budgetMin || null;
-    inquiryColumns.budget_max = body.budgetMax || null;
+    // Fixed price point, not a user-entered range: if they confirmed
+    // the $1,500 starting price works for them, record that as the
+    // floor. budget_max is intentionally left null - there's no
+    // upper-bound question in this version of the form.
+    inquiryColumns.budget_min = body.budgetConfirmed === "yes" ? 1500 : null;
     inquiryColumns.timeframe = body.timeframe || null;
     inquiryColumns.delivery_needed =
       typeof body.deliveryNeeded === "boolean" ? body.deliveryNeeded : null;

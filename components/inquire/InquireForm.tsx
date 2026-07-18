@@ -39,13 +39,13 @@ export default function InquireForm({
   const [notes, setNotes] = useState("");
 
   // Puppy interest fields
+  const [puppyName, setPuppyName] = useState(initialPuppyName || "");
   const [readyForDeposit, setReadyForDeposit] = useState("not_yet");
 
   // Puppy finder fields
   const [breed, setBreed] = useState("");
   const [genderPreference, setGenderPreference] = useState("");
-  const [budgetMin, setBudgetMin] = useState("");
-  const [budgetMax, setBudgetMax] = useState("");
+  const [budgetConfirmed, setBudgetConfirmed] = useState("");
   const [timeframe, setTimeframe] = useState("");
   const [deliveryNeeded, setDeliveryNeeded] = useState(false);
 
@@ -62,6 +62,11 @@ export default function InquireForm({
 
     if (!firstName.trim() || (!phone.trim() && !email.trim())) {
       setError("Please enter your first name and at least a phone number or email.");
+      return;
+    }
+
+    if (!consentToContact) {
+      setError("Please check the box consenting to be contacted before submitting.");
       return;
     }
 
@@ -83,14 +88,13 @@ export default function InquireForm({
     };
 
     if (inquiryType === "puppy_interest") {
-      payload.puppyName = initialPuppyName || "";
+      payload.puppyName = puppyName;
       payload.puppySlug = initialPuppySlug || "";
       payload.readyForDeposit = readyForDeposit;
     } else if (inquiryType === "puppy_finder") {
       payload.breed = breed;
       payload.genderPreference = genderPreference;
-      payload.budgetMin = budgetMin ? Number(budgetMin) : null;
-      payload.budgetMax = budgetMax ? Number(budgetMax) : null;
+      payload.budgetConfirmed = budgetConfirmed;
       payload.timeframe = timeframe;
       payload.deliveryNeeded = deliveryNeeded;
     } else if (inquiryType === "general") {
@@ -150,10 +154,16 @@ export default function InquireForm({
 
       {error && <div className="inquire-error">{error}</div>}
 
-      {inquiryType === "puppy_interest" && initialPuppyName && (
+      {inquiryType === "puppy_interest" && (
         <div className="inquire-field">
-          <label className="inquire-label">Puppy</label>
-          <input className="inquire-input" type="text" value={initialPuppyName} readOnly />
+          <label className="inquire-label">Which puppy are you interested in?</label>
+          <input
+            className="inquire-input"
+            type="text"
+            placeholder="Puppy's name from the website"
+            value={puppyName}
+            onChange={(e) => setPuppyName(e.target.value)}
+          />
         </div>
       )}
 
@@ -217,6 +227,23 @@ export default function InquireForm({
 
       {inquiryType === "puppy_finder" && (
         <>
+          <p style={{ fontSize: "13px", color: "#374151", lineHeight: 1.5, marginBottom: "16px", fontWeight: 600 }}>
+            Our Puppy Finder service is a paid concierge search — our team works
+            directly with you to track down your ideal match, starting at $1,500.
+          </p>
+          <div className="inquire-field">
+            <label className="inquire-label">This service starts at $1,500 - is that okay?</label>
+            <select
+              className="inquire-select"
+              value={budgetConfirmed}
+              onChange={(e) => setBudgetConfirmed(e.target.value)}
+              required
+            >
+              <option value="">Select one</option>
+              <option value="yes">Yes, that works for me</option>
+              <option value="no">No, that's outside my budget</option>
+            </select>
+          </div>
           <div className="inquire-field">
             <label className="inquire-label">Preferred breed</label>
             <input className="inquire-input" value={breed} onChange={(e) => setBreed(e.target.value)} />
@@ -232,25 +259,6 @@ export default function InquireForm({
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
-          </div>
-          <div className="inquire-field">
-            <label className="inquire-label">Budget range</label>
-            <div style={{ display: "flex", gap: "8px" }}>
-              <input
-                className="inquire-input"
-                type="number"
-                placeholder="Min"
-                value={budgetMin}
-                onChange={(e) => setBudgetMin(e.target.value)}
-              />
-              <input
-                className="inquire-input"
-                type="number"
-                placeholder="Max"
-                value={budgetMax}
-                onChange={(e) => setBudgetMax(e.target.value)}
-              />
-            </div>
           </div>
           <div className="inquire-field">
             <label className="inquire-label">Desired timeframe</label>
