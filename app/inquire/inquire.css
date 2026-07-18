@@ -1,0 +1,159 @@
+.inquire-shell {
+  min-height: 100dvh;
+  background: #fafafa;
+  padding: 32px 20px 64px;
+  display: flex;
+  justify-content: center;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+.inquire-inner {
+  width: 100%;
+  max-width: 440px;
+}
+
+.inquire-card {
+  background: #fff;
+  border: 1px solid #E5E7EB;
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+
+.inquire-title {
+  font-weight: 900;
+  font-size: 24px;
+  color: #111827;
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.inquire-subtitle {
+  font-size: 14px;
+  color: #6B7280;
+  text-align: center;
+  margin: 0 0 24px;
+  font-weight: 600;
+}
+
+.inquire-field {
+  margin-bottom: 16px;
+}
+
+.inquire-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.inquire-input,
+.inquire-select,
+.inquire-textarea {
+  width: 100%;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+  color: #111827;
+  background: #fff;
+}
+
+.inquire-input:focus,
+.inquire-select:focus,
+.inquire-textarea:focus {
+  outline: none;
+  border-color: #1B7BFF;
+}
+
+.inquire-textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+.inquire-radio-group {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inquire-radio-option {
+  flex: 1;
+  min-width: 90px;
+  text-align: center;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 10px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  color: #374151;
+}
+
+.inquire-radio-option.selected {
+  border-color: #1B7BFF;
+  background: #E8F1FF;
+  color: #1B7BFF;
+}
+
+.inquire-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #374151;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.inquire-submit {
+  width: 100%;
+  background: #1B7BFF;
+  color: #fff;
+  font-weight: 800;
+  font-size: 15px;
+  padding: 14px;
+  border-radius: 50px;
+  border: none;
+  cursor: pointer;
+  margin-top: 8px;
+}
+
+.inquire-submit:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.inquire-error {
+  color: #D92D20;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.inquire-success {
+  text-align: center;
+  padding: 40px 10px;
+}
+
+.inquire-success h2 {
+  font-weight: 900;
+  font-size: 22px;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.inquire-success p {
+  font-size: 14px;
+  color: #6B7280;
+  font-weight: 600;
+}
+
+.inquire-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
