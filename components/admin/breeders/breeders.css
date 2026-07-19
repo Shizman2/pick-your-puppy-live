@@ -1,0 +1,52 @@
+.breeder-card {
+  display: block;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+}
+
+.breeder-card-name {
+  font-weight: 800;
+  font-size: 15px;
+  color: #111827;
+}
+
+.breeder-card-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+.breeder-card-breeds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.breeder-breed-pill {
+  font-size: 11px;
+  font-weight: 700;
+  background: #eef4ff;
+  color: #2563eb;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.breeder-puppy-list-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f1f1;
+  font-size: 13px;
+}
+
+.breeder-puppy-list-item a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 700;
+}

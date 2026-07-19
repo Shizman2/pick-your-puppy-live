@@ -14,9 +14,10 @@ import { GENDER_OPTIONS, SIZE_OPTIONS, STATUS_OPTIONS, BADGE_OPTIONS, type Puppy
 
 interface PuppyFormProps {
   existing?: PuppyRow;
+  breeders?: { id: string; name: string }[];
 }
 
-export default function PuppyForm({ existing }: PuppyFormProps) {
+export default function PuppyForm({ existing, breeders = [] }: PuppyFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +36,7 @@ export default function PuppyForm({ existing }: PuppyFormProps) {
   const [isFeatured, setIsFeatured] = useState(existing?.is_featured ?? false);
   const [displayOrder, setDisplayOrder] = useState(existing?.display_order?.toString() || "0");
   const [photoUrls, setPhotoUrls] = useState<string[]>(existing?.photo_urls || []);
+  const [breederId, setBreederId] = useState<string>(existing?.breeder_id || "");
 
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -68,6 +70,7 @@ export default function PuppyForm({ existing }: PuppyFormProps) {
       deliveryAvailable,
       isFeatured,
       displayOrder: parseInt(displayOrder, 10) || 0,
+      breederId: breederId || null,
     };
 
     const result = existing ? await updatePuppy(existing.id, fields) : await createPuppy(fields);
@@ -254,6 +257,18 @@ export default function PuppyForm({ existing }: PuppyFormProps) {
         <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)} />
         Featured on homepage
       </label>
+
+      <div className="admin-field">
+        <label className="admin-field__label">Breeder (optional)</label>
+        <select className="admin-select" value={breederId} onChange={(e) => setBreederId(e.target.value)}>
+          <option value="">Not set</option>
+          {breeders.map((b) => (
+            <option key={b.id} value={b.id}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <div className="admin-field">
         <label className="admin-field__label">Display order (lower shows first)</label>

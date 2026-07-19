@@ -21,6 +21,7 @@ export interface PuppyRow {
   delivery_available: boolean;
   is_featured: boolean;
   display_order: number;
+  breeder_id: string | null;
   created_at: string;
   updated_at: string;
 }

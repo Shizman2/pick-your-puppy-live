@@ -47,6 +47,7 @@ export interface PuppyFormFields {
   deliveryAvailable: boolean;
   isFeatured: boolean;
   displayOrder: number;
+  breederId: string | null;
 }
 
 export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyResult> {
@@ -78,6 +79,7 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
       delivery_available: fields.deliveryAvailable,
       is_featured: fields.isFeatured,
       display_order: fields.displayOrder,
+      breeder_id: fields.breederId,
     })
     .select("id")
     .single();
@@ -122,6 +124,7 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
       delivery_available: fields.deliveryAvailable,
       is_featured: fields.isFeatured,
       display_order: fields.displayOrder,
+      breeder_id: fields.breederId,
     })
     .eq("id", puppyId);
 
