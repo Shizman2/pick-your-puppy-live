@@ -22,6 +22,8 @@ export interface PuppyRow {
   is_featured: boolean;
   display_order: number;
   breeder_id: string | null;
+  cost_cents: number;
+  bundle_cost_cents: number;
   created_at: string;
   updated_at: string;
 }

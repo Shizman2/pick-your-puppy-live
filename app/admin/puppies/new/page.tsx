@@ -7,6 +7,7 @@ import { getAllBreedersForSelect } from "../../../../lib/breeders";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/puppies/puppies.css";
+import "../../../../components/admin/sales/sales.css";
 
 export const dynamic = "force-dynamic";
 

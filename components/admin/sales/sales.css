@@ -1,0 +1,126 @@
+.sale-card {
+  display: block;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sale-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.sale-card-puppy {
+  font-weight: 800;
+  font-size: 15px;
+  color: #111827;
+}
+
+.sale-card-contact {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.sale-card-amounts {
+  text-align: right;
+}
+
+.sale-card-total {
+  font-weight: 800;
+  font-size: 15px;
+  color: #111827;
+}
+
+.sale-card-paid {
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.sale-progress-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 2px 9px;
+  margin-top: 8px;
+}
+
+.sale-progress-tag.pending { background: #f3f4f6; color: #6b7280; }
+.sale-progress-tag.partial { background: #fef3c7; color: #b45309; }
+.sale-progress-tag.paid_in_full { background: #dcfce7; color: #15803d; }
+
+.payment-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f1f1f1;
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.payment-row-amount {
+  font-weight: 800;
+  color: #111827;
+}
+
+.payment-row-meta {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.profit-box {
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  font-size: 13px;
+}
+
+.profit-box-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.profit-box-total {
+  font-weight: 800;
+  font-size: 15px;
+  color: #15803d;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 6px;
+  margin-top: 6px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.contact-picker-list {
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  margin-top: 6px;
+}
+
+.contact-picker-item {
+  padding: 10px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f1f1;
+}
+
+.contact-picker-item:hover {
+  background: #f9fafb;
+}
+
+.contact-picker-item.selected {
+  background: #eef4ff;
+  font-weight: 700;
+}

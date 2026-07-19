@@ -2,10 +2,14 @@ import Link from "next/link";
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import { getDashboardData } from "../../../lib/dashboard";
 import type { DashboardData } from "../../../lib/dashboard";
+import { getDashboardSalesSummary } from "../../../lib/sales";
+import type { DashboardSalesSummary } from "../../../lib/sales";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
 import { formatRelativeTime } from "../../../lib/formatRelative";
 import IconBadge, { ICONS } from "../../../components/admin/dashboard/IconBadge";
+import { formatPriceFromCents } from "../../../lib/puppyTypes";
+import { SALE_PROGRESS_LABEL } from "../../../lib/saleTypes";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/dashboard/dashboard.css";
@@ -14,10 +18,12 @@ export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
   let data: DashboardData | null = null;
+  let salesSummary: DashboardSalesSummary | null = null;
   let loadError: string | null = null;
 
   try {
     data = await getDashboardData();
+    salesSummary = await getDashboardSalesSummary();
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Unknown error loading the dashboard.";
   }
@@ -51,6 +57,15 @@ export default async function DashboardPage() {
         ) : (
           <>
             <div className="dashboard-stat-grid">
+              <div className="dashboard-stat-card">
+                <IconBadge color="green" path="M12 2v20M17 7a4 4 0 00-4-3H10a3 3 0 000 6h4a3 3 0 010 6h-3a4 4 0 01-4-3" />
+                <div className="dashboard-stat-body">
+                  <div className="dashboard-stat-value">
+                    {formatPriceFromCents(salesSummary?.todayRevenueCents || 0)}
+                  </div>
+                  <div className="dashboard-stat-label">Today&apos;s revenue</div>
+                </div>
+              </div>
               <div className="dashboard-stat-card">
                 <IconBadge color="purple" path={ICONS.contacts} />
                 <div className="dashboard-stat-body">
@@ -149,6 +164,28 @@ export default async function DashboardPage() {
                     </div>
                   ))}
                 </>
+              )}
+            </div>
+
+            <div className="dashboard-section">
+              <div className="dashboard-section-title">Recent Sales</div>
+              {!salesSummary || salesSummary.recentSales.length === 0 ? (
+                <div className="contacts-empty">No payments logged yet.</div>
+              ) : (
+                <div className="profile-card">
+                  {salesSummary.recentSales.map((s, i) => (
+                    <div key={`${s.saleId}-${i}`} className="dashboard-feed-item">
+                      <span>
+                        <Link href={`/admin/sales/${s.saleId}`}>{s.puppyName}</Link> — {s.contactName} —{" "}
+                        {formatPriceFromCents(s.amountCents)}{" "}
+                        <span className="dashboard-attention-tag" style={{ marginLeft: 6 }}>
+                          {SALE_PROGRESS_LABEL[s.progress]}
+                        </span>
+                      </span>
+                      <span className="dashboard-feed-time">{formatRelativeTime(s.date)}</span>
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
 

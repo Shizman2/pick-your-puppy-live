@@ -5,9 +5,11 @@ import { getPuppyById } from "../../../../lib/puppies";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../../lib/unreadCount";
 import { getAllBreedersForSelect } from "../../../../lib/breeders";
+import { getActiveSaleForPuppy } from "../../../../lib/sales";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/puppies/puppies.css";
+import "../../../../components/admin/sales/sales.css";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +26,7 @@ export default async function EditPuppyPage({ params }: { params: { id: string }
   const userEmail = await getAdminUserEmail();
   const unreadMessageCount = await getUnreadMessageCount();
   const breeders = await getAllBreedersForSelect();
+  const activeSale = puppy ? await getActiveSaleForPuppy(puppy.id) : null;
 
   return (
     <AdminSidebar active="puppies" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>
@@ -47,7 +50,7 @@ export default async function EditPuppyPage({ params }: { params: { id: string }
         ) : !puppy ? (
           <div className="contacts-empty">Puppy not found.</div>
         ) : (
-          <PuppyForm existing={puppy} breeders={breeders} />
+          <PuppyForm existing={puppy} breeders={breeders} activeSaleId={activeSale?.id || null} />
         )}
       </div>
     </AdminSidebar>

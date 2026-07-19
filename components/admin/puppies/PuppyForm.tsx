@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   createPuppy,
   updatePuppy,
@@ -15,9 +16,10 @@ import { GENDER_OPTIONS, SIZE_OPTIONS, STATUS_OPTIONS, BADGE_OPTIONS, type Puppy
 interface PuppyFormProps {
   existing?: PuppyRow;
   breeders?: { id: string; name: string }[];
+  activeSaleId?: string | null;
 }
 
-export default function PuppyForm({ existing, breeders = [] }: PuppyFormProps) {
+export default function PuppyForm({ existing, breeders = [], activeSaleId = null }: PuppyFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,6 +39,8 @@ export default function PuppyForm({ existing, breeders = [] }: PuppyFormProps) {
   const [displayOrder, setDisplayOrder] = useState(existing?.display_order?.toString() || "0");
   const [photoUrls, setPhotoUrls] = useState<string[]>(existing?.photo_urls || []);
   const [breederId, setBreederId] = useState<string>(existing?.breeder_id || "");
+  const [cost, setCost] = useState(existing ? (existing.cost_cents / 100).toString() : "0");
+  const [bundleCost, setBundleCost] = useState(existing ? (existing.bundle_cost_cents / 100).toString() : "0");
 
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -71,6 +75,8 @@ export default function PuppyForm({ existing, breeders = [] }: PuppyFormProps) {
       isFeatured,
       displayOrder: parseInt(displayOrder, 10) || 0,
       breederId: breederId || null,
+      costCents: Math.round((parseFloat(cost) || 0) * 100),
+      bundleCostCents: Math.round((parseFloat(bundleCost) || 0) * 100),
     };
 
     const result = existing ? await updatePuppy(existing.id, fields) : await createPuppy(fields);
@@ -258,6 +264,48 @@ export default function PuppyForm({ existing, breeders = [] }: PuppyFormProps) {
         Featured on homepage
       </label>
 
+      <div className="puppy-form-row">
+        <div className="admin-field">
+          <label className="admin-field__label">What you paid for the puppy ($)</label>
+          <input className="admin-input" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
+        </div>
+        <div className="admin-field">
+          <label className="admin-field__label">Bundle/supplies cost ($)</label>
+          <input
+            className="admin-input"
+            type="number"
+            value={bundleCost}
+            onChange={(e) => setBundleCost(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="profit-box">
+        <div className="profit-box-line">
+          <span>Listed price</span>
+          <span>${(parseFloat(price) || 0).toLocaleString()}</span>
+        </div>
+        <div className="profit-box-line">
+          <span>Puppy cost</span>
+          <span>-${(parseFloat(cost) || 0).toLocaleString()}</span>
+        </div>
+        <div className="profit-box-line">
+          <span>Bundle cost</span>
+          <span>-${(parseFloat(bundleCost) || 0).toLocaleString()}</span>
+        </div>
+        <div className="profit-box-total">
+          <span>Estimated profit</span>
+          <span>
+            $
+            {(
+              (parseFloat(price) || 0) -
+              (parseFloat(cost) || 0) -
+              (parseFloat(bundleCost) || 0)
+            ).toLocaleString()}
+          </span>
+        </div>
+      </div>
+
       <div className="admin-field">
         <label className="admin-field__label">Breeder (optional)</label>
         <select className="admin-select" value={breederId} onChange={(e) => setBreederId(e.target.value)}>
@@ -288,6 +336,14 @@ export default function PuppyForm({ existing, breeders = [] }: PuppyFormProps) {
           <button type="button" className="admin-btn admin-btn--danger" onClick={handleDelete} disabled={saving}>
             Delete
           </button>
+        )}
+        {existing && (
+          <Link
+            href={activeSaleId ? `/admin/sales/${activeSaleId}` : `/admin/sales/new?puppyId=${existing.id}`}
+            className="admin-btn"
+          >
+            {activeSaleId ? "View sale" : "Start a sale"}
+          </Link>
         )}
       </div>
     </div>
