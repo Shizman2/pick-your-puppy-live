@@ -5,6 +5,7 @@ import type { DashboardData } from "../../../lib/dashboard";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
 import { formatRelativeTime } from "../../../lib/formatRelative";
+import IconBadge, { ICONS } from "../../../components/admin/dashboard/IconBadge";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/dashboard/dashboard.css";
@@ -51,20 +52,32 @@ export default async function DashboardPage() {
           <>
             <div className="dashboard-stat-grid">
               <div className="dashboard-stat-card">
-                <div className="dashboard-stat-value">{data.newContactsThisWeek}</div>
-                <div className="dashboard-stat-label">New contacts (7 days)</div>
+                <IconBadge color="purple" path={ICONS.contacts} />
+                <div className="dashboard-stat-body">
+                  <div className="dashboard-stat-value">{data.newContactsThisWeek}</div>
+                  <div className="dashboard-stat-label">New contacts (7 days)</div>
+                </div>
               </div>
               <div className="dashboard-stat-card">
-                <div className="dashboard-stat-value">{data.unreadMessages}</div>
-                <div className="dashboard-stat-label">Unread messages</div>
+                <IconBadge color="blue" path={ICONS.message} />
+                <div className="dashboard-stat-body">
+                  <div className="dashboard-stat-value">{data.unreadMessages}</div>
+                  <div className="dashboard-stat-label">Unread messages</div>
+                </div>
               </div>
               <div className="dashboard-stat-card">
-                <div className="dashboard-stat-value">{data.activitiesDueTodayOrOverdue}</div>
-                <div className="dashboard-stat-label">Activities due/overdue</div>
+                <IconBadge color="orange" path={ICONS.checklist} />
+                <div className="dashboard-stat-body">
+                  <div className="dashboard-stat-value">{data.activitiesDueTodayOrOverdue}</div>
+                  <div className="dashboard-stat-label">Activities due/overdue</div>
+                </div>
               </div>
               <div className="dashboard-stat-card">
-                <div className="dashboard-stat-value">{data.highInterestCount}</div>
-                <div className="dashboard-stat-label">High interest contacts</div>
+                <IconBadge color="green" path={ICONS.heart} />
+                <div className="dashboard-stat-body">
+                  <div className="dashboard-stat-value">{data.highInterestCount}</div>
+                  <div className="dashboard-stat-label">High interest contacts</div>
+                </div>
               </div>
             </div>
 
@@ -91,34 +104,46 @@ export default async function DashboardPage() {
                 <>
                   {data.needsAttention.overdueActivities.map((a) => (
                     <div key={a.id} className="dashboard-attention-item">
-                      <span>
-                        <Link href={`/admin/contacts/${a.contactId}`}>{a.contactName}</Link> — {a.title}
+                      <span className="dashboard-attention-left">
+                        <IconBadge color="red" path={ICONS.phone} size="small" />
+                        <span>
+                          <Link href={`/admin/contacts/${a.contactId}`}>{a.contactName}</Link> — {a.title}
+                        </span>
                       </span>
                       <span className="dashboard-attention-tag">Overdue activity</span>
                     </div>
                   ))}
                   {data.needsAttention.staleUnread.map((m) => (
                     <div key={m.contactId} className="dashboard-attention-item">
-                      <span>
-                        <Link href={`/admin/messages#${m.contactId}`}>{m.contactName}</Link> — unread since{" "}
-                        {formatRelativeTime(m.lastMessageAt)}
+                      <span className="dashboard-attention-left">
+                        <IconBadge color="blue" path={ICONS.message} size="small" />
+                        <span>
+                          <Link href={`/admin/messages#${m.contactId}`}>{m.contactName}</Link> — unread since{" "}
+                          {formatRelativeTime(m.lastMessageAt)}
+                        </span>
                       </span>
                       <span className="dashboard-attention-tag">Unread</span>
                     </div>
                   ))}
                   {data.needsAttention.staleHighInterest.map((c) => (
                     <div key={c.contactId} className="dashboard-attention-item">
-                      <span>
-                        <Link href={`/admin/contacts/${c.contactId}`}>{c.contactName}</Link> — high interest, no
-                        recent activity
+                      <span className="dashboard-attention-left">
+                        <IconBadge color="orange" path={ICONS.heart} size="small" />
+                        <span>
+                          <Link href={`/admin/contacts/${c.contactId}`}>{c.contactName}</Link> — high interest, no
+                          recent activity
+                        </span>
                       </span>
                       <span className="dashboard-attention-tag">Needs follow-up</span>
                     </div>
                   ))}
                   {data.needsAttention.possibleDuplicates.map((c) => (
                     <div key={c.contactId} className="dashboard-attention-item">
-                      <span>
-                        <Link href={`/admin/contacts/${c.contactId}`}>{c.contactName}</Link>
+                      <span className="dashboard-attention-left">
+                        <IconBadge color="purple" path={ICONS.warning} size="small" />
+                        <span>
+                          <Link href={`/admin/contacts/${c.contactId}`}>{c.contactName}</Link>
+                        </span>
                       </span>
                       <span className="dashboard-attention-tag">Possible duplicate</span>
                     </div>
