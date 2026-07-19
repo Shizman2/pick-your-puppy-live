@@ -1,3 +1,5 @@
+import type { ActivityRow } from "./activityTypes";
+
 export type ContactStatus =
   | "new"
   | "contacted"
@@ -83,10 +85,12 @@ export interface NoteRow {
  * include the message thread itself - that's the Message Center's
  * job, not the profile's. See lib/contactProfile.ts.
  */
+
 export interface ContactProfileData {
   contact: ContactRow;
   badges: ContactBadge[];
   timelineEvents: TimelineEventRow[];
   notes: NoteRow[];
+  activities: ActivityRow[];
   unreadCount: number;
 }

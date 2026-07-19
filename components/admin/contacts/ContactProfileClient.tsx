@@ -5,6 +5,7 @@ import type { ContactProfileData, ContactStatus, InterestLevel } from "../../../
 import { STATUS_LABEL } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate } from "../../../lib/formatRelative";
 import { updateContactStatus, addContactNote } from "../../../app/admin/contacts/actions";
+import ContactActivities from "./ContactActivities";
 
 const STATUS_OPTIONS: ContactStatus[] = [
   "new",
@@ -203,6 +204,8 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
           {savedMessage && <span className="admin-hint">{savedMessage}</span>}
         </div>
       </div>
+
+      <ContactActivities contactId={contact.id} initialActivities={profile.activities} />
 
       {/* Links out to the Message Center (built this checkpoint) rather
           than building a second conversation UI on this page. */}

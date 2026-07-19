@@ -6,6 +6,7 @@ import { getAdminUserEmail } from "../../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
+import "../../../../components/admin/tasks/tasks.css";
 
 export const dynamic = "force-dynamic";
 

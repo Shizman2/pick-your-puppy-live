@@ -1,0 +1,122 @@
+.tasks-group-title {
+  font-weight: 800;
+  font-size: 14px;
+  color: #111827;
+  margin: 24px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tasks-group-title:first-child {
+  margin-top: 0;
+}
+
+.tasks-group-count {
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+
+.tasks-group-title.overdue .tasks-group-count {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.task-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: #fff;
+}
+
+.task-row-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.task-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-row-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: #111827;
+}
+
+.task-row-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.task-row-meta a {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.task-row-meta a:hover {
+  text-decoration: underline;
+}
+
+.task-complete-btn {
+  flex-shrink: 0;
+  background: #fff;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #374151;
+  cursor: pointer;
+}
+
+.task-complete-btn:hover {
+  background: #f9fafb;
+}
+
+.task-complete-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* --- Contact Profile: Activities section --- */
+.activities-add-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.activities-add-row {
+  display: flex;
+  gap: 8px;
+}
+
+.activities-empty {
+  font-size: 13px;
+  color: #9ca3af;
+  padding: 8px 0;
+}
+
+.activity-completed-row {
+  opacity: 0.6;
+}
+
+.activity-completed-row .task-row-title {
+  text-decoration: line-through;
+}

@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "./supabase/admin";
 import type { ContactProfileData, ContactRow, NoteRow, TimelineEventRow } from "./contactTypes";
+import type { ActivityRow } from "./activityTypes";
 import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./contactBadges";
 
 /**
@@ -31,6 +32,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     { data: timelineData, error: timelineError },
     { data: notesData, error: notesError },
     { data: unreadData, error: unreadError },
+    { data: activitiesData, error: activitiesError },
   ] = await Promise.all([
     admin
       .from("inquiries")
@@ -53,6 +55,11 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
       .eq("contact_id", contactId)
       .eq("direction", "inbound")
       .eq("is_read", false),
+    admin
+      .from("activities")
+      .select("*")
+      .eq("contact_id", contactId)
+      .order("created_at", { ascending: false }),
   ]);
 
   if (inquiriesError) throw new Error(inquiriesError.message);
@@ -60,6 +67,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
   if (timelineError) throw new Error(timelineError.message);
   if (notesError) throw new Error(notesError.message);
   if (unreadError) throw new Error(unreadError.message);
+  if (activitiesError) throw new Error(activitiesError.message);
 
   const inquiries = (inquiriesData || []) as InquiryForBadges[];
   const interestRows = (interestsData || []) as { inquiry_id: string | null; is_active: boolean }[];
@@ -70,6 +78,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     badges: badgesForContact(inquiries, activeInquiryIds),
     timelineEvents: (timelineData || []) as TimelineEventRow[],
     notes: (notesData || []) as NoteRow[],
+    activities: (activitiesData || []) as ActivityRow[],
     unreadCount: (unreadData || []).length,
   };
 }
