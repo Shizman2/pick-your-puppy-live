@@ -42,7 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "tasks", label: "Tasks", href: "/admin/tasks", icon: <Icon path="M9 11l3 3L22 4M3 12v7a2 2 0 002 2h14a2 2 0 002-2v-7" /> },
   { key: "pypl", label: "Pick Your Puppy Live", href: "/admin", icon: <Icon path="M12 8a4 4 0 010 8M8.5 5.5a8 8 0 000 13M15.5 5.5a8 8 0 010 13M12 12h.01" /> },
   { key: "reports", label: "Reports", href: null, icon: <Icon path="M4 20V10M12 20V4M20 20v-7" /> },
-  { key: "website", label: "Website", href: null, icon: <Icon path="M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3a14 14 0 010 18 14 14 0 010-18z" /> },
+  { key: "website", label: "Website", href: "/admin/website", icon: <Icon path="M12 21a9 9 0 100-18 9 9 0 000 18zM3 12h18M12 3a14 14 0 010 18 14 14 0 010-18z" /> },
   { key: "settings", label: "Settings", href: null, icon: <Icon path="M10.3 3h3.4l.6 2.5 2.3-1.2 2.1 2.1-1.2 2.3L20 9.3v3.4l-2.5.6 1.2 2.3-2.1 2.1-2.3-1.2-.6 2.5h-3.4l-.6-2.5-2.3 1.2-2.1-2.1 1.2-2.3L4 12.7V9.3l2.5-.6-1.2-2.3 2.1-2.1 2.3 1.2z" /> },
 ];
 
