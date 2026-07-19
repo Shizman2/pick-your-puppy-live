@@ -1,7 +1,6 @@
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import WebsiteEditorClient from "../../../components/admin/website/WebsiteEditorClient";
-import { getContentBlocksForPage, getFaqItems } from "../../../lib/content";
-import type { ContentBlockRow, ContentPage } from "../../../lib/contentTypes";
+import { getWebsiteOverviewData } from "../../../lib/content";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
@@ -11,24 +10,11 @@ import "../../../components/admin/website/website.css";
 export const dynamic = "force-dynamic";
 
 export default async function WebsitePage() {
-  let blocksByPage: Record<ContentPage, ContentBlockRow[]> = {
-    homepage: [],
-    about: [],
-    contact: [],
-    faq: [],
-  };
-  let faqItems: Awaited<ReturnType<typeof getFaqItems>> = [];
+  let overview: Awaited<ReturnType<typeof getWebsiteOverviewData>> | null = null;
   let loadError: string | null = null;
 
   try {
-    const [homepage, about, contact, faq] = await Promise.all([
-      getContentBlocksForPage("homepage"),
-      getContentBlocksForPage("about"),
-      getContentBlocksForPage("contact"),
-      getFaqItems(),
-    ]);
-    blocksByPage = { homepage, about, contact, faq: [] };
-    faqItems = faq;
+    overview = await getWebsiteOverviewData();
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Unknown error loading website content.";
   }
@@ -42,11 +28,15 @@ export default async function WebsitePage() {
         <div className="contacts-page-header">
           <div>
             <h1 className="contacts-title">Website</h1>
-            <p className="contacts-subtitle">Edit the text, images, and FAQ on IHeartPuppy.com</p>
+            <p className="contacts-subtitle">Manage the content that appears on your website.</p>
+          </div>
+          <div className="website-header-actions">
+            {/* TODO: wire to the real IHeartPuppy.com live URL once confirmed */}
+            <span className="admin-hint">Live site link not wired yet - confirm your real URL</span>
           </div>
         </div>
 
-        {loadError ? (
+        {loadError || !overview ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>
             <strong>Couldn&apos;t load website content.</strong>
             <p style={{ marginTop: 8 }}>
@@ -54,7 +44,12 @@ export default async function WebsitePage() {
             </p>
           </div>
         ) : (
-          <WebsiteEditorClient blocksByPage={blocksByPage} faqItems={faqItems} />
+          <WebsiteEditorClient
+            blocksByPage={overview.blocksByPage}
+            faqItems={overview.faqItems}
+            recentChanges={overview.recentChanges}
+            mediaItems={overview.mediaItems}
+          />
         )}
       </div>
     </AdminSidebar>
