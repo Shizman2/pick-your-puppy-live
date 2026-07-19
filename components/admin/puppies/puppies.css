@@ -1,0 +1,126 @@
+.puppies-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.puppy-admin-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+.puppy-admin-card-photo {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 12px;
+  overflow: hidden;
+}
+
+.puppy-admin-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.puppy-admin-card-body {
+  padding: 12px 14px;
+}
+
+.puppy-admin-card-name {
+  font-weight: 800;
+  font-size: 14px;
+  color: #111827;
+}
+
+.puppy-admin-card-meta {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.puppy-admin-card-price {
+  font-weight: 800;
+  font-size: 15px;
+  color: #2563eb;
+  margin-top: 6px;
+}
+
+.puppy-status-pill {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-top: 6px;
+}
+
+.puppy-status-pill.available { background: #dcfce7; color: #15803d; }
+.puppy-status-pill.hold { background: #fef3c7; color: #b45309; }
+.puppy-status-pill.sold { background: #fee2e2; color: #b91c1c; }
+
+.puppy-form-row {
+  display: flex;
+  gap: 10px;
+}
+
+.puppy-form-row .admin-field {
+  flex: 1;
+}
+
+.puppy-photo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.puppy-photo-thumb {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+
+.puppy-photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.puppy-photo-remove {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.puppy-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8px;
+}
