@@ -139,21 +139,16 @@ export async function getMessageCenterData(): Promise<MessageCenterData> {
     const contactInterests = interestsByContact.get(contact.id) || [];
     const contactMessages = messagesByContact.get(contact.id) || [];
 
-    // A contact with no inquiries at all (shouldn't normally happen,
-    // since inquiries are what create a contact) has nothing to show
-    // in an inbox - skip them from the list rather than show an
-    // empty/broken-looking row.
-    if (contactInquiries.length === 0) continue;
-
     const activeInquiryIds = activeInquiryIdsFor(
       contactInquiries as InquiryForBadges[],
       contactInterests
     );
     const badges = badgesForContact(contactInquiries as InquiryForBadges[], activeInquiryIds);
 
-    const sources = Array.from(
-      new Set(contactInquiries.map((i) => SOURCE_LABEL[i.inquiry_type]))
-    );
+    const sources =
+      contactInquiries.length > 0
+        ? Array.from(new Set(contactInquiries.map((i) => SOURCE_LABEL[i.inquiry_type])))
+        : ["Manually added"];
 
     const unreadCount = contactMessages.filter((m) => m.direction === "inbound" && !m.is_read).length;
 
@@ -162,7 +157,7 @@ export async function getMessageCenterData(): Promise<MessageCenterData> {
       contactName: contact.display_name || `${contact.first_name} ${contact.last_name || ""}`.trim(),
       badges,
       sources,
-      receivedAt: contactInquiries[0].created_at,
+      receivedAt: contactInquiries[0]?.created_at || contact.created_at,
       lastActivityAt: contact.last_activity_at,
       leadScore: contact.lead_score,
       status: contact.status,

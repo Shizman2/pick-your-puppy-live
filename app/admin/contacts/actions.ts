@@ -95,3 +95,103 @@ export async function addContactNote(contactId: string, body: string): Promise<A
   revalidatePath(`/admin/contacts/${contactId}`);
   return { success: true };
 }
+
+export interface NewContactFields {
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  city: string;
+  state: string;
+  status: ContactStatus;
+}
+
+export type AddContactResult =
+  | { success: true; contactId: string; matchedExisting: boolean }
+  | { success: false; error: string };
+
+/**
+ * Manually adds a contact from the admin side (phone call, walk-in,
+ * lead from somewhere else) - separate from the automatic path
+ * through /inquire. Uses the same phone/email normalization as that
+ * form so duplicate detection is consistent either way: if a match is
+ * found, no new row is created - the existing contact's id is
+ * returned instead, so the UI can send the admin straight to that
+ * profile rather than silently create a second record for the same
+ * person.
+ */
+export async function addContact(fields: NewContactFields): Promise<AddContactResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const firstName = fields.firstName.trim();
+  if (!firstName) return { success: false, error: "First name is required." };
+
+  const phone = fields.phone.trim();
+  const email = fields.email.trim();
+  if (!phone && !email) {
+    return { success: false, error: "Enter at least a phone number or email." };
+  }
+
+  const { normalizePhone, normalizeEmail } = await import("../../../lib/normalize");
+  const phoneNormalized = normalizePhone(phone);
+  const emailNormalized = normalizeEmail(email);
+
+  const admin = createAdminClient();
+
+  let existing = null;
+  if (phoneNormalized) {
+    const { data } = await admin
+      .from("contacts")
+      .select("id")
+      .eq("phone_normalized", phoneNormalized)
+      .limit(1)
+      .maybeSingle();
+    existing = data;
+  }
+  if (!existing && emailNormalized) {
+    const { data } = await admin
+      .from("contacts")
+      .select("id")
+      .eq("email_normalized", emailNormalized)
+      .limit(1)
+      .maybeSingle();
+    existing = data;
+  }
+
+  if (existing) {
+    return { success: true, contactId: existing.id, matchedExisting: true };
+  }
+
+  const { data: newContact, error } = await admin
+    .from("contacts")
+    .insert({
+      first_name: firstName,
+      last_name: fields.lastName.trim() || null,
+      display_name: `${firstName} ${fields.lastName.trim()}`.trim(),
+      phone: phone || null,
+      phone_normalized: phoneNormalized,
+      email: email || null,
+      email_normalized: emailNormalized,
+      city: fields.city.trim() || null,
+      state: fields.state.trim() || null,
+      status: fields.status,
+      source: "manual_admin_entry",
+      last_activity_at: new Date().toISOString(),
+    })
+    .select("id")
+    .single();
+
+  if (error) return { success: false, error: error.message };
+
+  await admin.from("timeline_events").insert({
+    contact_id: newContact.id,
+    event_type: "contact_created_manually",
+    description: "Added manually by staff",
+  });
+
+  revalidatePath("/admin/contacts");
+  revalidatePath("/admin/messages");
+
+  return { success: true, contactId: newContact.id, matchedExisting: false };
+}

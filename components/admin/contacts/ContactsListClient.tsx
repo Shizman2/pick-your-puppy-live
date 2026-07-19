@@ -148,6 +148,9 @@ export default function ContactsListClient({ contacts }: { contacts: ContactList
             {contacts.length} total contact{contacts.length === 1 ? "" : "s"}
           </p>
         </div>
+        <Link href="/admin/contacts/new" className="admin-btn admin-btn--primary">
+          + New Contact
+        </Link>
       </div>
 
       <div className="contacts-toolbar">
