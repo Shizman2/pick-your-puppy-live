@@ -145,7 +145,9 @@ export async function deletePuppy(puppyId: string): Promise<ActionResult> {
   return { success: true };
 }
 
-export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Promise<ActionResult> {
+export type UploadPhotoResult = { success: true; url: string } | { success: false; error: string };
+
+export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Promise<UploadPhotoResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
 
@@ -182,7 +184,7 @@ export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Pro
 
   revalidatePath(`/admin/puppies/${puppyId}`);
   revalidatePath("/admin/puppies");
-  return { success: true };
+  return { success: true, url: publicUrl };
 }
 
 export async function removePuppyPhoto(puppyId: string, url: string): Promise<ActionResult> {

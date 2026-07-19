@@ -121,7 +121,7 @@ export default function PuppyForm({ existing }: PuppyFormProps) {
       setError(result.error);
       return;
     }
-    router.refresh();
+    setPhotoUrls((prev) => [...prev, result.url]);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
