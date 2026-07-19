@@ -106,6 +106,15 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
     if (puppy?.status !== "sold") {
       await admin.from("puppies").update({ status: "sold" }).eq("id", sale.puppy_id);
     }
+
+    // The buyer's contact status should reflect that they actually
+    // bought, not just that they were "interested" - same logic as
+    // the puppy flipping to sold.
+    await admin
+      .from("contacts")
+      .update({ status: "customer", last_activity_at: new Date().toISOString() })
+      .eq("id", sale.contact_id);
+
     await admin.from("timeline_events").insert({
       contact_id: sale.contact_id,
       event_type: "sale_paid_in_full",
