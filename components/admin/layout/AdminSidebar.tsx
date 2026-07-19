@@ -33,7 +33,7 @@ function Icon({ path }: { path: string }) {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { key: "dashboard", label: "Dashboard", href: null, icon: <Icon path="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" /> },
+  { key: "dashboard", label: "Dashboard", href: "/admin/dashboard", icon: <Icon path="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" /> },
   { key: "contacts", label: "Contacts", href: "/admin/contacts", icon: <Icon path="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6" /> },
   { key: "puppies", label: "Puppies", href: null, icon: <Icon path="M12 21c4-3 7-6 7-10a5 5 0 00-9.5-2A5 5 0 005 11c0 4 3 7 7 10z" /> },
   { key: "sales", label: "Sales & Payments", href: null, icon: <Icon path="M12 2v20M17 7a4 4 0 00-4-3H10a3 3 0 000 6h4a3 3 0 010 6h-3a4 4 0 01-4-3" /> },
