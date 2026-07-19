@@ -102,6 +102,15 @@ export default function PuppyForm({ existing }: PuppyFormProps) {
     const file = e.target.files?.[0];
     if (!file || !existing) return;
 
+    const maxBytes = 8 * 1024 * 1024; // 8MB - leaves headroom under the 10MB server limit
+    if (file.size > maxBytes) {
+      setError(
+        `That photo is ${(file.size / 1024 / 1024).toFixed(1)}MB - please use one under 8MB.`
+      );
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
     setUploadingPhoto(true);
     const formData = new FormData();
     formData.append("file", file);
