@@ -8,6 +8,8 @@ interface InquireFormProps {
   initialType: InquiryType;
   initialPuppyName?: string;
   initialPuppySlug?: string;
+  eventDateDisplay?: string | null;
+  eventTimeDisplay?: string | null;
 }
 
 const TYPE_OPTIONS: { value: InquiryType; label: string }[] = [
@@ -21,11 +23,19 @@ export default function InquireForm({
   initialType,
   initialPuppyName,
   initialPuppySlug,
+  eventDateDisplay,
+  eventTimeDisplay,
 }: InquireFormProps) {
+  // A dedicated, no-other-options registration screen - only true when
+  // someone arrives specifically via a PYPL link (?type=pypl), not if
+  // they manually click the PYPL radio option from the general form.
+  const isDedicatedPypl = initialType === "pypl";
+
   const [inquiryType, setInquiryType] = useState<InquiryType>(initialType);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   // Shared fields
   const [firstName, setFirstName] = useState("");
@@ -59,6 +69,11 @@ export default function InquireForm({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    if (isDedicatedPypl && !email.trim()) {
+      setError("Please enter your email so we can send you the show link.");
+      return;
+    }
 
     if (!firstName.trim() || (!phone.trim() && !email.trim())) {
       setError("Please enter your first name and at least a phone number or email.");
@@ -111,7 +126,18 @@ export default function InquireForm({
       const data = await res.json();
 
       if (data.success) {
-        setSubmitted(true);
+        if (inquiryType === "pypl" && data.eventSlug) {
+          // Instant, open access - no approval step. The confirmation
+          // screen shows briefly, then redirects straight to their
+          // private countdown page (never the raw Zoom link).
+          setSubmitted(true);
+          setRedirecting(true);
+          setTimeout(() => {
+            window.location.href = `https://pyplcountdown.netlify.app/show/${data.eventSlug}`;
+          }, 3000);
+        } else {
+          setSubmitted(true);
+        }
       } else {
         setError(data.error || "Something went wrong. Please try again.");
         setSubmitting(false);
@@ -120,6 +146,22 @@ export default function InquireForm({
       setError("Something went wrong. Please try again.");
       setSubmitting(false);
     }
+  }
+
+  if (submitted && redirecting) {
+    return (
+      <div className="inquire-card">
+        <div className="inquire-success">
+          <h2>You&apos;re In! ✓</h2>
+          {eventDateDisplay && (
+            <p style={{ fontWeight: 700, marginBottom: 4 }}>
+              {eventDateDisplay} • {eventTimeDisplay}
+            </p>
+          )}
+          <p>Redirecting you to your private show page...</p>
+        </div>
+      </div>
+    );
   }
 
   if (submitted) {
@@ -135,22 +177,35 @@ export default function InquireForm({
 
   return (
     <form className="inquire-card" onSubmit={handleSubmit}>
-      <h1 className="inquire-title">How can we help you today?</h1>
-      <p className="inquire-subtitle">Let us know what you're looking for</p>
+      {isDedicatedPypl ? (
+        <>
+          <h1 className="inquire-title">Register for Pick Your Puppy Live</h1>
+          {eventDateDisplay && (
+            <p className="inquire-subtitle" style={{ fontWeight: 700 }}>
+              {eventDateDisplay} • {eventTimeDisplay}
+            </p>
+          )}
+        </>
+      ) : (
+        <>
+          <h1 className="inquire-title">How can we help you today?</h1>
+          <p className="inquire-subtitle">Let us know what you're looking for</p>
 
-      <div className="inquire-field">
-        <div className="inquire-radio-group">
-          {TYPE_OPTIONS.map((opt) => (
-            <div
-              key={opt.value}
-              className={`inquire-radio-option${inquiryType === opt.value ? " selected" : ""}`}
-              onClick={() => setInquiryType(opt.value)}
-            >
-              {opt.label}
+          <div className="inquire-field">
+            <div className="inquire-radio-group">
+              {TYPE_OPTIONS.map((opt) => (
+                <div
+                  key={opt.value}
+                  className={`inquire-radio-option${inquiryType === opt.value ? " selected" : ""}`}
+                  onClick={() => setInquiryType(opt.value)}
+                >
+                  {opt.label}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+        </>
+      )}
 
       {error && <div className="inquire-error">{error}</div>}
 
@@ -172,10 +227,12 @@ export default function InquireForm({
         <input className="inquire-input" value={firstName} onChange={(e) => setFirstName(e.target.value)} required />
       </div>
 
-      <div className="inquire-field">
-        <label className="inquire-label">Last name</label>
-        <input className="inquire-input" value={lastName} onChange={(e) => setLastName(e.target.value)} />
-      </div>
+      {!isDedicatedPypl && (
+        <div className="inquire-field">
+          <label className="inquire-label">Last name</label>
+          <input className="inquire-input" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+        </div>
+      )}
 
       <div className="inquire-field">
         <label className="inquire-label">Phone number</label>
@@ -184,31 +241,35 @@ export default function InquireForm({
 
       <div className="inquire-field">
         <label className="inquire-label">Email</label>
-        <input className="inquire-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+        <input className="inquire-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required={isDedicatedPypl} />
       </div>
 
-      <div className="inquire-field">
-        <label className="inquire-label">City</label>
-        <input className="inquire-input" value={city} onChange={(e) => setCity(e.target.value)} />
-      </div>
+      {!isDedicatedPypl && (
+        <>
+          <div className="inquire-field">
+            <label className="inquire-label">City</label>
+            <input className="inquire-input" value={city} onChange={(e) => setCity(e.target.value)} />
+          </div>
 
-      <div className="inquire-field">
-        <label className="inquire-label">State</label>
-        <input className="inquire-input" value={state} onChange={(e) => setState(e.target.value)} />
-      </div>
+          <div className="inquire-field">
+            <label className="inquire-label">State</label>
+            <input className="inquire-input" value={state} onChange={(e) => setState(e.target.value)} />
+          </div>
 
-      <div className="inquire-field">
-        <label className="inquire-label">Preferred contact method</label>
-        <select
-          className="inquire-select"
-          value={preferredContactMethod}
-          onChange={(e) => setPreferredContactMethod(e.target.value)}
-        >
-          <option value="phone">Phone call</option>
-          <option value="text">Text</option>
-          <option value="email">Email</option>
-        </select>
-      </div>
+          <div className="inquire-field">
+            <label className="inquire-label">Preferred contact method</label>
+            <select
+              className="inquire-select"
+              value={preferredContactMethod}
+              onChange={(e) => setPreferredContactMethod(e.target.value)}
+            >
+              <option value="phone">Phone call</option>
+              <option value="text">Text</option>
+              <option value="email">Email</option>
+            </select>
+          </div>
+        </>
+      )}
 
       {inquiryType === "puppy_interest" && (
         <div className="inquire-field">
@@ -294,7 +355,7 @@ export default function InquireForm({
         </>
       )}
 
-      {inquiryType !== "general" && (
+      {!isDedicatedPypl && inquiryType !== "general" && (
         <div className="inquire-field">
           <label className="inquire-label">Anything else we should know? (optional)</label>
           <textarea className="inquire-textarea" value={notes} onChange={(e) => setNotes(e.target.value)} />
@@ -325,7 +386,7 @@ export default function InquireForm({
       </div>
 
       <button type="submit" className="inquire-submit" disabled={submitting}>
-        {submitting ? "Sending..." : "Send"}
+        {submitting ? "Reserving..." : isDedicatedPypl ? "Reserve My Spot" : "Send"}
       </button>
     </form>
   );

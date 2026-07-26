@@ -111,6 +111,7 @@ export async function POST(request: NextRequest) {
   };
 
   let interestLabel = "";
+  let eventSlug: string | null = null;
 
   if (inquiryType === "puppy_interest") {
     inquiryColumns.puppy_name = body.puppyName || null;
@@ -138,6 +139,7 @@ export async function POST(request: NextRequest) {
       inquiryColumns.event_id = event.id;
       inquiryColumns.event_title_snapshot = event.event_title || event.countdown_headline;
       inquiryColumns.event_show_at_snapshot = event.show_at;
+      eventSlug = event.status === "published" ? event.slug : null;
     }
     interestLabel = "Registered for Pick Your Puppy Live";
   } else if (inquiryType === "general") {
@@ -236,5 +238,6 @@ export async function POST(request: NextRequest) {
     success: true,
     isNewContact: isNew,
     flaggedDuplicate: Boolean(flaggedDuplicate),
+    eventSlug,
   });
 }
