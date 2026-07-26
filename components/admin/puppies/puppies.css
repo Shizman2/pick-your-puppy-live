@@ -68,6 +68,51 @@
 .puppy-status-pill.available { background: #dcfce7; color: #15803d; }
 .puppy-status-pill.hold { background: #fef3c7; color: #b45309; }
 .puppy-status-pill.sold { background: #fee2e2; color: #b91c1c; }
+.puppy-status-pill.on_sale { background: #dbeafe; color: #1d4ed8; }
+.puppy-status-pill.discounted { background: #fef3c7; color: #b45309; }
+
+.badge-preview-box {
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+
+.badge-preview-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.badge-preview-hidden {
+  font-size: 11px;
+  font-weight: 700;
+  color: #b91c1c;
+  background: #fee2e2;
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+.badge-preview-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
+  color: #111827;
+}
+
+.badge-preview-strike {
+  text-decoration: line-through;
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.badge-preview-sale {
+  color: #2563eb;
+}
 
 .puppy-form-row {
   display: flex;

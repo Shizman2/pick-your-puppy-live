@@ -50,6 +50,8 @@ export interface PuppyFormFields {
   breederId: string | null;
   costCents: number;
   bundleCostCents: number;
+  salePriceCents: number | null;
+  showOnWebsite: boolean;
 }
 
 export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyResult> {
@@ -84,6 +86,8 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
       breeder_id: fields.breederId,
       cost_cents: fields.costCents,
       bundle_cost_cents: fields.bundleCostCents,
+      sale_price_cents: fields.salePriceCents,
+      show_on_website: fields.showOnWebsite,
     })
     .select("id")
     .single();
@@ -131,6 +135,8 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
       breeder_id: fields.breederId,
       cost_cents: fields.costCents,
       bundle_cost_cents: fields.bundleCostCents,
+      sale_price_cents: fields.salePriceCents,
+      show_on_website: fields.showOnWebsite,
     })
     .eq("id", puppyId);
 

@@ -1,6 +1,6 @@
 export type PuppyGender = "male" | "female";
 export type PuppySize = "teacup" | "toy" | "mini" | "standard";
-export type PuppyStatus = "available" | "hold" | "sold";
+export type PuppyStatus = "available" | "hold" | "sold" | "on_sale" | "discounted";
 export type PuppyBadgeTag = "available" | "new" | "popular";
 
 export interface PuppyRow {
@@ -9,6 +9,8 @@ export interface PuppyRow {
   slug: string;
   breed: string;
   price_cents: number;
+  sale_price_cents: number | null;
+  show_on_website: boolean;
   gender: PuppyGender;
   date_of_birth: string | null;
   size: PuppySize | null;
@@ -30,8 +32,16 @@ export interface PuppyRow {
 
 export const GENDER_OPTIONS: PuppyGender[] = ["male", "female"];
 export const SIZE_OPTIONS: PuppySize[] = ["teacup", "toy", "mini", "standard"];
-export const STATUS_OPTIONS: PuppyStatus[] = ["available", "hold", "sold"];
+export const STATUS_OPTIONS: PuppyStatus[] = ["available", "hold", "sold", "on_sale", "discounted"];
 export const BADGE_OPTIONS: PuppyBadgeTag[] = ["available", "new", "popular"];
+
+export const STATUS_DISPLAY_LABEL: Record<PuppyStatus, string> = {
+  available: "Available",
+  hold: "Pending Adoption",
+  sold: "Sold",
+  on_sale: "On Sale",
+  discounted: "Discounted",
+};
 
 export function formatPriceFromCents(cents: number): string {
   return `$${(cents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;

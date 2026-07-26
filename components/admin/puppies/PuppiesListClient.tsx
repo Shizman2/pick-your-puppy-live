@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { PuppyRow } from "../../../lib/puppyTypes";
-import { formatPriceFromCents } from "../../../lib/puppyTypes";
+import { formatPriceFromCents, STATUS_DISPLAY_LABEL } from "../../../lib/puppyTypes";
 
 export default function PuppiesListClient({ puppies }: { puppies: PuppyRow[] }) {
   if (puppies.length === 0) {
@@ -23,7 +23,7 @@ export default function PuppiesListClient({ puppies }: { puppies: PuppyRow[] }) 
             <div className="puppy-admin-card-name">{p.name}</div>
             <div className="puppy-admin-card-meta">{p.breed}</div>
             <div className="puppy-admin-card-price">{formatPriceFromCents(p.price_cents)}</div>
-            <div className={`puppy-status-pill ${p.status}`}>{p.status}</div>
+            <div className={`puppy-status-pill ${p.status}`}>{STATUS_DISPLAY_LABEL[p.status]}</div>
           </div>
         </Link>
       ))}

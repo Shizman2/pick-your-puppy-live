@@ -11,7 +11,7 @@ import {
   removePuppyPhoto,
   type PuppyFormFields,
 } from "../../../app/admin/puppies/actions";
-import { GENDER_OPTIONS, SIZE_OPTIONS, STATUS_OPTIONS, BADGE_OPTIONS, type PuppyRow } from "../../../lib/puppyTypes";
+import { GENDER_OPTIONS, SIZE_OPTIONS, STATUS_OPTIONS, BADGE_OPTIONS, STATUS_DISPLAY_LABEL, type PuppyRow } from "../../../lib/puppyTypes";
 
 interface PuppyFormProps {
   existing?: PuppyRow;
@@ -41,6 +41,10 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
   const [breederId, setBreederId] = useState<string>(existing?.breeder_id || "");
   const [cost, setCost] = useState(existing ? (existing.cost_cents / 100).toString() : "0");
   const [bundleCost, setBundleCost] = useState(existing ? (existing.bundle_cost_cents / 100).toString() : "0");
+  const [salePrice, setSalePrice] = useState(
+    existing?.sale_price_cents ? (existing.sale_price_cents / 100).toString() : ""
+  );
+  const [showOnWebsite, setShowOnWebsite] = useState(existing?.show_on_website ?? true);
 
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -77,6 +81,8 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
       breederId: breederId || null,
       costCents: Math.round((parseFloat(cost) || 0) * 100),
       bundleCostCents: Math.round((parseFloat(bundleCost) || 0) * 100),
+      salePriceCents: salePrice.trim() ? Math.round(parseFloat(salePrice) * 100) : null,
+      showOnWebsite,
     };
 
     const result = existing ? await updatePuppy(existing.id, fields) : await createPuppy(fields);
@@ -220,11 +226,49 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
           <select className="admin-select" value={status} onChange={(e) => setStatus(e.target.value as PuppyRow["status"])}>
             {STATUS_OPTIONS.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {STATUS_DISPLAY_LABEL[s]}
               </option>
             ))}
           </select>
         </div>
+        <div className="admin-field">
+          <label className="admin-field__label">Sale price ($, optional)</label>
+          <input
+            className="admin-input"
+            type="number"
+            placeholder="Leave blank if not on sale"
+            value={salePrice}
+            onChange={(e) => setSalePrice(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="admin-field">
+        <label className="puppy-checkbox-row">
+          <input type="checkbox" checked={showOnWebsite} onChange={(e) => setShowOnWebsite(e.target.checked)} />
+          Show on website (separate from status - a Sold puppy can still show, with a badge, until you hide it here)
+        </label>
+      </div>
+
+      <div className="badge-preview-box">
+        <div className="admin-field__label" style={{ marginBottom: 8 }}>Live preview</div>
+        <div className="badge-preview-row">
+          <span className={`puppy-status-pill ${status}`}>{STATUS_DISPLAY_LABEL[status]}</span>
+          {!showOnWebsite && <span className="badge-preview-hidden">Hidden from website</span>}
+        </div>
+        <div className="badge-preview-price">
+          {salePrice.trim() && !isNaN(parseFloat(salePrice)) ? (
+            <>
+              <span className="badge-preview-strike">${(parseFloat(price) || 0).toLocaleString()}</span>
+              <span className="badge-preview-sale">${parseFloat(salePrice).toLocaleString()}</span>
+            </>
+          ) : (
+            <span>${(parseFloat(price) || 0).toLocaleString()}</span>
+          )}
+        </div>
+      </div>
+
+      <div className="puppy-form-row">
         <div className="admin-field">
           <label className="admin-field__label">Badge tag</label>
           <select
