@@ -1,13 +1,16 @@
 import Link from "next/link";
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
-import { getDashboardData } from "../../../lib/dashboard";
-import type { DashboardData } from "../../../lib/dashboard";
-import { getDashboardSalesSummary } from "../../../lib/sales";
-import type { DashboardSalesSummary } from "../../../lib/sales";
+import GoalWidget from "../../../components/admin/dashboard/GoalWidget";
+import PuppyStatusDonut from "../../../components/admin/dashboard/PuppyStatusDonut";
+import { getDashboardData, getPuppyStatusBreakdown, getTodayActivities } from "../../../lib/dashboard";
+import type { DashboardData, PuppyStatusBreakdown, TodayActivityItem } from "../../../lib/dashboard";
+import { getDashboardSalesSummary, getSalesListData } from "../../../lib/sales";
+import type { DashboardSalesSummary, SaleListItem } from "../../../lib/sales";
+import { getActiveGoal, getGoalProgress } from "../../../lib/goals";
+import type { GoalProgress } from "../../../lib/goalTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
 import { formatRelativeTime } from "../../../lib/formatRelative";
-import IconBadge, { ICONS } from "../../../components/admin/dashboard/IconBadge";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
 import { SALE_PROGRESS_LABEL } from "../../../lib/saleTypes";
 import "../../../components/admin/layout/adminShell.css";
@@ -19,35 +22,36 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   let data: DashboardData | null = null;
   let salesSummary: DashboardSalesSummary | null = null;
+  let activeSales: SaleListItem[] = [];
+  let puppyStatus: PuppyStatusBreakdown | null = null;
+  let todayActivities: TodayActivityItem[] = [];
+  let goalProgress: GoalProgress | null = null;
   let loadError: string | null = null;
 
   try {
     data = await getDashboardData();
     salesSummary = await getDashboardSalesSummary();
+    activeSales = await getSalesListData();
+    puppyStatus = await getPuppyStatusBreakdown();
+    todayActivities = await getTodayActivities();
+    const goal = await getActiveGoal();
+    goalProgress = goal ? await getGoalProgress(goal) : null;
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Unknown error loading the dashboard.";
   }
 
   const userEmail = await getAdminUserEmail();
   const unreadMessageCount = await getUnreadMessageCount();
+  const firstName = userEmail ? userEmail.split("@")[0].split(".")[0] : "there";
+  const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-  const attentionCount =
-    (data?.needsAttention.overdueActivities.length || 0) +
-    (data?.needsAttention.staleUnread.length || 0) +
-    (data?.needsAttention.staleHighInterest.length || 0) +
-    (data?.needsAttention.possibleDuplicates.length || 0);
+  const soldCount = puppyStatus?.sold || 0;
+  const totalCount = puppyStatus?.total || 0;
 
   return (
     <AdminSidebar active="dashboard" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>
       <div className="contacts-page">
-        <div className="contacts-page-header">
-          <div>
-            <h1 className="contacts-title">Dashboard</h1>
-            <p className="contacts-subtitle">Here&apos;s what&apos;s happening with your business today.</p>
-          </div>
-        </div>
-
-        {loadError || !data ? (
+        {loadError || !data || !salesSummary || !puppyStatus ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>
             <strong>Couldn&apos;t load the dashboard.</strong>
             <p style={{ marginTop: 8 }}>
@@ -56,155 +60,186 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <>
-            <div className="dashboard-stat-grid">
-              <div className="dashboard-stat-card">
-                <IconBadge color="green" path="M12 2v20M17 7a4 4 0 00-4-3H10a3 3 0 000 6h4a3 3 0 010 6h-3a4 4 0 01-4-3" />
-                <div className="dashboard-stat-body">
-                  <div className="dashboard-stat-value">
-                    {formatPriceFromCents(salesSummary?.todayRevenueCents || 0)}
+            <div className="dash2-greeting">Good morning, {displayName} 👋</div>
+            <div className="dash2-subgreeting">Here&apos;s what&apos;s happening with your business today.</div>
+
+            <div className="dash2-grid">
+              <div>
+                <div className="dash2-stat-row">
+                  <div className="dash2-stat-card">
+                    <div className="dash2-stat-label">🐾 Puppies Sold</div>
+                    <div className="dash2-stat-value">
+                      {soldCount} <span style={{ fontSize: 13, fontWeight: 500, color: "#9ca3af" }}>/ {totalCount}</span>
+                    </div>
+                    <div className="dash2-stat-bar">
+                      <div
+                        className="dash2-stat-bar-fill"
+                        style={{ width: `${totalCount > 0 ? (soldCount / totalCount) * 100 : 0}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="dashboard-stat-label">Today&apos;s revenue</div>
-                </div>
-              </div>
-              <div className="dashboard-stat-card">
-                <IconBadge color="purple" path={ICONS.contacts} />
-                <div className="dashboard-stat-body">
-                  <div className="dashboard-stat-value">{data.newContactsThisWeek}</div>
-                  <div className="dashboard-stat-label">New contacts (7 days)</div>
-                </div>
-              </div>
-              <div className="dashboard-stat-card">
-                <IconBadge color="blue" path={ICONS.message} />
-                <div className="dashboard-stat-body">
-                  <div className="dashboard-stat-value">{data.unreadMessages}</div>
-                  <div className="dashboard-stat-label">Unread messages</div>
-                </div>
-              </div>
-              <div className="dashboard-stat-card">
-                <IconBadge color="orange" path={ICONS.checklist} />
-                <div className="dashboard-stat-body">
-                  <div className="dashboard-stat-value">{data.activitiesDueTodayOrOverdue}</div>
-                  <div className="dashboard-stat-label">Activities due/overdue</div>
-                </div>
-              </div>
-              <div className="dashboard-stat-card">
-                <IconBadge color="green" path={ICONS.heart} />
-                <div className="dashboard-stat-body">
-                  <div className="dashboard-stat-value">{data.highInterestCount}</div>
-                  <div className="dashboard-stat-label">High interest contacts</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="dashboard-section">
-              <div className="dashboard-section-title">Pipeline</div>
-              <div className="dashboard-pipeline">
-                {data.pipeline.map((stage) => (
-                  <div key={stage.status} className="dashboard-pipeline-stage">
-                    <div className="dashboard-pipeline-count">{stage.count}</div>
-                    <div className="dashboard-pipeline-label">{stage.status.replace("_", " ")}</div>
+                  <div className="dash2-stat-card">
+                    <div className="dash2-stat-label">📈 Sold This Week</div>
+                    <div className="dash2-stat-value">{goalProgress?.soldThisWeek ?? 0}</div>
+                    <div className="dash2-stat-sub">
+                      {goalProgress ? `Goal: ${goalProgress.weeklyPaceNeeded}/wk` : "No active goal"}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="dashboard-section">
-              <div className="dashboard-section-title">
-                Needs Attention {attentionCount > 0 && `(${attentionCount})`}
-              </div>
-
-              {attentionCount === 0 ? (
-                <div className="contacts-empty">Nothing needs attention right now.</div>
-              ) : (
-                <>
-                  {data.needsAttention.overdueActivities.map((a) => (
-                    <div key={a.id} className="dashboard-attention-item">
-                      <span className="dashboard-attention-left">
-                        <IconBadge color="red" path={ICONS.phone} size="small" />
-                        <span>
-                          <Link href={`/admin/contacts/${a.contactId}`}>{a.contactName}</Link> — {a.title}
-                        </span>
-                      </span>
-                      <span className="dashboard-attention-tag">Overdue activity</span>
-                    </div>
-                  ))}
-                  {data.needsAttention.staleUnread.map((m) => (
-                    <div key={m.contactId} className="dashboard-attention-item">
-                      <span className="dashboard-attention-left">
-                        <IconBadge color="blue" path={ICONS.message} size="small" />
-                        <span>
-                          <Link href={`/admin/messages#${m.contactId}`}>{m.contactName}</Link> — unread since{" "}
-                          {formatRelativeTime(m.lastMessageAt)}
-                        </span>
-                      </span>
-                      <span className="dashboard-attention-tag">Unread</span>
-                    </div>
-                  ))}
-                  {data.needsAttention.staleHighInterest.map((c) => (
-                    <div key={c.contactId} className="dashboard-attention-item">
-                      <span className="dashboard-attention-left">
-                        <IconBadge color="orange" path={ICONS.heart} size="small" />
-                        <span>
-                          <Link href={`/admin/contacts/${c.contactId}`}>{c.contactName}</Link> — high interest, no
-                          recent activity
-                        </span>
-                      </span>
-                      <span className="dashboard-attention-tag">Needs follow-up</span>
-                    </div>
-                  ))}
-                  {data.needsAttention.possibleDuplicates.map((c) => (
-                    <div key={c.contactId} className="dashboard-attention-item">
-                      <span className="dashboard-attention-left">
-                        <IconBadge color="purple" path={ICONS.warning} size="small" />
-                        <span>
-                          <Link href={`/admin/contacts/${c.contactId}`}>{c.contactName}</Link>
-                        </span>
-                      </span>
-                      <span className="dashboard-attention-tag">Possible duplicate</span>
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            <div className="dashboard-section">
-              <div className="dashboard-section-title">Recent Sales</div>
-              {!salesSummary || salesSummary.recentSales.length === 0 ? (
-                <div className="contacts-empty">No payments logged yet.</div>
-              ) : (
-                <div className="profile-card">
-                  {salesSummary.recentSales.map((s, i) => (
-                    <div key={`${s.saleId}-${i}`} className="dashboard-feed-item">
-                      <span>
-                        <Link href={`/admin/sales/${s.saleId}`}>{s.puppyName}</Link> — {s.contactName} —{" "}
-                        {formatPriceFromCents(s.amountCents)}{" "}
-                        <span className="dashboard-attention-tag" style={{ marginLeft: 6 }}>
-                          {SALE_PROGRESS_LABEL[s.progress]}
-                        </span>
-                      </span>
-                      <span className="dashboard-feed-time">{formatRelativeTime(s.date)}</span>
-                    </div>
-                  ))}
+                  <div className="dash2-stat-card">
+                    <div className="dash2-stat-label">🛍 Available</div>
+                    <div className="dash2-stat-value">{puppyStatus.available}</div>
+                    <div className="dash2-stat-sub">Ready to sell</div>
+                  </div>
+                  <div className="dash2-stat-card">
+                    <div className="dash2-stat-label">💲 Revenue Today</div>
+                    <div className="dash2-stat-value">{formatPriceFromCents(salesSummary.todayRevenueCents)}</div>
+                    <div className="dash2-stat-sub">Deposits + payments</div>
+                  </div>
                 </div>
-              )}
-            </div>
 
-            <div className="dashboard-section">
-              <div className="dashboard-section-title">Recent Activity</div>
-              {data.recentActivity.length === 0 ? (
-                <div className="contacts-empty">Nothing yet.</div>
-              ) : (
-                <div className="profile-card">
-                  {data.recentActivity.map((item) => (
-                    <div key={item.id} className="dashboard-feed-item">
-                      <span>
-                        <Link href={`/admin/contacts/${item.contactId}`}>{item.contactName}</Link> — {item.description}
-                      </span>
-                      <span className="dashboard-feed-time">{formatRelativeTime(item.createdAt)}</span>
-                    </div>
-                  ))}
+                <div className="dash2-section">
+                  <div className="dash2-section-header">
+                    <div className="dash2-section-title">Active Puppy Sales</div>
+                    <Link href="/admin/sales" className="dash2-section-link">
+                      View All Sales →
+                    </Link>
+                  </div>
+                  {activeSales.length === 0 ? (
+                    <p className="admin-hint">No active sales right now.</p>
+                  ) : (
+                    <table className="dash2-sales-table">
+                      <thead>
+                        <tr>
+                          <th>Puppy</th>
+                          <th>Breed</th>
+                          <th>Customer</th>
+                          <th>Status</th>
+                          <th>Price</th>
+                          <th>Paid</th>
+                          <th>Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {activeSales.slice(0, 6).map((item) => (
+                          <tr key={item.sale.id}>
+                            <td>
+                              <Link href={`/admin/sales/${item.sale.id}`}>{item.puppyName}</Link>
+                            </td>
+                            <td>{item.breed}</td>
+                            <td>{item.contactName}</td>
+                            <td>
+                              <span className={`dash2-progress-pill ${item.progress}`}>
+                                {SALE_PROGRESS_LABEL[item.progress]}
+                              </span>
+                            </td>
+                            <td>{formatPriceFromCents(item.sale.sale_price_cents)}</td>
+                            <td>{formatPriceFromCents(item.totalPaidCents)}</td>
+                            <td>{formatPriceFromCents(Math.max(0, item.sale.sale_price_cents - item.totalPaidCents))}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
                 </div>
-              )}
+
+                <div className="dash2-grid" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 0 }}>
+                  <div className="dash2-section">
+                    <div className="dash2-section-header">
+                      <div className="dash2-section-title">Puppy Status Overview</div>
+                    </div>
+                    <PuppyStatusDonut data={puppyStatus} />
+                  </div>
+
+                  <div className="dash2-section">
+                    <div className="dash2-section-header">
+                      <div className="dash2-section-title">Revenue Overview</div>
+                    </div>
+                    <div className="dash2-revenue-line">
+                      <span className="admin-hint">Collected today</span>
+                    </div>
+                    <div className="dash2-revenue-amount">{formatPriceFromCents(salesSummary.todayRevenueCents)}</div>
+                    <div className="admin-hint" style={{ marginTop: 10 }}>
+                      Deposits today: {formatPriceFromCents(salesSummary.todayDepositsCents)}
+                      <br />
+                      Other payments today: {formatPriceFromCents(salesSummary.todayPaymentsCents)}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="dash2-section">
+                  <div className="dash2-section-title" style={{ marginBottom: 12 }}>
+                    Quick Actions
+                  </div>
+                  <div className="dash2-quick-actions">
+                    <Link href="/admin/puppies/new" className="dash2-quick-action">
+                      + Add Puppy
+                    </Link>
+                    <Link href="/admin/contacts/new" className="dash2-quick-action">
+                      + Add Customer
+                    </Link>
+                    <Link href="/admin/sales" className="dash2-quick-action">
+                      $ Record Payment
+                    </Link>
+                    <Link href="/admin/tasks" className="dash2-quick-action">
+                      ✓ Add Today&apos;s Action
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <div style={{ marginBottom: 16 }}>
+                  <GoalWidget progress={goalProgress} />
+                </div>
+
+                <div className="dash2-section">
+                  <div className="dash2-section-header">
+                    <div className="dash2-section-title">Today&apos;s Actions</div>
+                    <Link href="/admin/tasks" className="dash2-section-link">
+                      View All →
+                    </Link>
+                  </div>
+                  {todayActivities.length === 0 ? (
+                    <p className="admin-hint">Nothing due today.</p>
+                  ) : (
+                    todayActivities.map((a) => (
+                      <div key={a.id} className="dash2-todo-item">
+                        <span className="dash2-todo-checkbox" />
+                        <span>
+                          {a.title}
+                          <br />
+                          <Link href={`/admin/contacts/${a.contactId}`} style={{ color: "#8B6BFF", fontWeight: 600 }}>
+                            {a.contactName}
+                          </Link>
+                        </span>
+                        {a.dueTime && <span className="dash2-todo-time">{a.dueTime.slice(0, 5)}</span>}
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="dash2-section">
+                  <div className="dash2-section-header">
+                    <div className="dash2-section-title">Recent Activity</div>
+                  </div>
+                  {data.recentActivity.length === 0 ? (
+                    <p className="admin-hint">Nothing yet.</p>
+                  ) : (
+                    data.recentActivity.slice(0, 6).map((item) => (
+                      <div key={item.id} className="dash2-activity-item">
+                        <span className="dash2-activity-icon">•</span>
+                        <div>
+                          <Link href={`/admin/contacts/${item.contactId}`} style={{ color: "#111827", fontWeight: 700, textDecoration: "none" }}>
+                            {item.contactName}
+                          </Link>{" "}
+                          — {item.description}
+                          <div className="dash2-activity-time">{formatRelativeTime(item.createdAt)}</div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
             </div>
           </>
         )}

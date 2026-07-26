@@ -167,3 +167,58 @@ export async function getDashboardData(): Promise<DashboardData> {
     recentActivity,
   };
 }
+
+export interface PuppyStatusBreakdown {
+  total: number;
+  available: number;
+  hold: number;
+  sold: number;
+}
+
+export async function getPuppyStatusBreakdown(): Promise<PuppyStatusBreakdown> {
+  const admin = createAdminClient();
+  const { data, error } = await admin.from("puppies").select("status");
+
+  if (error) throw new Error(error.message);
+
+  const rows = data || [];
+  return {
+    total: rows.length,
+    available: rows.filter((p) => p.status === "available").length,
+    hold: rows.filter((p) => p.status === "hold").length,
+    sold: rows.filter((p) => p.status === "sold").length,
+  };
+}
+
+export interface TodayActivityItem {
+  id: string;
+  title: string;
+  contactName: string;
+  contactId: string;
+  dueTime: string | null;
+}
+
+export async function getTodayActivities(): Promise<TodayActivityItem[]> {
+  const admin = createAdminClient();
+  const today = new Date().toISOString().slice(0, 10);
+
+  const { data, error } = await admin
+    .from("activities")
+    .select("id, title, due_time, contact_id, contacts(first_name, last_name, display_name)")
+    .eq("status", "pending")
+    .eq("due_date", today)
+    .order("due_time", { ascending: true, nullsFirst: false });
+
+  if (error) throw new Error(error.message);
+
+  return (data || []).map((row: any) => {
+    const contact = row.contacts;
+    return {
+      id: row.id,
+      title: row.title,
+      contactName: contact?.display_name || `${contact?.first_name ?? ""} ${contact?.last_name ?? ""}`.trim() || "Unknown",
+      contactId: row.contact_id,
+      dueTime: row.due_time,
+    };
+  });
+}

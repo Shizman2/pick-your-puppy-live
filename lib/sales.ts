@@ -8,6 +8,7 @@ export interface SaleListItem {
   sale: SaleRow;
   puppyName: string;
   puppyId: string;
+  breed: string;
   contactName: string;
   contactId: string;
   totalPaidCents: number;
@@ -43,7 +44,7 @@ export async function getSalesListData(): Promise<SaleListItem[]> {
 
   const { data: salesData, error: salesError } = await admin
     .from("sales")
-    .select("*, puppies(id, name), contacts(id, first_name, last_name, display_name)")
+    .select("*, puppies(id, name, breed), contacts(id, first_name, last_name, display_name)")
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
@@ -81,6 +82,7 @@ export async function getSalesListData(): Promise<SaleListItem[]> {
       },
       puppyName: row.puppies?.name || "Unknown puppy",
       puppyId: row.puppy_id,
+      breed: row.puppies?.breed || "",
       contactName: contact?.display_name || `${contact?.first_name ?? ""} ${contact?.last_name ?? ""}`.trim() || "Unknown",
       contactId: row.contact_id,
       totalPaidCents,
