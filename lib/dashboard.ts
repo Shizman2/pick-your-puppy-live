@@ -184,7 +184,11 @@ export async function getPuppyStatusBreakdown(): Promise<PuppyStatusBreakdown> {
   const rows = data || [];
   return {
     total: rows.length,
-    available: rows.filter((p) => p.status === "available").length,
+    // on_sale and discounted are still purchasable inventory - just
+    // merchandised differently - so they count as Available here,
+    // same as the live website treats them (visible, not sold/hold).
+    available: rows.filter((p) => p.status === "available" || p.status === "on_sale" || p.status === "discounted")
+      .length,
     hold: rows.filter((p) => p.status === "hold").length,
     sold: rows.filter((p) => p.status === "sold").length,
   };
