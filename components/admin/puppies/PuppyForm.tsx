@@ -326,9 +326,19 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
 
       <div className="profit-box">
         <div className="profit-box-line">
-          <span>Listed price</span>
-          <span>${(parseFloat(price) || 0).toLocaleString()}</span>
+          <span>{salePrice.trim() ? "Sale price (selling for)" : "Listed price"}</span>
+          <span>
+            ${(salePrice.trim() ? parseFloat(salePrice) || 0 : parseFloat(price) || 0).toLocaleString()}
+          </span>
         </div>
+        {salePrice.trim() && (
+          <div className="profit-box-line">
+            <span>Regular price (for reference)</span>
+            <span style={{ textDecoration: "line-through", color: "#9ca3af" }}>
+              ${(parseFloat(price) || 0).toLocaleString()}
+            </span>
+          </div>
+        )}
         <div className="profit-box-line">
           <span>Puppy cost</span>
           <span>-${(parseFloat(cost) || 0).toLocaleString()}</span>
@@ -342,7 +352,7 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
           <span>
             $
             {(
-              (parseFloat(price) || 0) -
+              (salePrice.trim() ? parseFloat(salePrice) || 0 : parseFloat(price) || 0) -
               (parseFloat(cost) || 0) -
               (parseFloat(bundleCost) || 0)
             ).toLocaleString()}
