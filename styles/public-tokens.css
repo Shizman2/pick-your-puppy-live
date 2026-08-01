@@ -1,0 +1,37 @@
+/*
+  Public site design tokens.
+  Pulled directly from the current live static site (index.html, puppies.html,
+  contact.html, faq.html, how-it-works.html, etc.) so the migrated pages match
+  pixel-for-pixel. This is intentionally a SEPARATE token set from
+  app/globals.css, which holds the admin ("Puppy OS") brand — the two brands
+  are not meant to merge.
+*/
+
+:root {
+  /* Colors */
+  --pp-blue: #1b7bff;
+  --pp-blue-dark: #0d60d8;
+  --pp-blue-light: #e8f1ff;
+  --pp-text: #111827;
+  --pp-muted: #6b7280;
+  --pp-border: #e5e7eb;
+  --pp-white: #ffffff;
+
+  /* Status colors (puppy badges) */
+  --pp-status-available: #22c55e;
+  --pp-status-hold: #f59e0b;
+  --pp-status-sold: #ef4444;
+  --pp-status-on-sale: #f97316;
+  --pp-status-discounted: #a855f7;
+
+  /* Typography */
+  --pp-font: "Nunito", sans-serif;
+
+  /* Shape */
+  --pp-radius: 14px;
+  --pp-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* Layout */
+  --pp-max-width: 430px;
+  --pp-bottom-nav-height: 62px;
+}
