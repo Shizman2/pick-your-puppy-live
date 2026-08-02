@@ -2,7 +2,7 @@ import "./bundle-section.css";
 
 const ITEMS: { title: string; img?: string }[] = [
   { title: "Brand-New Crate", img: "/bundle-crate.png" },
-  { title: "Starter Bag of Food" },
+  { title: "Starter Bag of Food", img: "/bundle-food-diamond.jpg" },
   { title: "Food & Water Bowls", img: "/bundle-bowls.png" },
   { title: "Pee Pads", img: "/bundle-pee-pads.png" },
   { title: "Potty Bags", img: "/bundle-potty-bags.png" },
@@ -78,13 +78,23 @@ export default function BundleSection() {
         </p>
       </div>
 
-      <div className="bundle-hero-row">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bundle-pee-pads.png" alt="Pee pads" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bundle-crate.png" alt="Puppy crate" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bundle-bowls.png" alt="Food and water bowls" />
+      <div className="bundle-hero-card">
+        <div className="bundle-hero-item pee-pads">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/bundle-pee-pads.png" alt="Pee pads" />
+        </div>
+        <div className="bundle-hero-item food-bag">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/bundle-food-diamond.jpg" alt="Diamond Puppy dog food" />
+        </div>
+        <div className="bundle-hero-item crate">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/bundle-crate.png" alt="Puppy crate" />
+        </div>
+        <div className="bundle-hero-item bowls">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/bundle-bowls.png" alt="Food and water bowls" />
+        </div>
       </div>
 
       <div className="bundle-grid">
