@@ -118,6 +118,7 @@ export async function createFaqItem(question: string, answer: string, displayOrd
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/faq");
   return { success: true };
 }
 
@@ -134,6 +135,7 @@ export async function updateFaqItem(id: string, question: string, answer: string
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/faq");
   return { success: true };
 }
 
@@ -147,5 +149,6 @@ export async function deleteFaqItem(id: string): Promise<ActionResult> {
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/faq");
   return { success: true };
 }
