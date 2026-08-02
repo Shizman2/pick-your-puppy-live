@@ -1,20 +1,42 @@
 import "./about.css";
+import { getContentBlocksForPage } from "../../../lib/content";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "About Us – ThePuppyPlugs.com",
 };
 
-export default function AboutPage() {
+const FALLBACK: Record<string, string> = {
+  hero_heading: "We Love Puppies. Just Like You Do.",
+  hero_subtext: "ThePuppyPlugs.com was created to make finding your perfect puppy easy, safe, and affordable.",
+  story_p1:
+    "ThePuppyPlugs.com started with one simple idea — everyone deserves the chance to bring home a healthy, happy puppy without paying outrageous prices or worrying about whether the breeder is legit.",
+  story_p2:
+    "We connect families with trusted, responsible breeders who share our values: healthy puppies, honest pricing, and happy homes. Every puppy on our site is vet-checked, vaccinated, and comes with full health records before going anywhere.",
+  cta_heading: "Ready to Find Your Puppy?",
+  cta_text: "Hundreds of families have found their perfect match. You're next.",
+};
+
+export default async function AboutPage() {
+  const text: Record<string, string> = { ...FALLBACK };
+  try {
+    const blocks = await getContentBlocksForPage("about");
+    for (const block of blocks) {
+      if (block.content_type === "text" && block.text_value) {
+        text[block.section_key] = block.text_value;
+      }
+    }
+  } catch {
+    // Keep fallback content if Supabase is unreachable.
+  }
+
   return (
     <>
       <div className="about-hero">
         <div className="icon">🐾</div>
-        <h1>
-          We Love Puppies.
-          <br />
-          Just Like You Do.
-        </h1>
-        <p>ThePuppyPlugs.com was created to make finding your perfect puppy easy, safe, and affordable.</p>
+        <h1>{text.hero_heading}</h1>
+        <p>{text.hero_subtext}</p>
       </div>
 
       <div className="stats-row">
@@ -34,15 +56,8 @@ export default function AboutPage() {
 
       <div className="about-section">
         <h2>Our Story</h2>
-        <p>
-          ThePuppyPlugs.com started with one simple idea — everyone deserves the chance to bring home a healthy, happy
-          puppy without paying outrageous prices or worrying about whether the breeder is legit.
-        </p>
-        <p>
-          We connect families with trusted, responsible breeders who share our values: healthy puppies, honest
-          pricing, and happy homes. Every puppy on our site is vet-checked, vaccinated, and comes with full health
-          records before going anywhere.
-        </p>
+        <p>{text.story_p1}</p>
+        <p>{text.story_p2}</p>
       </div>
 
       <div className="mission-grid">
@@ -101,8 +116,8 @@ export default function AboutPage() {
       </div>
 
       <div className="about-cta">
-        <h2>Ready to Find Your Puppy?</h2>
-        <p>Hundreds of families have found their perfect match. You&rsquo;re next.</p>
+        <h2>{text.cta_heading}</h2>
+        <p>{text.cta_text}</p>
         <a className="btn-white" href="/puppies">
           Browse Puppies ›
         </a>

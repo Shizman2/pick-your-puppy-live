@@ -44,6 +44,7 @@ export async function createContentBlock(fields: {
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -57,6 +58,7 @@ export async function updateContentBlockText(id: string, textValue: string): Pro
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -70,6 +72,7 @@ export async function deleteContentBlock(id: string): Promise<ActionResult> {
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
@@ -97,6 +100,7 @@ export async function uploadContentImage(id: string, formData: FormData): Promis
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/website");
+  revalidatePath("/", "layout");
   return { success: true };
 }
 
