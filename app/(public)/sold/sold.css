@@ -1,0 +1,245 @@
+.sold-hero {
+  background: linear-gradient(135deg, #1b7bff, #0d60d8);
+  padding: 32px 24px 28px;
+  text-align: center;
+  color: #fff;
+}
+.sold-hero .icon {
+  font-size: 44px;
+  margin-bottom: 12px;
+}
+.sold-hero h1 {
+  font-size: 24px;
+  font-weight: 900;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.sold-hero p {
+  font-size: 13px;
+  font-weight: 600;
+  opacity: 0.9;
+  line-height: 1.6;
+}
+
+.sold-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  padding: 20px;
+}
+.sold-stat {
+  background: #fff;
+  border-radius: var(--pp-radius);
+  padding: 16px 8px;
+  text-align: center;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+}
+.sold-stat .num {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--pp-blue);
+}
+.sold-stat .lbl {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--pp-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.reviews-section {
+  padding: 0 20px 24px;
+}
+.reviews-section h2 {
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+.review-card {
+  background: var(--pp-blue-light);
+  border-radius: var(--pp-radius);
+  padding: 18px;
+  margin-bottom: 12px;
+}
+.review-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.review-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid var(--pp-blue);
+  flex-shrink: 0;
+  background: var(--pp-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+}
+.review-name {
+  font-size: 14px;
+  font-weight: 900;
+}
+.review-meta {
+  font-size: 11px;
+  color: var(--pp-muted);
+  font-weight: 600;
+}
+.review-stars {
+  color: var(--pp-blue);
+  font-size: 13px;
+  letter-spacing: 1px;
+}
+.review-text {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.sold-section {
+  padding: 0 20px 24px;
+}
+.sold-section h2 {
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+.sold-section .sub {
+  font-size: 12px;
+  color: var(--pp-muted);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.sold-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.sold-card {
+  border-radius: var(--pp-radius);
+  overflow: hidden;
+  box-shadow: var(--pp-shadow);
+  border: 1px solid var(--pp-border);
+  position: relative;
+  background: #fff;
+}
+.sold-card-photo {
+  height: 110px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  background: linear-gradient(135deg, var(--pp-blue-light), #fff);
+}
+.sold-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  padding: 3px 9px;
+  border-radius: 50px;
+}
+.sold-heart {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  font-size: 16px;
+}
+.sold-card-body {
+  padding: 9px 10px 11px;
+}
+.sold-card-name {
+  font-size: 13px;
+  font-weight: 900;
+}
+.sold-card-meta {
+  font-size: 10px;
+  color: var(--pp-muted);
+  font-weight: 700;
+  margin: 2px 0 4px;
+}
+.sold-card-home {
+  font-size: 11px;
+  color: #22c55e;
+  font-weight: 800;
+}
+
+.trust-banner {
+  margin: 0 20px 24px;
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  padding: 20px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.07);
+}
+.trust-banner h2 {
+  font-size: 17px;
+  font-weight: 900;
+  margin-bottom: 14px;
+  text-align: center;
+}
+.trust-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--pp-border);
+}
+.trust-row:last-child {
+  border: none;
+}
+.trust-emoji {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+.trust-row p {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+.trust-row strong {
+  color: var(--pp-text);
+  font-weight: 900;
+}
+
+.sold-cta {
+  margin: 0 20px 26px;
+  background: var(--pp-blue);
+  border-radius: 20px;
+  padding: 24px 20px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(27, 123, 255, 0.35);
+}
+.sold-cta .btn-white {
+  background: #fff;
+  color: var(--pp-blue);
+  font-size: 14px;
+  font-weight: 900;
+  padding: 13px 28px;
+  border-radius: 50px;
+  border: none;
+}
+.sold-cta h2 {
+  color: #fff;
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+.sold-cta p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
