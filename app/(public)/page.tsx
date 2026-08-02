@@ -2,6 +2,7 @@ import "./home-sections/home.css";
 import { getFeaturedPuppies, getHomepageEventData } from "../../lib/public-data/homepage";
 import FeaturedPuppies from "./home-sections/FeaturedPuppies";
 import PyplCountdown from "./home-sections/PyplCountdown";
+import BundleSection from "../../components/public-site/BundleSection";
 
 export const dynamic = "force-dynamic";
 
@@ -167,6 +168,8 @@ export default async function HomePage() {
           No pressure. No obligation. Just cute puppies. 💙
         </div>
       </section>
+
+      <BundleSection />
 
       <div className="trust-strip">
         <div className="trust-badge">
