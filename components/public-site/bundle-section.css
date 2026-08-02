@@ -33,20 +33,19 @@
   margin-top: 10px;
 }
 
-.bundle-hero-row {
-  display: flex;
-  gap: 8px;
-  align-items: flex-end;
-  justify-content: center;
+.bundle-hero-card {
+  background: linear-gradient(180deg, var(--pp-blue-light) 0%, #fff 85%);
+  border-radius: 20px;
   margin-bottom: 18px;
-  padding: 0 4px;
+  padding: 16px 10px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-.bundle-hero-row img {
-  height: 92px;
-  width: auto;
-  object-fit: contain;
-  flex: 1;
-  max-width: 33%;
+.bundle-hero-card img {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .bundle-grid {
