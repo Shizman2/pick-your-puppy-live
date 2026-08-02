@@ -51,23 +51,28 @@
 .bundle-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 10px;
+}
+.bundle-grid.bundle-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+  max-width: 78%;
+  margin: 10px auto 0;
 }
 .bundle-card {
   background: #fff;
   border: 1px solid var(--pp-border);
-  border-radius: 14px;
+  border-radius: 16px;
   box-shadow: var(--pp-shadow);
-  padding: 10px 6px 12px;
+  padding: 16px 8px 14px;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
 }
 .bundle-card-img-wrap {
-  width: 44px;
-  height: 44px;
+  width: 62px;
+  height: 62px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,13 +81,13 @@
   overflow: hidden;
 }
 .bundle-card-img-wrap img {
-  max-height: 30px;
-  max-width: 30px;
+  max-height: 42px;
+  max-width: 42px;
   object-fit: contain;
 }
 .bundle-card-icon {
-  width: 44px;
-  height: 44px;
+  width: 62px;
+  height: 62px;
   background: var(--pp-blue-light);
   border-radius: 50%;
   display: flex;
@@ -90,38 +95,47 @@
   justify-content: center;
 }
 .bundle-card-title {
-  font-size: 10.5px;
+  font-size: 13.5px;
   font-weight: 800;
-  line-height: 1.25;
+  line-height: 1.3;
 }
 
 .bundle-note {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   background: var(--pp-blue-light);
-  border-radius: var(--pp-radius);
-  padding: 16px;
-  margin-top: 16px;
+  border-radius: 18px;
+  padding: 18px 16px;
+  margin-top: 18px;
 }
 .bundle-note-icon {
   flex-shrink: 0;
-  width: 38px;
-  height: 38px;
-  background: #fff;
-  border-radius: 50%;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+.bundle-note-text {
+  flex: 1;
+}
 .bundle-note-text strong {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   color: var(--pp-blue);
+  margin-bottom: 2px;
 }
 .bundle-note-text span {
-  font-size: 12.5px;
+  font-size: 13px;
   color: var(--pp-muted);
   font-weight: 600;
+  line-height: 1.4;
+}
+.bundle-note-heart {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
