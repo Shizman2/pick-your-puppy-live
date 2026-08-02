@@ -1,13 +1,35 @@
 import "./home-sections/home.css";
 import { getFeaturedPuppies, getHomepageEventData } from "../../lib/public-data/homepage";
+import { getContentBlocksForPage } from "../../lib/content";
 import FeaturedPuppies from "./home-sections/FeaturedPuppies";
 import PyplCountdown from "./home-sections/PyplCountdown";
 import BundleSection from "../../components/public-site/BundleSection";
 
 export const dynamic = "force-dynamic";
 
+const FALLBACK: Record<string, string> = {
+  hero_heading_line1: "Find Your",
+  hero_heading_line2: "New Bestie",
+  hero_subtext: "Real puppies. Clear prices.\nSimple help from start to home.",
+  featured_heading: "Available Puppies",
+  finder_heading_line1: "Can't Find the",
+  finder_heading_line2: "Puppy You Want?",
+  finder_subtext: "Let us help you find your perfect match! Tell us what you're looking for & we'll notify you when the perfect puppy arrives.",
+};
+
 export default async function HomePage() {
+  const text: Record<string, string> = { ...FALLBACK };
   const [puppies, event] = await Promise.all([getFeaturedPuppies(), getHomepageEventData()]);
+  try {
+    const blocks = await getContentBlocksForPage("homepage");
+    for (const block of blocks) {
+      if (block.content_type === "text" && block.text_value) {
+        text[block.section_key] = block.text_value;
+      }
+    }
+  } catch {
+    // Keep fallback content if Supabase is unreachable.
+  }
 
   const showBanner = event.published && event.bannerVisible && event.bannerImageUrl;
   const showCountdown = event.published && event.countdownVisible && event.showAt;
@@ -31,14 +53,17 @@ export default async function HomePage() {
         <div className="hero-top">
           <div className="hero-text">
             <h1>
-              Find Your
+              {text.hero_heading_line1}
               <br />
-              <span className="blue">New Bestie</span>
+              <span className="blue">{text.hero_heading_line2}</span>
             </h1>
             <p>
-              Real puppies. Clear prices.
-              <br />
-              Simple help from start to home.
+              {text.hero_subtext.split("\n").map((line, i) => (
+                <span key={i}>
+                  {line}
+                  <br />
+                </span>
+              ))}
             </p>
             <div className="hero-btns">
               <a className="pp-btn-primary" href="/puppies">
@@ -63,7 +88,7 @@ export default async function HomePage() {
 
       <section className="section" id="featured">
         <div className="section-header">
-          <h2 className="section-title">Available Puppies</h2>
+          <h2 className="section-title">{text.featured_heading}</h2>
           <a className="view-all" href="/puppies">
             View All ›
           </a>
@@ -75,14 +100,11 @@ export default async function HomePage() {
         <div className="finder-promo-top">
           <div className="finder-promo-text">
             <h2>
-              Can&rsquo;t Find the
+              {text.finder_heading_line1}
               <br />
-              <span className="blue">Puppy You Want?</span>
+              <span className="blue">{text.finder_heading_line2}</span>
             </h2>
-            <p>
-              Let us help you find your perfect match! Tell us what you&rsquo;re looking for &amp; we&rsquo;ll
-              notify you when the perfect puppy arrives.
-            </p>
+            <p>{text.finder_subtext}</p>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="finder-promo-img" src="/finder-puppy.png" alt="Cute puppy" />
