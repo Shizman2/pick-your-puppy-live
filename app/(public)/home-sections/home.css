@@ -104,7 +104,7 @@
   object-fit: cover;
   display: block;
 }
-.puppy-card-watermark {
+.puppy-card-img-wrap img.puppy-card-watermark {
   position: absolute;
   bottom: 5px;
   right: 5px;

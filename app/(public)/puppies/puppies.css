@@ -104,7 +104,7 @@
   object-fit: cover;
   display: block;
 }
-.pcard-watermark {
+.pcard-img-wrap img.pcard-watermark {
   position: absolute;
   bottom: 5px;
   right: 5px;
