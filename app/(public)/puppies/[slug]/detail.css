@@ -10,6 +10,7 @@
   padding: 14px 20px 0;
 }
 .main-photo {
+  position: relative;
   border-radius: var(--pp-radius);
   overflow: hidden;
   box-shadow: var(--pp-shadow);
@@ -20,6 +21,18 @@
   object-fit: cover;
   width: 100%;
   border-radius: var(--pp-radius);
+}
+.main-photo img.main-photo-watermark {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 40px;
+  height: auto;
+  object-fit: contain;
+  opacity: 0.85;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+  border-radius: 0;
 }
 .thumb-row {
   display: flex;

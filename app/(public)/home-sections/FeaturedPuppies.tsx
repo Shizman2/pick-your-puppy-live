@@ -9,21 +9,8 @@ const STATUS_BADGE: Record<string, { label: string; color: string }> = {
 };
 
 function Watermark() {
-  return (
-    <svg className="puppy-card-watermark" width="34" height="34" viewBox="0 0 34 34" fill="none">
-      <circle cx="17" cy="17" r="15.5" stroke="white" strokeWidth="1.3" opacity="0.9" />
-      <path
-        d="M12.5 14.2c.7 0 1.3-.8 1.3-1.8s-.6-1.8-1.3-1.8-1.3.8-1.3 1.8.6 1.8 1.3 1.8zM21.5 14.2c.7 0 1.3-.8 1.3-1.8s-.6-1.8-1.3-1.8-1.3.8-1.3 1.8.6 1.8 1.3 1.8zM9.6 18.4c.6 0 1.1-.7 1.1-1.6s-.5-1.6-1.1-1.6-1.1.7-1.1 1.6.5 1.6 1.1 1.6zM24.4 18.4c.6 0 1.1-.7 1.1-1.6s-.5-1.6-1.1-1.6-1.1.7-1.1 1.6.5 1.6 1.1 1.6z"
-        fill="white"
-        opacity="0.9"
-      />
-      <path
-        d="M17 17.6c-2.4 0-5.2 1.6-5.2 3.9 0 1.4 1.5 2.5 2.9 2.1.7-.2 1.5-.4 2.3-.4s1.6.2 2.3.4c1.4.4 2.9-.7 2.9-2.1 0-2.3-2.8-3.9-5.2-3.9z"
-        fill="white"
-        opacity="0.9"
-      />
-    </svg>
-  );
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img className="puppy-card-watermark" src="/watermark-logo.png" alt="" />;
 }
 
 function HeartIcon() {

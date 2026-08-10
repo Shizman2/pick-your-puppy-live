@@ -11,6 +11,8 @@ export default function PuppyGallery({ photos, alt }: { photos: string[]; alt: s
       <div className="main-photo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={shown[active]} alt={alt} />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className="main-photo-watermark" src="/watermark-logo.png" alt="" />
       </div>
       {shown.length > 1 && (
         <div className="thumb-row">
