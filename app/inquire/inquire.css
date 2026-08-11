@@ -12,6 +12,18 @@
   max-width: 440px;
 }
 
+.inquire-back-link {
+  display: inline-block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #6B7280;
+  text-decoration: none;
+  margin-bottom: 14px;
+}
+.inquire-back-link:hover {
+  color: #111827;
+}
+
 .inquire-card {
   background: #fff;
   border: 1px solid #E5E7EB;

@@ -55,6 +55,9 @@ export default async function InquirePage({
   return (
     <div className="inquire-shell">
       <div className="inquire-inner">
+        <a className="inquire-back-link" href="/">
+          ← Back to Home
+        </a>
         <InquireForm
           initialType={resolvedType as "puppy_interest" | "puppy_finder" | "pypl" | "general"}
           initialPuppyName={searchParams.puppy}
