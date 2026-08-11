@@ -16,6 +16,13 @@ function getRemaining(targetTime: number) {
   };
 }
 
+function formatShowDate(iso: string) {
+  const d = new Date(iso);
+  const datePart = d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  const timePart = d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit", timeZoneName: "short" });
+  return `${datePart} · ${timePart}`;
+}
+
 export default function PyplCountdown({
   eventTitle,
   showAt,
@@ -39,6 +46,7 @@ export default function PyplCountdown({
         <span style={{ color: "var(--pp-blue)", fontSize: 16 }}>📡</span>
         <span style={{ fontWeight: 800, fontSize: 16, color: "#0D1B2A" }}>{eventTitle}</span>
       </div>
+      <div className="pypl-countdown-date">{formatShowDate(showAt)}</div>
       <div className="pypl-countdown-eyebrow">LIVE IN</div>
       <div className="pypl-countdown-grid">
         <div className="pypl-countdown-cell">

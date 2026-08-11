@@ -294,6 +294,13 @@
   gap: 8px;
   margin-bottom: 4px;
 }
+.pypl-countdown-date {
+  text-align: center;
+  font-weight: 700;
+  font-size: 13px;
+  color: #5b7a9e;
+  margin-bottom: 4px;
+}
 .pypl-countdown-eyebrow {
   text-align: center;
   font-weight: 700;
