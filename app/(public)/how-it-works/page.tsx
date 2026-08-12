@@ -1,96 +1,132 @@
 import "./how-it-works.css";
+import BundleSection from "../../../components/public-site/BundleSection";
 
 export const metadata = {
   title: "How It Works – ThePuppyPlugs.com",
 };
 
+function StepIcon({ path }: { path: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+      <path d={path} stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export default function HowItWorksPage() {
   return (
     <>
-      <div className="page-title">How It Works</div>
-      <div className="page-sub">
-        Finding and bringing home your new best friend is simple. Here&rsquo;s exactly what to expect, from browsing
-        to delivery day.
-      </div>
+      <section className="hiw-hero">
+        <div className="hiw-hero-text">
+          <h1>How It Works</h1>
+          <div className="hiw-hero-underline" />
+          <p>
+            Finding your puppy should be simple. Browse, reserve, and bring your new best friend home — we&rsquo;ll
+            help you through every step.
+          </p>
+        </div>
+        <div className="hiw-hero-img-wrap">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/hiw-hero.png" alt="Cute puppy" />
+        </div>
+      </section>
 
-      <div className="steps-detail">
-        <div className="step-card">
-          <div className="step-card-top">
-            <div className="step-num">1</div>
-            <div className="step-icon">
-              <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
-                <circle cx="14" cy="14" r="8" stroke="#1B7BFF" strokeWidth="2.5" />
-                <path d="M20 20L27 27" stroke="#1B7BFF" strokeWidth="2.5" strokeLinecap="round" />
-              </svg>
+      <div className="hiw-steps">
+        <div className="hiw-step-card">
+          <div className="hiw-step-num-col">
+            <div className="hiw-step-num">01</div>
+            <div className="hiw-step-icon">
+              <StepIcon path="M11 4a7 7 0 100 14 7 7 0 000-14zM21 21l-4.35-4.35" />
             </div>
-            <div className="step-title">Browse Puppies</div>
+            <div className="hiw-step-line" />
           </div>
-          <div className="step-body">
-            Explore our available puppies, complete with real photos, breed details, age, and pricing. Not sure
-            exactly what you&rsquo;re looking for? Use our Puppy Finder service and our team will help track down
-            your ideal match.
-          </div>
-        </div>
-
-        <div className="step-card">
-          <div className="step-card-top">
-            <div className="step-num">2</div>
-            <div className="step-icon">
-              <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
-                <rect x="6" y="4" width="20" height="24" rx="4" fill="#1B7BFF" opacity=".15" stroke="#1B7BFF" strokeWidth="2" />
-                <circle cx="16" cy="16" r="5" stroke="#1B7BFF" strokeWidth="2" />
-                <path d="M16 13v3l2 2" stroke="#1B7BFF" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+          <div className="hiw-step-body">
+            <div className="hiw-step-title">Find Your Puppy</div>
+            <div className="hiw-step-desc">
+              Browse available puppies with real photos, pricing, age, breed &amp; availability. If you don&rsquo;t
+              see what you want, click Request to use our Puppy Finder service &amp; our team will find the puppy
+              you want.
             </div>
-            <div className="step-title">Reserve Securely</div>
-          </div>
-          <div className="step-body">
-            Found the one? Reach out through our contact form to reserve your puppy. Our team will walk you through
-            the next steps and answer any questions about health records, vaccinations, or timing.
-          </div>
-        </div>
-
-        <div className="step-card">
-          <div className="step-card-top">
-            <div className="step-num">3</div>
-            <div className="step-icon">
-              <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
-                <path
-                  d="M16 4L4 14v14h8v-8h8v8h8V14L16 4z"
-                  fill="#1B7BFF"
-                  opacity=".15"
-                  stroke="#1B7BFF"
-                  strokeWidth="2"
-                  strokeLinejoin="round"
-                />
-              </svg>
+            <div className="hiw-step-img-wrap">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hiw-step1.png" alt="Available Puppies listing on phone" />
             </div>
-            <div className="step-title">Bring Home</div>
-          </div>
-          <div className="step-body">
-            Once everything&rsquo;s confirmed, we coordinate safe delivery or pickup, whichever works best for you.
-            Every puppy arrives vet-checked, vaccinated, and ready to settle into their new home.
           </div>
         </div>
-      </div>
 
-      <div className="faq-mini">
-        <div className="faq-mini-title">Common Questions</div>
-        <div className="faq-mini-item">
-          <div className="faq-mini-q">Are your puppies vet-checked?</div>
-          <div className="faq-mini-a">Yes - every puppy is vet-checked and vaccinated before going to their new home.</div>
+        <div className="hiw-step-card">
+          <div className="hiw-step-num-col">
+            <div className="hiw-step-num">02</div>
+            <div className="hiw-step-icon">
+              <StepIcon path="M20 6L9 17l-5-5" />
+            </div>
+            <div className="hiw-step-line" />
+          </div>
+          <div className="hiw-step-body">
+            <div className="hiw-step-title">Reserve Your Puppy</div>
+            <div className="hiw-step-desc">
+              If you&rsquo;ve found the puppy you want, tap Reserve This Puppy on the puppy&rsquo;s info page to
+              start the process.
+            </div>
+            <div className="hiw-step-img-wrap">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hiw-step2.png" alt="Reservation started confirmation on phone" />
+            </div>
+          </div>
         </div>
-        <div className="faq-mini-item">
-          <div className="faq-mini-q">Do you offer delivery?</div>
-          <div className="faq-mini-a">Yes - delivery is available nationwide for most puppies. Check each puppy&rsquo;s listing for details.</div>
-        </div>
-        <div className="faq-mini-item">
-          <div className="faq-mini-q">Have more questions?</div>
-          <div className="faq-mini-a">Visit our full FAQ page or reach out directly - we&rsquo;re happy to help.</div>
+
+        <div className="hiw-step-card">
+          <div className="hiw-step-num-col">
+            <div className="hiw-step-num">03</div>
+            <div className="hiw-step-icon">
+              <StepIcon path="M3 12L12 4l9 8M5 10v9a1 1 0 001 1h4v-5h4v5h4a1 1 0 001-1v-9" />
+            </div>
+          </div>
+          <div className="hiw-step-body">
+            <div className="hiw-step-title">Bring Your Puppy Home</div>
+            <div className="hiw-step-desc">
+              We coordinate pickup or delivery so it&rsquo;s easy for you. Every puppy comes vet-checked, vaccinated
+              &amp; with everything you need to bring your puppy home. <strong>No pet store runs.</strong>
+            </div>
+            <div className="hiw-step-img-wrap">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/hiw-step3.png" alt="Puppy in a ThePuppyPlugs.com delivery crate" />
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="cta-wrap">
+      <BundleSection />
+
+      <div className="hiw-questions">
+        <div className="hiw-questions-icon">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <path
+              d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"
+              stroke="var(--pp-blue)"
+              strokeWidth="1.8"
+              strokeLinejoin="round"
+            />
+            <path d="M12 15.5v.01M9.5 9.7a2.5 2.5 0 114 2c-.6.5-1 .9-1 1.8" stroke="var(--pp-blue)" strokeWidth="1.8" strokeLinecap="round" />
+          </svg>
+        </div>
+        <div>
+          <div className="hiw-questions-title">Still Have Questions?</div>
+          <div className="hiw-questions-desc">
+            Everything from deposits and delivery to health records and pickup is covered in our FAQ.
+          </div>
+          <div className="hiw-questions-btns">
+            <a className="hiw-btn-outline" href="/faq">
+              View FAQs ›
+            </a>
+            <a className="hiw-btn-outline" href="/contact">
+              Contact Us ›
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div className="hiw-final-cta">
         <a className="pp-btn-primary" href="/puppies">
           Browse Available Puppies ›
         </a>
