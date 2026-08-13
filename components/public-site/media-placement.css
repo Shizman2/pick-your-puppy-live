@@ -1,0 +1,29 @@
+.pp-media-placement-wrap {
+  display: block;
+  width: 100%;
+}
+.pp-media-placement-wrap.pp-media-hide-mobile {
+  display: none;
+}
+.pp-media-placement-wrap.pp-media-hide-desktop {
+  display: block;
+}
+
+@media (min-width: 768px) {
+  .pp-media-placement-wrap.pp-media-hide-mobile {
+    display: block;
+  }
+  .pp-media-placement-wrap.pp-media-hide-desktop {
+    display: none;
+  }
+}
+
+.pp-media-placement-inner {
+  overflow: hidden;
+  display: block;
+}
+
+.pp-media-placement-img {
+  display: block;
+  width: 100%;
+}
