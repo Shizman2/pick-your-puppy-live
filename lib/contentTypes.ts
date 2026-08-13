@@ -1,4 +1,4 @@
-export type ContentPage = "homepage" | "about" | "contact" | "faq" | "puppies" | "footer";
+export type ContentPage = "homepage" | "about" | "contact" | "faq" | "puppies" | "footer" | "puppy_finder";
 export type ContentType = "text" | "image";
 
 export interface ContentBlockRow {
@@ -36,5 +36,6 @@ export const WEBSITE_PAGES: WebsitePageInfo[] = [
   { key: "puppies", label: "Puppies Page", description: "Edit the website content surrounding your puppy listings - not the puppies themselves.", icon: "paw" },
   { key: "contact", label: "Contact Us", description: "Contact info, hours, location, and form text", icon: "phone" },
   { key: "faq", label: "FAQ", description: "Manage questions and answers", icon: "help" },
+  { key: "puppy_finder", label: "Puppy Finder", description: "Edit the concierge page's hero photo and other content", icon: "search" },
   { key: "footer", label: "Footer", description: "Footer text, links, social media", icon: "link" },
 ];

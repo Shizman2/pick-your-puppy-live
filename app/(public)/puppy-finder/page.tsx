@@ -1,18 +1,30 @@
 import "./puppy-finder.css";
 import FinderForm from "./FinderForm";
 import PlacementSlot from "../../../components/public-site/PlacementSlot";
-
+import { getContentBlocksForPage } from "../../../lib/content";
 
 export const metadata = {
   title: "Puppy Finder Concierge – ThePuppyPlugs.com",
 };
 
-export default function PuppyFinderPage({
+export default async function PuppyFinderPage({
   searchParams,
 }: {
   searchParams: { previewToken?: string };
 }) {
   const previewToken = searchParams?.previewToken || null;
+
+  let heroImage = "/concierge-hero-puppy.jpg";
+  try {
+    const blocks = await getContentBlocksForPage("puppy_finder");
+    const heroBlock = blocks.find((b) => b.section_key === "hero_image");
+    if (heroBlock?.content_type === "image" && heroBlock.image_url) {
+      heroImage = heroBlock.image_url;
+    }
+  } catch {
+    // Keep the default static image if Supabase is unreachable.
+  }
+
   return (
     <>
       <PlacementSlot pageType="puppy_finder" slot="global_below_header" previewToken={previewToken} />
@@ -32,7 +44,7 @@ export default function PuppyFinderPage({
           </a>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="finder-hero-img" src="/concierge-hero-puppy.jpg" alt="Cute puppy" />
+        <img className="finder-hero-img" src={heroImage} alt="Cute puppy" />
       </section>
 
       <PlacementSlot pageType="puppy_finder" slot="puppy_finder_hero" previewToken={previewToken} />
