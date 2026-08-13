@@ -10,6 +10,7 @@ interface Props {
 }
 
 export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: Props) {
+  const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -65,6 +66,20 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
     return (
       <div className="question-success">
         <p>🐾 Thanks! We&rsquo;ve got your message and will get back to you soon.</p>
+      </div>
+    );
+  }
+
+  if (!expanded) {
+    return (
+      <div className="question-collapsed">
+        <p className="question-collapsed-text">
+          Not ready to reserve? <br />
+          Have a question about this puppy?
+        </p>
+        <button type="button" className="question-collapsed-btn" onClick={() => setExpanded(true)}>
+          Ask a Question ›
+        </button>
       </div>
     );
   }
