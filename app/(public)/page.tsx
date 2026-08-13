@@ -119,7 +119,7 @@ export default async function HomePage({
             <p>{text.finder_subtext}</p>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="finder-promo-img" src="/finder-puppy.png" width={282} height={370} alt="Cute puppy" />
+          <img className="finder-promo-img" src="/finder-puppy.webp" width={282} height={370} alt="Cute puppy" />
         </div>
 
         <div className="finder-divider">

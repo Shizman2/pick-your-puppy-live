@@ -97,7 +97,7 @@ export default function BundleSection() {
 
       <div className="bundle-hero-card">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bundle-hero-composite.png" width={900} height={374} alt="Puppy starter bundle: crate, food, bowls, pee pads, potty bags" />
+        <img src="/bundle-hero-composite.webp" width={900} height={374} alt="Puppy starter bundle: crate, food, bowls, pee pads, potty bags" />
       </div>
 
       <BundleGrid items={ROW_1} />

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../lib/supabase/server";
 import type { EventRow } from "../../lib/eventTypes";
+import { resizeImageForWeb } from "../../lib/imageProcessing";
 
 /**
  * V1 is single-event only, so admin reads/writes target "the one event
@@ -78,12 +79,26 @@ export async function uploadImage(
   if (!file) throw new Error("No file provided");
 
   const admin = createAdminClient();
-  const fileExt = file.name.split(".").pop();
-  const filePath = `${id}-${targetColumn}-${Date.now()}.${fileExt}`;
+
+  let processedBuffer: Buffer;
+  let contentType: string;
+  try {
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
+    // Banner images run full-width at the top of the homepage, so allow a
+    // wider max dimension than a typical photo (2000px) to stay sharp on
+    // large screens while still cutting down multi-MB source uploads.
+    const result = await resizeImageForWeb(inputBuffer, 2000);
+    processedBuffer = result.buffer;
+    contentType = result.contentType;
+  } catch (err) {
+    throw new Error(err instanceof Error ? `Image processing failed: ${err.message}` : "Image processing failed.");
+  }
+
+  const filePath = `${id}-${targetColumn}-${Date.now()}.jpg`;
 
   const { error: uploadError } = await admin.storage
     .from("event-images")
-    .upload(filePath, file, { upsert: true });
+    .upload(filePath, processedBuffer, { upsert: true, contentType });
 
   if (uploadError) throw new Error(uploadError.message);
 
