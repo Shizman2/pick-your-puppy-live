@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import { slugify, type PuppyRow } from "../../../lib/puppyTypes";
+import { resizeImageForWeb } from "../../../lib/imageProcessing";
 
 export type ActionResult = { success: true } | { success: false; error: string };
 export type SavePuppyResult = { success: true; puppyId: string } | { success: false; error: string };
@@ -170,11 +171,23 @@ export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Pro
   if (!file) return { success: false, error: "No file provided." };
 
   const admin = createAdminClient();
-  const fileExt = file.name.split(".").pop() || "jpg";
-  const filePath = `puppies/${puppyId}/${crypto.randomUUID()}.${fileExt}`;
 
-  const { error: uploadError } = await admin.storage.from("puppy-photos").upload(filePath, file, {
+  let processedBuffer: Buffer;
+  let contentType: string;
+  try {
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
+    const result = await resizeImageForWeb(inputBuffer);
+    processedBuffer = result.buffer;
+    contentType = result.contentType;
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? `Image processing failed: ${err.message}` : "Image processing failed." };
+  }
+
+  const filePath = `puppies/${puppyId}/${crypto.randomUUID()}.jpg`;
+
+  const { error: uploadError } = await admin.storage.from("puppy-photos").upload(filePath, processedBuffer, {
     upsert: true,
+    contentType,
   });
   if (uploadError) return { success: false, error: uploadError.message };
 
@@ -202,6 +215,73 @@ export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Pro
   return { success: true, url: publicUrl };
 }
 
+export type OptimizeAllPhotosResult =
+  | { success: true; processed: number; skipped: number; errors: string[] }
+  | { success: false; error: string };
+
+/**
+ * One-time cleanup for photos uploaded before resizing was added to the
+ * upload flow. Re-downloads each existing photo, resizes/recompresses it,
+ * and overwrites it at its EXISTING storage path - so puppies.photo_urls
+ * never needs to change, nothing can end up broken or orphaned.
+ *
+ * Safe to run more than once: re-processing an already-optimized photo
+ * just re-saves it at roughly the same size, so if this times out partway
+ * through on a large photo library, simply running it again picks up
+ * where a fresh pass would naturally leave off (no per-photo tracking
+ * needed since the operation is idempotent).
+ */
+export async function optimizeAllExistingPuppyPhotos(): Promise<OptimizeAllPhotosResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { data: puppies, error } = await admin.from("puppies").select("id, photo_urls");
+  if (error) return { success: false, error: error.message };
+
+  let processed = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const puppy of puppies || []) {
+    const urls = (puppy.photo_urls as string[]) || [];
+    for (const url of urls) {
+      const marker = "/puppy-photos/";
+      const idx = url.indexOf(marker);
+      if (idx === -1) {
+        skipped++;
+        continue;
+      }
+      const storagePath = url.slice(idx + marker.length);
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          errors.push(`${storagePath}: fetch failed (${res.status})`);
+          continue;
+        }
+        const inputBuffer = Buffer.from(await res.arrayBuffer());
+        const { buffer, contentType } = await resizeImageForWeb(inputBuffer);
+
+        const { error: uploadError } = await admin.storage
+          .from("puppy-photos")
+          .upload(storagePath, buffer, { upsert: true, contentType });
+
+        if (uploadError) {
+          errors.push(`${storagePath}: ${uploadError.message}`);
+          continue;
+        }
+        processed++;
+      } catch (err) {
+        errors.push(`${storagePath}: ${err instanceof Error ? err.message : "unknown error"}`);
+      }
+    }
+  }
+
+  revalidatePath("/", "layout");
+  return { success: true, processed, skipped, errors };
+}
+  const auth = await requireAdminUser();
 export async function removePuppyPhoto(puppyId: string, url: string): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };

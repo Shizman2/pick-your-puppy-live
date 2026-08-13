@@ -1,6 +1,7 @@
 import Link from "next/link";
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import PuppiesListClient from "../../../components/admin/puppies/PuppiesListClient";
+import OptimizePhotosButton from "../../../components/admin/puppies/OptimizePhotosButton";
 import { getPuppiesListData } from "../../../lib/puppies";
 import type { PuppyRow } from "../../../lib/puppyTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
@@ -34,9 +35,12 @@ export default async function PuppiesPage() {
               {puppies.length} total puppy{puppies.length === 1 ? "" : " listings"}
             </p>
           </div>
-          <Link href="/admin/puppies/new" className="admin-btn admin-btn--primary">
-            + Add Puppy
-          </Link>
+          <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+            <OptimizePhotosButton />
+            <Link href="/admin/puppies/new" className="admin-btn admin-btn--primary">
+              + Add Puppy
+            </Link>
+          </div>
         </div>
 
         {loadError ? (
