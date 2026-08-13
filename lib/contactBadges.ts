@@ -6,6 +6,7 @@ const INQUIRY_TYPE_BADGE: Record<InquiryType, { icon: string; label: string } | 
   // puppy-name interest badge below already communicates it, and a
   // second "Puppy Interest" chip next to "Leo" would just be noise.
   puppy_interest: null,
+  puppy_reservation: { icon: "🐾", label: "Reservation Request" },
   puppy_finder: { icon: "🐶", label: "Puppy Finder" },
   pypl: { icon: "📺", label: "PYPL Registered" },
   general: { icon: "💬", label: "General Question" },

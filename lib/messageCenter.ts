@@ -22,6 +22,8 @@ export interface InquiryDetailRow {
   inquiry_type: InquiryType;
   created_at: string;
   puppy_name: string | null;
+  puppy_id: string | null;
+  pickup_or_delivery: string | null;
   breed: string | null;
   subject: string | null;
   form_data: Record<string, unknown> | null;
@@ -86,7 +88,7 @@ export async function getMessageCenterData(): Promise<MessageCenterData> {
   ] = await Promise.all([
     admin
       .from("inquiries")
-      .select("id, contact_id, inquiry_type, puppy_name, breed, subject, form_data, created_at")
+      .select("id, contact_id, inquiry_type, puppy_name, puppy_id, pickup_or_delivery, breed, subject, form_data, created_at")
       .in("contact_id", contactIds)
       .order("created_at", { ascending: true }),
     admin.from("interests").select("inquiry_id, is_active, contact_id").in("contact_id", contactIds),

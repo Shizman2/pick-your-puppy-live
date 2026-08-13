@@ -1,15 +1,43 @@
+import { notFound } from "next/navigation";
+import "./reserve.css";
+import { getPuppyBySlug } from "../../../../../lib/public-data/puppies";
+import { STATUS_DISPLAY_LABEL } from "../../../../../lib/puppyTypes";
+import ReservationForm from "./ReservationForm";
+
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Reserve Your Puppy – ThePuppyPlugs.com",
 };
 
-export default function ReservePage() {
+export default async function ReservePage({ params }: { params: { slug: string } }) {
+  const puppy = await getPuppyBySlug(params.slug);
+  if (!puppy) notFound();
+
+  const puppyName = puppy.name || puppy.breed;
+
+  if (puppy.status !== "available" && puppy.status !== "on_sale" && puppy.status !== "discounted") {
+    return (
+      <div className="reserve-unavailable">
+        <h1>{puppyName} isn&rsquo;t available to reserve right now</h1>
+        <p>Current status: {STATUS_DISPLAY_LABEL[puppy.status]}</p>
+        <a className="pp-btn-primary" href={`/puppies/${puppy.slug}`}>
+          Back to {puppyName}&rsquo;s Page
+        </a>
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: "60px 20px", textAlign: "center" }}>
-      <h1 style={{ fontSize: 20, fontWeight: 900, marginBottom: 10 }}>Reservation — Coming Soon</h1>
-      <p style={{ fontSize: 13, color: "var(--pp-muted)", fontWeight: 600 }}>
-        This page will let you reserve your puppy directly. In the meantime, use the question form on the puppy&rsquo;s
-        page and our team will help you reserve them.
-      </p>
+    <div className="reserve-page">
+      <a className="back-btn" href={`/puppies/${puppy.slug}`}>
+        ← Back to {puppyName}
+      </a>
+      <div className="reserve-header">
+        <h1>Reserve {puppyName}</h1>
+        <p>Let us know you&rsquo;re interested — we&rsquo;ll reach out to arrange the next steps.</p>
+      </div>
+      <ReservationForm puppyId={puppy.id} puppyName={puppyName} slug={puppy.slug} />
     </div>
   );
 }

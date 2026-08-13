@@ -8,7 +8,7 @@
  * rather than silently leaving it out unmentioned.
  */
 export function calculateScoreBump(params: {
-  inquiryType: "puppy_interest" | "puppy_finder" | "pypl" | "general";
+  inquiryType: "puppy_interest" | "puppy_finder" | "pypl" | "general" | "puppy_reservation";
   readyForDeposit?: string | null;
 }): number {
   let points = 0;
@@ -16,6 +16,7 @@ export function calculateScoreBump(params: {
   if (params.inquiryType === "pypl") points += 20;
   if (params.inquiryType === "puppy_finder") points += 30;
   if (params.inquiryType === "puppy_interest") points += 15;
+  if (params.inquiryType === "puppy_reservation") points += 40;
   if (params.readyForDeposit === "yes") points += 30;
 
   return points;

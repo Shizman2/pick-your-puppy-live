@@ -6,7 +6,7 @@ import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
 
 export const dynamic = "force-dynamic";
 
-const VALID_TYPES = ["puppy_interest", "puppy_finder", "pypl", "general"];
+const VALID_TYPES = ["puppy_interest", "puppy_finder", "pypl", "general", "puppy_reservation"];
 
 /**
  * Best-effort in-memory rate limiter: max 5 submissions per IP per
@@ -145,6 +145,13 @@ export async function POST(request: NextRequest) {
   } else if (inquiryType === "general") {
     inquiryColumns.subject = body.subject || null;
     interestLabel = String(body.subject || "General question");
+  } else if (inquiryType === "puppy_reservation") {
+    inquiryColumns.puppy_id = body.puppyId || null;
+    inquiryColumns.puppy_name = body.puppyName || null;
+    inquiryColumns.puppy_slug = body.puppySlug || null;
+    inquiryColumns.source_url = body.sourceUrl || null;
+    inquiryColumns.pickup_or_delivery = body.pickupOrDelivery || null;
+    interestLabel = `Reservation request: ${body.puppyName || "a puppy"}`;
   }
 
   const { data: inquiry, error: inquiryError } = await admin
@@ -164,6 +171,8 @@ export async function POST(request: NextRequest) {
     interest_type:
       inquiryType === "puppy_interest"
         ? "puppy"
+        : inquiryType === "puppy_reservation"
+        ? "reservation"
         : inquiryType === "puppy_finder"
         ? "breed"
         : inquiryType === "pypl"
@@ -220,7 +229,7 @@ export async function POST(request: NextRequest) {
 
   // 6. Lead score bump + contact activity timestamps.
   const scoreBump = calculateScoreBump({
-    inquiryType: inquiryType as "puppy_interest" | "puppy_finder" | "pypl" | "general",
+    inquiryType: inquiryType as "puppy_interest" | "puppy_finder" | "pypl" | "general" | "puppy_reservation",
     readyForDeposit: (body.readyForDeposit as string) || null,
   });
 

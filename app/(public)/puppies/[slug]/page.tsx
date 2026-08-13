@@ -6,6 +6,7 @@ import PuppyGallery from "./PuppyGallery";
 import HealthyCheckedReady from "./HealthyCheckedReady";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import BundleSection from "../../../../components/public-site/BundleSection";
+import PlacementSlot from "../../../../components/public-site/PlacementSlot";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,14 @@ const STATUS_COLOR: Record<string, string> = {
   discounted: "#A855F7",
 };
 
-export default async function PuppyDetailPage({ params }: { params: { slug: string } }) {
+export default async function PuppyDetailPage({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { previewToken?: string };
+}) {
+  const previewToken = searchParams?.previewToken || null;
   const puppy = await getPuppyBySlug(params.slug);
   if (!puppy) notFound();
 
@@ -35,6 +43,8 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
 
   return (
     <>
+      <PlacementSlot pageType="puppy_detail" slot="global_below_header" pageIdentifier={puppy.id} previewToken={previewToken} />
+
       <a className="back-btn" href="/puppies">
         ← Back to Puppies
       </a>
@@ -97,16 +107,24 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         )}
       </div>
 
+      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} previewToken={previewToken} />
+
       <BundleSection />
 
       <div className="detail-info">
         <HealthyCheckedReady />
       </div>
 
+      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} previewToken={previewToken} />
+
       <div className="detail-cta">
         {puppy.status === "sold" ? (
           <button className="pp-btn-primary" disabled style={{ opacity: 0.5, cursor: "default" }}>
             This Puppy Has Been Sold
+          </button>
+        ) : puppy.status === "hold" ? (
+          <button className="pp-btn-primary" disabled style={{ opacity: 0.5, cursor: "default" }}>
+            Pending Adoption
           </button>
         ) : (
           <a className="pp-btn-primary" href={`/puppies/${puppy.slug}/reserve`}>

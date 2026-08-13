@@ -11,7 +11,7 @@ export type ContactStatus =
 
 export type InterestLevel = "low" | "medium" | "high";
 
-export type InquiryType = "puppy_interest" | "puppy_finder" | "pypl" | "general";
+export type InquiryType = "puppy_interest" | "puppy_finder" | "pypl" | "general" | "puppy_reservation";
 
 export interface ContactRow {
   id: string;

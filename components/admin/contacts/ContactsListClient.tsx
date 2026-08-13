@@ -11,6 +11,7 @@ type FilterKey =
   | "new"
   | "high_interest"
   | "puppy_interest"
+  | "puppy_reservation"
   | "puppy_finder"
   | "pypl"
   | "customer"
@@ -22,6 +23,7 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "new", label: "New" },
   { key: "high_interest", label: "High Interest" },
   { key: "puppy_interest", label: "Puppy Interest" },
+  { key: "puppy_reservation", label: "Reservations" },
   { key: "puppy_finder", label: "Puppy Finder" },
   { key: "pypl", label: "PYPL Registered" },
   { key: "customer", label: "Customers" },
@@ -49,6 +51,8 @@ function matchesFilter(contact: ContactListItem, filter: FilterKey): boolean {
       return contact.interest_level === "high";
     case "puppy_interest":
       return contact.inquiryTypes.includes("puppy_interest");
+    case "puppy_reservation":
+      return contact.inquiryTypes.includes("puppy_reservation");
     case "puppy_finder":
       return contact.inquiryTypes.includes("puppy_finder");
     case "pypl":
@@ -118,6 +122,7 @@ export default function ContactsListClient({ contacts }: { contacts: ContactList
       new: 0,
       high_interest: 0,
       puppy_interest: 0,
+      puppy_reservation: 0,
       puppy_finder: 0,
       pypl: 0,
       customer: 0,

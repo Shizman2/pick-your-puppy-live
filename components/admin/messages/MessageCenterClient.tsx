@@ -15,6 +15,11 @@ function inquiryFieldLines(inquiry: MessageCenterData["detailsByContactId"][stri
   if (inquiry.inquiry_type === "puppy_interest" && inquiry.puppy_name) {
     lines.push(`Puppy: ${inquiry.puppy_name}`);
   }
+  if (inquiry.inquiry_type === "puppy_reservation") {
+    if (inquiry.puppy_name) lines.push(`Puppy: ${inquiry.puppy_name}`);
+    if (inquiry.puppy_id) lines.push(`Puppy ID: ${inquiry.puppy_id}`);
+    if (inquiry.pickup_or_delivery) lines.push(`Pickup/Delivery: ${inquiry.pickup_or_delivery}`);
+  }
   if (inquiry.inquiry_type === "puppy_finder" && inquiry.breed) {
     lines.push(`Breed: ${inquiry.breed}`);
   }
@@ -45,6 +50,7 @@ const INQUIRY_TYPE_LABEL: Record<string, string> = {
   puppy_finder: "Puppy Finder",
   pypl: "PYPL Registration",
   general: "General Question",
+  puppy_reservation: "Puppy Reservation",
 };
 
 export default function MessageCenterClient({ list, detailsByContactId }: Props) {
