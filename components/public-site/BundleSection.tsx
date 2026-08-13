@@ -97,7 +97,7 @@ export default function BundleSection() {
 
       <div className="bundle-hero-card">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bundle-hero-composite.png" alt="Puppy starter bundle: crate, food, bowls, pee pads, potty bags" />
+        <img src="/bundle-hero-composite.png" width={900} height={374} alt="Puppy starter bundle: crate, food, bowls, pee pads, potty bags" />
       </div>
 
       <BundleGrid items={ROW_1} />
@@ -126,15 +126,35 @@ export default function BundleSection() {
             />
           </svg>
         </div>
+
+        <div className="bundle-note-accent">
+          <svg viewBox="0 0 16 6" width="16" height="6" fill="none">
+            <path d="M1 3c2-2 4-2 6 0s4 2 6 0" stroke="var(--pp-blue)" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+          <svg viewBox="0 0 16 6" width="16" height="6" fill="none">
+            <path d="M1 3c2-2 4-2 6 0s4 2 6 0" stroke="var(--pp-blue)" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </div>
+
         <div className="bundle-note-text">
           <strong>No Pet Store Runs.</strong>
           <span>We&rsquo;ve already taken care of everything you need!</span>
         </div>
-        <div className="bundle-note-heart">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-            <path d="M12 3v6M9 4l1 5M15 4l-1 5" stroke="var(--pp-blue)" strokeWidth="1.6" strokeLinecap="round" />
+
+        <div className="bundle-note-accent">
+          <svg viewBox="0 0 16 6" width="16" height="6" fill="none">
+            <path d="M1 3c2-2 4-2 6 0s4 2 6 0" stroke="var(--pp-blue)" strokeWidth="1.4" strokeLinecap="round" />
           </svg>
-          <svg viewBox="0 0 48 48" width="30" height="30" fill="none">
+          <svg viewBox="0 0 16 6" width="16" height="6" fill="none">
+            <path d="M1 3c2-2 4-2 6 0s4 2 6 0" stroke="var(--pp-blue)" strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </div>
+
+        <div className="bundle-note-heart-wrap">
+          <svg className="sparkle" viewBox="0 0 20 20" width="14" height="14" fill="none">
+            <path d="M10 2v6M6 4l1.5 4.5M14 4l-1.5 4.5" stroke="var(--pp-blue)" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <svg viewBox="0 0 48 48" width="34" height="34" fill="none">
             <path
               d="M24 40C10 30 4 22 4 14.5 4 8.5 8.8 4 14.5 4c3.4 0 6.6 1.7 8.5 4.4C24.9 5.7 28.1 4 31.5 4 37.2 4 42 8.5 42 14.5 42 22 36 30 24 40z"
               stroke="var(--pp-blue)"

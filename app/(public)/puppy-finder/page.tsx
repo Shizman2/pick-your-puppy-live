@@ -1,13 +1,22 @@
 import "./puppy-finder.css";
 import FinderForm from "./FinderForm";
+import PlacementSlot from "../../../components/public-site/PlacementSlot";
+
 
 export const metadata = {
   title: "Puppy Finder Concierge – ThePuppyPlugs.com",
 };
 
-export default function PuppyFinderPage() {
+export default function PuppyFinderPage({
+  searchParams,
+}: {
+  searchParams: { previewToken?: string };
+}) {
+  const previewToken = searchParams?.previewToken || null;
   return (
     <>
+      <PlacementSlot pageType="puppy_finder" slot="global_below_header" previewToken={previewToken} />
+
       <section className="finder-hero">
         <div className="finder-hero-text">
           <h1>
@@ -25,6 +34,8 @@ export default function PuppyFinderPage() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="finder-hero-img" src="/concierge-hero-puppy.jpg" alt="Cute puppy" />
       </section>
+
+      <PlacementSlot pageType="puppy_finder" slot="puppy_finder_hero" previewToken={previewToken} />
 
       <section className="section">
         <div className="section-title">How It Works</div>
@@ -169,6 +180,7 @@ export default function PuppyFinderPage() {
       </section>
 
       <section className="section" style={{ paddingTop: 0 }}>
+        <PlacementSlot pageType="puppy_finder" slot="puppy_finder_above_form" previewToken={previewToken} />
         <FinderForm />
       </section>
 

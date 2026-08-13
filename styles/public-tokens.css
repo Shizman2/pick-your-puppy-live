@@ -25,7 +25,7 @@
   --pp-status-discounted: #a855f7;
 
   /* Typography */
-  --pp-font: "Nunito", sans-serif;
+  --pp-font: var(--pp-font-family, "Nunito", sans-serif);
 
   /* Shape */
   --pp-radius: 14px;

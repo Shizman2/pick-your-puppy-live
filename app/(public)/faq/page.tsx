@@ -2,7 +2,6 @@ import "./faq.css";
 import FaqAccordion, { type FaqEntry } from "./FaqAccordion";
 import { getFaqItems } from "../../../lib/content";
 
-export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "FAQ – ThePuppyPlugs.com",

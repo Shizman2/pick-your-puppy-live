@@ -4,6 +4,7 @@ import { getContentBlocksForPage } from "../../lib/content";
 import FeaturedPuppies from "./home-sections/FeaturedPuppies";
 import PyplCountdown from "./home-sections/PyplCountdown";
 import BundleSection from "../../components/public-site/BundleSection";
+import PlacementSlot from "../../components/public-site/PlacementSlot";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,12 @@ const FALLBACK: Record<string, string> = {
   finder_subtext: "Let us help you find your perfect match! Tell us what you're looking for & we'll notify you when the perfect puppy arrives.",
 };
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: { previewToken?: string };
+}) {
+  const previewToken = searchParams?.previewToken || null;
   const text: Record<string, string> = { ...FALLBACK };
   const [puppies, event] = await Promise.all([getFeaturedPuppies(), getHomepageEventData()]);
   try {
@@ -36,6 +42,8 @@ export default async function HomePage() {
 
   return (
     <>
+      <PlacementSlot pageType="homepage" slot="global_below_header" previewToken={previewToken} />
+
       {showBanner && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={event.bannerImageUrl!} alt="Pick Your Puppy Live" style={{ width: "100%", display: "block" }} />
@@ -48,6 +56,8 @@ export default async function HomePage() {
           registrationLink={event.registrationLink || "/inquire?type=pypl"}
         />
       )}
+
+      <PlacementSlot pageType="homepage" slot="homepage_hero" previewToken={previewToken} />
 
       <section className="hero" id="home">
         <div className="hero-top">
@@ -76,7 +86,7 @@ export default async function HomePage() {
           </div>
           <div className="hero-img-wrap">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/hero-yorkie.jpg" alt="Yorkie puppy" />
+            <img src="/hero-yorkie.jpg" width={600} height={450} alt="Yorkie puppy" />
             <div className="hero-dots">
               <span className="pp-active" />
               <span />
@@ -96,6 +106,8 @@ export default async function HomePage() {
         <FeaturedPuppies puppies={puppies} />
       </section>
 
+      <PlacementSlot pageType="homepage" slot="homepage_below_puppies" previewToken={previewToken} />
+
       <section className="finder-promo">
         <div className="finder-promo-top">
           <div className="finder-promo-text">
@@ -107,7 +119,7 @@ export default async function HomePage() {
             <p>{text.finder_subtext}</p>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="finder-promo-img" src="/finder-puppy.png" alt="Cute puppy" />
+          <img className="finder-promo-img" src="/finder-puppy.png" width={282} height={370} alt="Cute puppy" />
         </div>
 
         <div className="finder-divider">

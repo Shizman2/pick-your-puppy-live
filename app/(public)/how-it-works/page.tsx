@@ -27,7 +27,7 @@ export default function HowItWorksPage() {
         </div>
         <div className="hiw-hero-img-wrap">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/hiw-hero.png" alt="Cute puppy" />
+          <img src="/hiw-hero.png" width={400} height={307} alt="Cute puppy" />
         </div>
       </section>
 
@@ -49,7 +49,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="hiw-step-img-wrap">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/hiw-step1.png" alt="Available Puppies listing on phone" />
+              <img src="/hiw-step1.png" width={400} height={566} alt="Available Puppies listing on phone" />
             </div>
           </div>
         </div>
@@ -70,7 +70,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="hiw-step-img-wrap">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/hiw-step2.png" alt="Reservation started confirmation on phone" />
+              <img src="/hiw-step2.png" width={400} height={423} alt="Reservation started confirmation on phone" />
             </div>
           </div>
         </div>
@@ -90,7 +90,7 @@ export default function HowItWorksPage() {
             </div>
             <div className="hiw-step-img-wrap">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/hiw-step3.png" alt="Puppy in a ThePuppyPlugs.com delivery crate" />
+              <img src="/hiw-step3.png" width={400} height={381} alt="Puppy in a ThePuppyPlugs.com delivery crate" />
             </div>
           </div>
         </div>
