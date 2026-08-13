@@ -5,6 +5,7 @@ import { randomUUID } from "crypto";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import type { PageType, MediaType, SlotId, FitMode, Alignment, LinkTarget, DisplayMode } from "../../../lib/mediaTypes";
+import { resizeImageForWeb } from "../../../lib/imageProcessing";
 
 export type ActionResult<T = undefined> = { success: true; data?: T } | { success: false; error: string };
 
@@ -66,9 +67,10 @@ export async function uploadMediaAsset(formData: FormData): Promise<ActionResult
   const admin = createAdminClient();
 
   async function uploadOne(f: File): Promise<string> {
-    const ext = f.name.split(".").pop() || "jpg";
-    const path = `assets/${randomUUID()}.${ext}`;
-    const { error } = await admin.storage.from("media-assets").upload(path, f, { upsert: true });
+    const inputBuffer = Buffer.from(await f.arrayBuffer());
+    const { buffer, contentType } = await resizeImageForWeb(inputBuffer, 2000);
+    const path = `assets/${randomUUID()}.jpg`;
+    const { error } = await admin.storage.from("media-assets").upload(path, buffer, { upsert: true, contentType });
     if (error) throw new Error(error.message);
     const {
       data: { publicUrl },
@@ -125,9 +127,10 @@ export async function replaceMediaAsset(assetId: string, formData: FormData): Pr
   const admin = createAdminClient();
 
   try {
-    const ext = file.name.split(".").pop() || "jpg";
-    const path = `assets/${randomUUID()}.${ext}`;
-    const { error: uploadError } = await admin.storage.from("media-assets").upload(path, file, { upsert: true });
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
+    const { buffer, contentType } = await resizeImageForWeb(inputBuffer, 2000);
+    const path = `assets/${randomUUID()}.jpg`;
+    const { error: uploadError } = await admin.storage.from("media-assets").upload(path, buffer, { upsert: true, contentType });
     if (uploadError) throw new Error(uploadError.message);
 
     const {

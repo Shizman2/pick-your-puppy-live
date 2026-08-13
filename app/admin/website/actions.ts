@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import type { ContentPage, ContentType } from "../../../lib/contentTypes";
+import { resizeImageForWeb } from "../../../lib/imageProcessing";
 
 export type ActionResult = { success: true } | { success: false; error: string };
 
@@ -84,11 +85,23 @@ export async function uploadContentImage(id: string, formData: FormData): Promis
   if (!file) return { success: false, error: "No file provided." };
 
   const admin = createAdminClient();
-  const fileExt = file.name.split(".").pop() || "jpg";
-  const filePath = `content/${id}/${crypto.randomUUID()}.${fileExt}`;
 
-  const { error: uploadError } = await admin.storage.from("site-content").upload(filePath, file, {
+  let processedBuffer: Buffer;
+  let contentType: string;
+  try {
+    const inputBuffer = Buffer.from(await file.arrayBuffer());
+    const result = await resizeImageForWeb(inputBuffer, 2000);
+    processedBuffer = result.buffer;
+    contentType = result.contentType;
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? `Image processing failed: ${err.message}` : "Image processing failed." };
+  }
+
+  const filePath = `content/${id}/${crypto.randomUUID()}.jpg`;
+
+  const { error: uploadError } = await admin.storage.from("site-content").upload(filePath, processedBuffer, {
     upsert: true,
+    contentType,
   });
   if (uploadError) return { success: false, error: uploadError.message };
 
