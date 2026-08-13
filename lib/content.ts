@@ -54,7 +54,7 @@ export interface WebsiteOverviewData {
  * nothing here is a placeholder list.
  */
 export async function getWebsiteOverviewData(): Promise<WebsiteOverviewData> {
-  const pages: ContentPage[] = ["homepage", "about", "puppies", "contact", "faq", "footer"];
+  const pages: ContentPage[] = ["homepage", "about", "puppies", "contact", "faq", "footer", "puppy_finder"];
 
   const [blocksArrays, faqItems] = await Promise.all([
     Promise.all(pages.map((p) => getContentBlocksForPage(p))),
