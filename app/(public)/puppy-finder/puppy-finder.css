@@ -47,7 +47,7 @@ label {
 .finder-hero-img {
   width: 100%;
   height: auto;
-  max-height: 220px;
+  max-height: 300px;
   object-fit: cover;
   display: block;
 }
