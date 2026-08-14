@@ -78,9 +78,9 @@ label {
 .finder-hero-img {
   position: absolute;
   z-index: 1;
-  right: -70px;
-  bottom: -10px;
-  width: 78%;
+  right: -30px;
+  bottom: 0;
+  width: 95%;
   max-width: none;
   height: auto;
   display: block;
