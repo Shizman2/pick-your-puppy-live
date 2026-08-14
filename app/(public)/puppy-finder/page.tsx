@@ -44,7 +44,8 @@ export default async function PuppyFinderPage({
           </a>
         </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="finder-hero-img" src={heroImage} alt="Cute puppy" />
+        <div className="finder-hero-img" style={{ backgroundImage: `url(${heroImage})` }} role="img" aria-label="Cute puppy" />
+        <div className="finder-hero-fade" />
       </section>
 
       <PlacementSlot pageType="puppy_finder" slot="puppy_finder_hero" previewToken={previewToken} />

@@ -78,12 +78,17 @@ label {
 .finder-hero-img {
   position: absolute;
   z-index: 1;
-  right: -30px;
-  bottom: 0;
-  width: 95%;
-  max-width: none;
-  height: auto;
-  display: block;
+  inset: 0;
+  background-size: cover;
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+.finder-hero-fade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(90deg, #f3dec6 0%, #f3dec6 22%, rgba(243, 222, 198, 0) 62%);
+  pointer-events: none;
 }
 
 .timeline-divider {
