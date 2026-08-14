@@ -42,53 +42,18 @@ label {
 }
 
 .finder-hero {
-  position: relative;
-  min-height: 420px;
-  overflow: hidden;
-  background: #f3dec6;
-  padding: 28px 0 28px 20px;
-}
-.finder-hero-text {
-  position: relative;
-  z-index: 2;
-  width: 58%;
-}
-.finder-hero-text h1 {
-  font-size: 27px;
-  font-weight: 900;
-  line-height: 1.2;
-  margin-bottom: 10px;
-}
-.finder-hero-text .accent {
-  color: var(--pp-blue);
-}
-.finder-hero-sub {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--pp-blue);
-  margin-bottom: 10px;
-}
-.finder-hero-text p {
-  font-size: 14px;
-  color: var(--pp-muted);
-  font-weight: 600;
-  line-height: 1.6;
-  margin-bottom: 20px;
+  padding: 0 0 20px;
 }
 .finder-hero-img {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  background-size: cover;
-  background-position: center right;
-  background-repeat: no-repeat;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+  object-fit: cover;
+  display: block;
 }
-.finder-hero-fade {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  background: linear-gradient(90deg, #f3dec6 0%, #f3dec6 22%, rgba(243, 222, 198, 0) 62%);
-  pointer-events: none;
+.finder-hero-btn {
+  margin: 16px 20px 0;
+  width: calc(100% - 40px);
 }
 
 .timeline-divider {

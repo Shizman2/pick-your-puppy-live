@@ -30,22 +30,11 @@ export default async function PuppyFinderPage({
       <PlacementSlot pageType="puppy_finder" slot="global_below_header" previewToken={previewToken} />
 
       <section className="finder-hero">
-        <div className="finder-hero-text">
-          <h1>
-            Can&rsquo;t Find the Puppy You&rsquo;re <span className="accent">Looking For?</span>
-          </h1>
-          <div className="finder-hero-sub">Let us do the searching for you.</div>
-          <p>
-            Through our trusted breeder network, we&rsquo;ll help locate the puppy you&rsquo;ve been dreaming of,
-            coordinate the process, and personally handle everything from search to pickup or delivery.
-          </p>
-          <a className="pp-btn-primary" href="#finderForm">
-            🐾 Start My Puppy Search
-          </a>
-        </div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <div className="finder-hero-img" style={{ backgroundImage: `url(${heroImage})` }} role="img" aria-label="Cute puppy" />
-        <div className="finder-hero-fade" />
+        <img className="finder-hero-img" src={heroImage} alt="Puppy Finder Concierge" />
+        <a className="pp-btn-primary finder-hero-btn" href="#finderForm">
+          🐾 Start My Puppy Search
+        </a>
       </section>
 
       <PlacementSlot pageType="puppy_finder" slot="puppy_finder_hero" previewToken={previewToken} />
