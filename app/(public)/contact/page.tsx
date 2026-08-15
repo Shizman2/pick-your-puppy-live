@@ -1,7 +1,9 @@
 import "./contact.css";
 import ContactForm from "./ContactForm";
 import { getContentBlocksForPage } from "../../../lib/content";
+import { getAllVisiblePuppiesForCards } from "../../../lib/public-data/puppies";
 
+const FIXED_BREED_OPTIONS = ["Not sure yet", "Just have a question"];
 
 export const metadata = {
   title: "Contact – ThePuppyPlugs.com",
@@ -30,6 +32,17 @@ export default async function ContactPage() {
   }
 
   const phoneDigits = text.phone.replace(/[^\d+]/g, "");
+
+  let breedOptions = [...FIXED_BREED_OPTIONS];
+  try {
+    const puppies = await getAllVisiblePuppiesForCards();
+    const uniqueBreeds = Array.from(new Set(puppies.map((p) => p.breed?.trim()).filter(Boolean))).sort((a, b) =>
+      a.localeCompare(b)
+    );
+    breedOptions = [...uniqueBreeds, ...FIXED_BREED_OPTIONS];
+  } catch {
+    // Keep the fixed-only fallback if Supabase is unreachable.
+  }
 
   return (
     <>
@@ -64,7 +77,7 @@ export default async function ContactPage() {
         </div>
       </div>
 
-      <ContactForm />
+      <ContactForm breedOptions={breedOptions} />
 
       <div className="hours-section">
         <h2>Response Hours</h2>

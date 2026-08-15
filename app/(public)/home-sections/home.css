@@ -361,10 +361,10 @@
   white-space: nowrap;
 }
 .finder-promo-text p {
-  font-size: 13.5px;
+  font-size: 19px;
   color: var(--pp-muted);
   font-weight: 600;
-  line-height: 1.55;
+  line-height: 1.5;
   width: 92%;
   margin: 14px 0 0;
 }

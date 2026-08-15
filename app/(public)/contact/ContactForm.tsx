@@ -2,28 +2,92 @@
 
 import { useState } from "react";
 
-export default function ContactForm() {
+interface Props {
+  breedOptions: string[];
+}
+
+export default function ContactForm({ breedOptions }: Props) {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [interest, setInterest] = useState("");
   const [message, setMessage] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [website, setWebsite] = useState(""); // honeypot
 
-  function submitForm() {
-    if (!firstName.trim() || !email.trim() || !message.trim()) {
-      alert("Please fill in your name, email, and message.");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (!firstName.trim() || (!email.trim() && !phone.trim())) {
+      setErrorMsg("Please enter your first name and at least an email or phone number.");
+      setStatus("error");
       return;
     }
-    // NOTE: preserved as-is from the current live site - this does not
-    // actually submit anywhere yet. Fixing this was intentionally
-    // deferred to a later task per an earlier decision.
-    window.location.href = "/thank-you";
+    if (!consent) {
+      setErrorMsg("Please check the box consenting to be contacted before submitting.");
+      setStatus("error");
+      return;
+    }
+
+    setStatus("submitting");
+    try {
+      const res = await fetch("/api/inquire", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          inquiryType: "general",
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          subject: interest,
+          notes: message.trim(),
+          consentToContact: consent,
+          website,
+          sourceUrl: typeof window !== "undefined" ? window.location.href : "/contact",
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus("success");
+      } else {
+        setErrorMsg(data.error || "Something went wrong. Please try again.");
+        setStatus("error");
+      }
+    } catch {
+      setErrorMsg("Something went wrong. Please try again.");
+      setStatus("error");
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <div className="contact-form-section">
+        <div className="contact-form-success">
+          <p>🐾 Thanks! We&rsquo;ve received your message and will get back to you soon.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="contact-form-section">
+    <form className="contact-form-section" onSubmit={handleSubmit}>
       <h2>Send Us a Message</h2>
+
+      <input
+        type="text"
+        value={website}
+        onChange={(e) => setWebsite(e.target.value)}
+        style={{ position: "absolute", left: "-9999px" }}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+      />
+
       <div className="form-row">
         <div className="form-group">
           <label>First Name</label>
@@ -46,10 +110,11 @@ export default function ContactForm() {
         <label>I am interested in...</label>
         <select value={interest} onChange={(e) => setInterest(e.target.value)}>
           <option value="">Select a breed</option>
-          <option>Yorkie</option>
-          <option>Maltipoo</option>
-          <option>Not sure yet</option>
-          <option>Just have a question</option>
+          {breedOptions.map((breed) => (
+            <option key={breed} value={breed}>
+              {breed}
+            </option>
+          ))}
         </select>
       </div>
       <div className="form-group">
@@ -60,9 +125,17 @@ export default function ContactForm() {
           onChange={(e) => setMessage(e.target.value)}
         />
       </div>
-      <button className="pp-btn-primary" onClick={submitForm} style={{ marginTop: 4 }}>
-        Send Message ›
+
+      <label className="contact-form-consent">
+        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
+        I agree to be contacted by phone, text, or email about my inquiry.
+      </label>
+
+      {status === "error" && <p className="contact-form-error">{errorMsg}</p>}
+
+      <button className="pp-btn-primary" type="submit" disabled={status === "submitting"} style={{ marginTop: 4 }}>
+        {status === "submitting" ? "Sending..." : "Send Message ›"}
       </button>
-    </div>
+    </form>
   );
 }

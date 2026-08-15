@@ -1,107 +1,17 @@
 import "./bundle-section.css";
 
-const ROW_1: { title: string; img?: string }[] = [
-  { title: "Health Guarantee" },
-  { title: "Health / Shot Records" },
-  { title: "Bag of Food", img: "/bundle-food-diamond.png" },
-  { title: "Crate", img: "/bundle-crate.png" },
-];
-
-const ROW_2: { title: string; img?: string }[] = [
-  { title: "Food & Water Bowls", img: "/bundle-bowls.png" },
-  { title: "Pee Pads", img: "/bundle-pee-pads.png" },
-  { title: "Potty Bags", img: "/bundle-potty-bags.png" },
-];
-
-function HealthGuaranteeShieldIcon() {
-  return (
-    <svg viewBox="0 0 48 48" width="30" height="30" fill="none">
-      <path
-        d="M24 5l15 6v11c0 9.4-6.4 17.6-15 20-8.6-2.4-15-10.6-15-20V11l15-6z"
-        stroke="var(--pp-blue)"
-        strokeWidth="2.4"
-        strokeLinejoin="round"
-        fill="none"
-        opacity="0.35"
-      />
-      <path
-        d="M24 5l15 6v11c0 9.4-6.4 17.6-15 20-8.6-2.4-15-10.6-15-20V11l15-6z"
-        stroke="var(--pp-blue)"
-        strokeWidth="2.4"
-        strokeLinejoin="round"
-      />
-      <path d="M24 15v18M15 24h18" stroke="var(--pp-blue)" strokeWidth="3.2" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function HealthShotRecordsClipboardIcon() {
-  return (
-    <svg viewBox="0 0 48 48" width="30" height="30" fill="none">
-      <rect x="10" y="7" width="28" height="36" rx="4" stroke="var(--pp-blue)" strokeWidth="2.4" fill="none" opacity="0.9" />
-      <rect x="17" y="4" width="14" height="7" rx="2" fill="var(--pp-blue)" />
-      {[15, 22, 29].map((y) => (
-        <g key={y}>
-          <path d={`M16 ${y}l2.2 2.2L22 ${y - 3.4}`} stroke="var(--pp-blue)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          <path d={`M26 ${y}h9`} stroke="var(--pp-blue)" strokeWidth="2" strokeLinecap="round" />
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-function CardIcon({ title }: { title: string }) {
-  if (title === "Health Guarantee") return <HealthGuaranteeShieldIcon />;
-  if (title === "Health / Shot Records") return <HealthShotRecordsClipboardIcon />;
-  return null;
-}
-
-function BundleGrid({ items, extraClass }: { items: { title: string; img?: string }[]; extraClass?: string }) {
-  return (
-    <div className={`bundle-grid${extraClass ? ` ${extraClass}` : ""}`}>
-      {items.map((item) => (
-        <div className="bundle-card" key={item.title}>
-          {item.img ? (
-            <div className="bundle-card-img-wrap">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={item.img} alt={item.title} />
-            </div>
-          ) : (
-            <div className="bundle-card-icon">
-              <CardIcon title={item.title} />
-            </div>
-          )}
-          <div className="bundle-card-title">{item.title}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
 export default function BundleSection() {
   return (
     <section className="bundle-section">
-      <div className="bundle-header">
-        <h2>
-          🐾 What Comes With Your Puppy 🐾
-        </h2>
-        <div className="divider">
-          <span className="divider-line" />
-          <span>💙</span>
-          <span className="divider-line" />
-        </div>
-        <p>
-          Our all-inclusive starter bundle has everything you need to bring your puppy home happy &amp; healthy.
-        </p>
-      </div>
-
-      <div className="bundle-hero-card">
+      <div className="bundle-image-wrap">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/bundle-hero-composite.webp" width={900} height={374} alt="Puppy starter bundle: crate, food, bowls, pee pads, potty bags" />
+        <img
+          src="/bundle-full.webp"
+          width={900}
+          height={720}
+          alt="What comes with your puppy: health guarantee, health and shot records, starter bag of Diamond puppy food, brand-new crate, food and water bowls, pee pads, and potty bags"
+        />
       </div>
-
-      <BundleGrid items={ROW_1} />
-      <BundleGrid items={ROW_2} extraClass="bundle-grid-3" />
 
       <div className="bundle-note">
         <div className="bundle-note-icon">
