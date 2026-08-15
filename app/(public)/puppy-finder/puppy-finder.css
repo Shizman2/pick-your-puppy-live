@@ -28,15 +28,17 @@ label {
   padding: 28px 20px;
 }
 .section-title {
-  font-size: 20px;
+  font-size: 30px;
   font-weight: 900;
   text-align: center;
-  margin-bottom: 6px;
+  line-height: 1.2;
+  margin-bottom: 10px;
 }
 .section-sub {
-  font-size: 13px;
+  font-size: 18px;
   color: var(--pp-muted);
   font-weight: 600;
+  line-height: 1.5;
   text-align: center;
   margin-bottom: 18px;
 }
@@ -51,23 +53,7 @@ label {
   object-fit: cover;
   display: block;
 }
-.finder-hero-btn {
-  margin: 16px 20px 0;
-  width: calc(100% - 40px);
-}
 
-.timeline-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 26px;
-}
-.timeline-divider .line {
-  width: 32px;
-  height: 1px;
-  background: #d6e4ff;
-}
 .timeline-wrap {
   position: relative;
   padding-left: 46px;
@@ -121,83 +107,77 @@ label {
   margin-bottom: 12px;
 }
 .timeline-title {
-  font-size: 15.5px;
+  font-size: 21px;
   font-weight: 900;
+  line-height: 1.25;
   margin-bottom: 5px;
 }
 .timeline-desc {
-  font-size: 12.5px;
-  color: var(--pp-muted);
-  font-weight: 600;
-  line-height: 1.55;
-}
-
-.included-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.included-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13.5px;
-  font-weight: 700;
-}
-.included-check {
-  width: 22px;
-  height: 22px;
-  background: var(--pp-blue-light);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.price-card {
-  background: var(--pp-blue-light);
-  border-radius: var(--pp-radius);
-  padding: 22px;
-  text-align: center;
-}
-.price-card-icon {
-  width: 48px;
-  height: 48px;
-  background: #fff;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 12px;
-}
-.price-card-title {
-  font-size: 16px;
-  font-weight: 900;
-  margin-bottom: 4px;
-}
-.price-card-amount {
-  font-size: 34px;
-  font-weight: 900;
-  color: var(--pp-blue);
-  margin-bottom: 10px;
-}
-.price-card-desc {
-  font-size: 12.5px;
+  font-size: 17.5px;
   color: var(--pp-muted);
   font-weight: 600;
   line-height: 1.5;
-  margin-bottom: 14px;
 }
-.price-card-note {
-  background: #fff;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 12.5px;
-  font-weight: 700;
+
+/* ── CONCIERGE VALUE + FEE ── */
+.concierge-card {
+  background: var(--pp-blue-light);
+  border-radius: var(--pp-radius);
+  padding: 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
 }
-.price-card-note b {
+.concierge-main {
+  flex: 1.4;
+  min-width: 0;
+}
+.concierge-icon {
+  width: 44px;
+  height: 44px;
+  background: var(--pp-blue);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+  box-shadow: 0 3px 10px rgba(27, 123, 255, 0.35);
+}
+.concierge-title {
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+.concierge-desc {
+  font-size: 17px;
+  color: var(--pp-muted);
+  font-weight: 600;
+  line-height: 1.5;
+}
+.concierge-divider {
+  width: 1.5px;
+  align-self: stretch;
+  background: #c4d9fb;
+  flex-shrink: 0;
+}
+.concierge-fee {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+}
+.concierge-fee-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--pp-text);
+  line-height: 1.35;
+  margin-bottom: 8px;
+}
+.concierge-fee-amount {
+  font-size: 38px;
+  font-weight: 900;
   color: var(--pp-blue);
+  line-height: 1;
 }
 
 .form-card {
@@ -290,43 +270,3 @@ label {
   font-weight: 600;
 }
 
-.faq-item {
-  border-bottom: 1px solid var(--pp-border);
-  padding: 14px 0;
-}
-.faq-q {
-  font-size: 13.5px;
-  font-weight: 800;
-  margin-bottom: 4px;
-}
-.faq-a {
-  font-size: 12.5px;
-  color: var(--pp-muted);
-  font-weight: 600;
-  line-height: 1.5;
-}
-
-.final-cta {
-  background: var(--pp-blue);
-  border-radius: var(--pp-radius);
-  padding: 26px 20px;
-  text-align: center;
-  margin: 0 20px 24px;
-}
-.final-cta h2 {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 900;
-  margin-bottom: 6px;
-}
-.final-cta p {
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 13px;
-  font-weight: 600;
-  margin-bottom: 16px;
-}
-.final-cta .pp-btn-primary {
-  background: #fff;
-  color: var(--pp-blue);
-  box-shadow: none;
-}
