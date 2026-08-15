@@ -2,7 +2,7 @@ import "./puppies.css";
 import { getAllVisiblePuppiesForCards } from "../../../lib/public-data/puppies";
 import PuppyGrid from "./PuppyGrid";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata = {
   title: "Available Puppies – ThePuppyPlugs.com",

@@ -1,6 +1,7 @@
 import "./puppy-finder.css";
 import FinderForm from "./FinderForm";
 import PlacementSlot from "../../../components/public-site/PlacementSlot";
+import PlacementPreviewOverlay from "../../../components/public-site/PlacementPreviewOverlay";
 import { getContentBlocksForPage } from "../../../lib/content";
 
 export const metadata = {
@@ -102,13 +103,7 @@ const STEPS = [
   { title: "Bring Your Puppy Home", desc: "Choose local pickup or delivery.", icon: <HouseIcon /> },
 ];
 
-export default async function PuppyFinderPage({
-  searchParams,
-}: {
-  searchParams: { previewToken?: string };
-}) {
-  const previewToken = searchParams?.previewToken || null;
-
+export default async function PuppyFinderPage() {
   let heroImage = "/concierge-hero-puppy.jpg";
   try {
     const blocks = await getContentBlocksForPage("puppy_finder");
@@ -122,14 +117,16 @@ export default async function PuppyFinderPage({
 
   return (
     <>
-      <PlacementSlot pageType="puppy_finder" slot="global_below_header" previewToken={previewToken} />
+      <PlacementSlot pageType="puppy_finder" slot="global_below_header" />
+      <PlacementPreviewOverlay pageType="puppy_finder" slot="global_below_header" />
 
       <section className="finder-hero">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="finder-hero-img" src={heroImage} alt="Puppy Finder Concierge" />
       </section>
 
-      <PlacementSlot pageType="puppy_finder" slot="puppy_finder_hero" previewToken={previewToken} />
+      <PlacementSlot pageType="puppy_finder" slot="puppy_finder_hero" />
+      <PlacementPreviewOverlay pageType="puppy_finder" slot="puppy_finder_hero" />
 
       <section className="section">
         <div className="section-title">How Our Puppy Finder Works</div>
@@ -179,7 +176,8 @@ export default async function PuppyFinderPage({
       </section>
 
       <section className="section" style={{ paddingTop: 8 }}>
-        <PlacementSlot pageType="puppy_finder" slot="puppy_finder_above_form" previewToken={previewToken} />
+        <PlacementSlot pageType="puppy_finder" slot="puppy_finder_above_form" />
+        <PlacementPreviewOverlay pageType="puppy_finder" slot="puppy_finder_above_form" />
         <FinderForm />
       </section>
     </>

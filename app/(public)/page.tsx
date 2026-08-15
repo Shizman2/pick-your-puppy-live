@@ -5,8 +5,9 @@ import FeaturedPuppies from "./home-sections/FeaturedPuppies";
 import PyplCountdown from "./home-sections/PyplCountdown";
 import BundleSection from "../../components/public-site/BundleSection";
 import PlacementSlot from "../../components/public-site/PlacementSlot";
+import PlacementPreviewOverlay from "../../components/public-site/PlacementPreviewOverlay";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const FALLBACK: Record<string, string> = {
   hero_heading_line1: "Find Your",
@@ -18,12 +19,7 @@ const FALLBACK: Record<string, string> = {
   finder_subtext: "Let us help you find your perfect match! Tell us what you're looking for & we'll notify you when the perfect puppy arrives.",
 };
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: { previewToken?: string };
-}) {
-  const previewToken = searchParams?.previewToken || null;
+export default async function HomePage() {
   const text: Record<string, string> = { ...FALLBACK };
   const [puppies, event] = await Promise.all([getFeaturedPuppies(), getHomepageEventData()]);
   try {
@@ -42,7 +38,8 @@ export default async function HomePage({
 
   return (
     <>
-      <PlacementSlot pageType="homepage" slot="global_below_header" previewToken={previewToken} />
+      <PlacementSlot pageType="homepage" slot="global_below_header" />
+      <PlacementPreviewOverlay pageType="homepage" slot="global_below_header" />
 
       {showBanner && (
         // eslint-disable-next-line @next/next/no-img-element
@@ -57,7 +54,8 @@ export default async function HomePage({
         />
       )}
 
-      <PlacementSlot pageType="homepage" slot="homepage_hero" previewToken={previewToken} />
+      <PlacementSlot pageType="homepage" slot="homepage_hero" />
+      <PlacementPreviewOverlay pageType="homepage" slot="homepage_hero" />
 
       <section className="hero" id="home">
         <div className="hero-top">
@@ -106,7 +104,8 @@ export default async function HomePage({
         <FeaturedPuppies puppies={puppies} />
       </section>
 
-      <PlacementSlot pageType="homepage" slot="homepage_below_puppies" previewToken={previewToken} />
+      <PlacementSlot pageType="homepage" slot="homepage_below_puppies" />
+      <PlacementPreviewOverlay pageType="homepage" slot="homepage_below_puppies" />
 
       <section className="finder-promo">
         <div className="finder-promo-top">

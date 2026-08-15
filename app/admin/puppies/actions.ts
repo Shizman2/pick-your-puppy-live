@@ -96,6 +96,8 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/puppies");
+  revalidatePath("/", "layout");
+  revalidatePath("/puppies");
   return { success: true, puppyId: data.id };
 }
 
@@ -145,6 +147,10 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
 
   revalidatePath("/admin/puppies");
   revalidatePath(`/admin/puppies/${puppyId}`);
+  revalidatePath("/", "layout");
+  revalidatePath("/puppies");
+  if (slug) revalidatePath(`/puppies/${slug}`);
+  if (existing?.slug && existing.slug !== slug) revalidatePath(`/puppies/${existing.slug}`);
   return { success: true, puppyId };
 }
 
@@ -153,11 +159,15 @@ export async function deletePuppy(puppyId: string): Promise<ActionResult> {
   if (!auth.ok) return { success: false, error: auth.error };
 
   const admin = createAdminClient();
+  const { data: existing } = await admin.from("puppies").select("slug").eq("id", puppyId).maybeSingle();
   const { error } = await admin.from("puppies").delete().eq("id", puppyId);
 
   if (error) return { success: false, error: error.message };
 
   revalidatePath("/admin/puppies");
+  revalidatePath("/", "layout");
+  revalidatePath("/puppies");
+  if (existing?.slug) revalidatePath(`/puppies/${existing.slug}`);
   return { success: true };
 }
 
@@ -197,7 +207,7 @@ export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Pro
 
   const { data: puppy, error: fetchError } = await admin
     .from("puppies")
-    .select("photo_urls")
+    .select("photo_urls, slug")
     .eq("id", puppyId)
     .maybeSingle();
   if (fetchError) return { success: false, error: fetchError.message };
@@ -212,6 +222,8 @@ export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Pro
 
   revalidatePath(`/admin/puppies/${puppyId}`);
   revalidatePath("/admin/puppies");
+  revalidatePath("/puppies");
+  if (puppy?.slug) revalidatePath(`/puppies/${puppy.slug}`);
   return { success: true, url: publicUrl };
 }
 
@@ -281,7 +293,7 @@ export async function optimizeAllExistingPuppyPhotos(): Promise<OptimizeAllPhoto
   revalidatePath("/", "layout");
   return { success: true, processed, skipped, errors };
 }
-  const auth = await requireAdminUser();
+
 export async function removePuppyPhoto(puppyId: string, url: string): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
@@ -290,7 +302,7 @@ export async function removePuppyPhoto(puppyId: string, url: string): Promise<Ac
 
   const { data: puppy, error: fetchError } = await admin
     .from("puppies")
-    .select("photo_urls")
+    .select("photo_urls, slug")
     .eq("id", puppyId)
     .maybeSingle();
   if (fetchError) return { success: false, error: fetchError.message };
@@ -305,5 +317,7 @@ export async function removePuppyPhoto(puppyId: string, url: string): Promise<Ac
 
   revalidatePath(`/admin/puppies/${puppyId}`);
   revalidatePath("/admin/puppies");
+  revalidatePath("/puppies");
+  if (puppy?.slug) revalidatePath(`/puppies/${puppy.slug}`);
   return { success: true };
 }

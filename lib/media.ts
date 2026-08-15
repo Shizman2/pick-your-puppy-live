@@ -60,7 +60,7 @@ export async function getPlacementsForSlot(
   return eligible;
 }
 
-async function getPlacementByPreviewTokenForSlot(
+export async function getPlacementByPreviewTokenForSlot(
   pageType: PageType,
   slot: SlotId,
   pageIdentifier: string | null | undefined,

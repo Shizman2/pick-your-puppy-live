@@ -7,8 +7,16 @@ import HealthyCheckedReady from "./HealthyCheckedReady";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import BundleSection from "../../../../components/public-site/BundleSection";
 import PlacementSlot from "../../../../components/public-site/PlacementSlot";
+import PlacementPreviewOverlay from "../../../../components/public-site/PlacementPreviewOverlay";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
+
+// No paths are known at build time; dynamicParams (default true) lets
+// Next.js render + cache each slug on-demand on its first real visit,
+// rather than falling back to full per-request SSR.
+export async function generateStaticParams() {
+  return [];
+}
 
 const STATUS_COLOR: Record<string, string> = {
   available: "#22C55E",
@@ -18,14 +26,7 @@ const STATUS_COLOR: Record<string, string> = {
   discounted: "#A855F7",
 };
 
-export default async function PuppyDetailPage({
-  params,
-  searchParams,
-}: {
-  params: { slug: string };
-  searchParams: { previewToken?: string };
-}) {
-  const previewToken = searchParams?.previewToken || null;
+export default async function PuppyDetailPage({ params }: { params: { slug: string } }) {
   const puppy = await getPuppyBySlug(params.slug);
   if (!puppy) notFound();
 
@@ -43,7 +44,8 @@ export default async function PuppyDetailPage({
 
   return (
     <>
-      <PlacementSlot pageType="puppy_detail" slot="global_below_header" pageIdentifier={puppy.id} previewToken={previewToken} />
+      <PlacementSlot pageType="puppy_detail" slot="global_below_header" pageIdentifier={puppy.id} />
+      <PlacementPreviewOverlay pageType="puppy_detail" slot="global_below_header" pageIdentifier={puppy.id} />
 
       <a className="back-btn" href="/puppies">
         ← Back to Puppies
@@ -107,7 +109,8 @@ export default async function PuppyDetailPage({
         )}
       </div>
 
-      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} previewToken={previewToken} />
+      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
+      <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
 
       <BundleSection />
 
@@ -115,7 +118,8 @@ export default async function PuppyDetailPage({
         <HealthyCheckedReady />
       </div>
 
-      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} previewToken={previewToken} />
+      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
+      <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
 
       <div className="detail-cta">
         {puppy.status === "sold" ? (
