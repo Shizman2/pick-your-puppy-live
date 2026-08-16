@@ -1,4 +1,4 @@
-export type ContentPage = "homepage" | "about" | "contact" | "faq" | "puppies" | "footer" | "puppy_finder";
+export type ContentPage = "homepage" | "contact" | "faq" | "puppies" | "footer" | "puppy_finder";
 export type ContentType = "text" | "image";
 
 export interface ContentBlockRow {
@@ -14,14 +14,38 @@ export interface ContentBlockRow {
   updated_at: string;
 }
 
-export interface FaqItemRow {
+export interface FaqCategoryRow {
   id: string;
-  question: string;
-  answer: string;
+  title: string;
+  icon: string | null;
   display_order: number;
   created_at: string;
   updated_at: string;
 }
+
+export interface FaqItemRow {
+  id: string;
+  category_id: string;
+  question: string;
+  answer: string;
+  display_order: number;
+  is_visible: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface FaqCategoryWithItems extends FaqCategoryRow {
+  items: FaqItemRow[];
+}
+
+/** Small fixed set of icon keys the FAQ category editor can choose from. */
+export const FAQ_ICON_OPTIONS: { key: string; label: string }[] = [
+  { key: "paw", label: "Paw" },
+  { key: "tag", label: "Price Tag" },
+  { key: "shield-check", label: "Shield Check" },
+  { key: "truck", label: "Truck" },
+  { key: "help", label: "Question Mark" },
+];
 
 export interface WebsitePageInfo {
   key: ContentPage;
@@ -32,7 +56,6 @@ export interface WebsitePageInfo {
 
 export const WEBSITE_PAGES: WebsitePageInfo[] = [
   { key: "homepage", label: "Homepage", description: "Edit hero, featured puppies, and homepage sections", icon: "home" },
-  { key: "about", label: "About Us", description: "Your story, location, guarantees, and policies", icon: "info" },
   { key: "puppies", label: "Puppies Page", description: "Edit the website content surrounding your puppy listings - not the puppies themselves.", icon: "paw" },
   { key: "contact", label: "Contact Us", description: "Contact info, hours, location, and form text", icon: "phone" },
   { key: "faq", label: "FAQ", description: "Manage questions and answers", icon: "help" },

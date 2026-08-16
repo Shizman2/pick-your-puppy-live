@@ -268,3 +268,29 @@
   margin-bottom: 12px;
   background: #fff;
 }
+
+.faq-category-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #f9fafb;
+}
+.faq-category-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.faq-category-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 800;
+  margin: 0;
+}
+.faq-category-items {
+  padding-left: 4px;
+  border-left: 2px solid #e5e7eb;
+  margin-left: 6px;
+}

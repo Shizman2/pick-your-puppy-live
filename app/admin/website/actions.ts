@@ -117,7 +117,97 @@ export async function uploadContentImage(id: string, formData: FormData): Promis
   return { success: true };
 }
 
-export async function createFaqItem(question: string, answer: string, displayOrder: number): Promise<ActionResult> {
+export async function createFaqCategory(title: string, icon: string | null, displayOrder: number): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  if (!title.trim()) {
+    return { success: false, error: "Section title is required." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("faq_categories").insert({
+    title: title.trim(),
+    icon,
+    display_order: displayOrder,
+  });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/website");
+  revalidatePath("/faq");
+  return { success: true };
+}
+
+export async function updateFaqCategory(id: string, title: string, icon: string | null): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  if (!title.trim()) {
+    return { success: false, error: "Section title is required." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("faq_categories").update({ title: title.trim(), icon }).eq("id", id);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/website");
+  revalidatePath("/faq");
+  return { success: true };
+}
+
+export async function deleteFaqCategory(id: string): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+
+  const { count } = await admin.from("faq_items").select("id", { count: "exact", head: true }).eq("category_id", id);
+  if (count && count > 0) {
+    return { success: false, error: "Delete or move every question out of this section first." };
+  }
+
+  const { error } = await admin.from("faq_categories").delete().eq("id", id);
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/website");
+  revalidatePath("/faq");
+  return { success: true };
+}
+
+export async function moveFaqCategory(id: string, direction: "up" | "down"): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { data: categories, error } = await admin
+    .from("faq_categories")
+    .select("id, display_order")
+    .order("display_order", { ascending: true });
+  if (error) return { success: false, error: error.message };
+
+  const list = categories || [];
+  const idx = list.findIndex((c) => c.id === id);
+  const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (idx === -1 || swapIdx < 0 || swapIdx >= list.length) return { success: true };
+
+  const current = list[idx];
+  const swap = list[swapIdx];
+  await admin.from("faq_categories").update({ display_order: swap.display_order }).eq("id", current.id);
+  await admin.from("faq_categories").update({ display_order: current.display_order }).eq("id", swap.id);
+
+  revalidatePath("/admin/website");
+  revalidatePath("/faq");
+  return { success: true };
+}
+
+export async function createFaqItem(
+  categoryId: string,
+  question: string,
+  answer: string,
+  displayOrder: number
+): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
 
@@ -127,6 +217,7 @@ export async function createFaqItem(question: string, answer: string, displayOrd
 
   const admin = createAdminClient();
   const { error } = await admin.from("faq_items").insert({
+    category_id: categoryId,
     question: question.trim(),
     answer: answer.trim(),
     display_order: displayOrder,
@@ -139,15 +230,34 @@ export async function createFaqItem(question: string, answer: string, displayOrd
   return { success: true };
 }
 
-export async function updateFaqItem(id: string, question: string, answer: string): Promise<ActionResult> {
+export async function updateFaqItem(
+  id: string,
+  question: string,
+  answer: string,
+  categoryId: string
+): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
 
   const admin = createAdminClient();
   const { error } = await admin
     .from("faq_items")
-    .update({ question: question.trim(), answer: answer.trim() })
+    .update({ question: question.trim(), answer: answer.trim(), category_id: categoryId })
     .eq("id", id);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/website");
+  revalidatePath("/faq");
+  return { success: true };
+}
+
+export async function toggleFaqItemVisibility(id: string, isVisible: boolean): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("faq_items").update({ is_visible: isVisible }).eq("id", id);
 
   if (error) return { success: false, error: error.message };
 
@@ -164,6 +274,33 @@ export async function deleteFaqItem(id: string): Promise<ActionResult> {
   const { error } = await admin.from("faq_items").delete().eq("id", id);
 
   if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/website");
+  revalidatePath("/faq");
+  return { success: true };
+}
+
+export async function moveFaqItem(id: string, categoryId: string, direction: "up" | "down"): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { data: items, error } = await admin
+    .from("faq_items")
+    .select("id, display_order")
+    .eq("category_id", categoryId)
+    .order("display_order", { ascending: true });
+  if (error) return { success: false, error: error.message };
+
+  const list = items || [];
+  const idx = list.findIndex((i) => i.id === id);
+  const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+  if (idx === -1 || swapIdx < 0 || swapIdx >= list.length) return { success: true };
+
+  const current = list[idx];
+  const swap = list[swapIdx];
+  await admin.from("faq_items").update({ display_order: swap.display_order }).eq("id", current.id);
+  await admin.from("faq_items").update({ display_order: current.display_order }).eq("id", swap.id);
 
   revalidatePath("/admin/website");
   revalidatePath("/faq");

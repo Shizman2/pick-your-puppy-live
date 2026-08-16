@@ -3,9 +3,7 @@
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Puppies", href: "/puppies" },
-  { label: "About Us", href: "/about" },
   { label: "FAQ", href: "/faq" },
-  { label: "Happy Homes", href: "/sold" },
   { label: "Contact", href: "/contact" },
 ];
 

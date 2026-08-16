@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "./supabase/admin";
-import type { ContentBlockRow, FaqItemRow, ContentPage } from "./contentTypes";
+import type { ContentBlockRow, FaqCategoryWithItems, ContentPage } from "./contentTypes";
+import { getFaqCategoriesWithItems } from "./faq";
 
 export async function getContentBlocksForPage(page: ContentPage): Promise<ContentBlockRow[]> {
   const admin = createAdminClient();
@@ -12,17 +13,6 @@ export async function getContentBlocksForPage(page: ContentPage): Promise<Conten
 
   if (error) throw new Error(error.message);
   return (data || []) as ContentBlockRow[];
-}
-
-export async function getFaqItems(): Promise<FaqItemRow[]> {
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from("faq_items")
-    .select("*")
-    .order("display_order", { ascending: true });
-
-  if (error) throw new Error(error.message);
-  return (data || []) as FaqItemRow[];
 }
 
 export interface RecentChange {
@@ -42,7 +32,7 @@ export interface MediaItem {
 
 export interface WebsiteOverviewData {
   blocksByPage: Record<ContentPage, ContentBlockRow[]>;
-  faqItems: FaqItemRow[];
+  faqCategories: FaqCategoryWithItems[];
   recentChanges: RecentChange[];
   mediaItems: MediaItem[];
 }
@@ -54,11 +44,11 @@ export interface WebsiteOverviewData {
  * nothing here is a placeholder list.
  */
 export async function getWebsiteOverviewData(): Promise<WebsiteOverviewData> {
-  const pages: ContentPage[] = ["homepage", "about", "puppies", "contact", "faq", "footer", "puppy_finder"];
+  const pages: ContentPage[] = ["homepage", "puppies", "contact", "faq", "footer", "puppy_finder"];
 
-  const [blocksArrays, faqItems] = await Promise.all([
+  const [blocksArrays, faqCategories] = await Promise.all([
     Promise.all(pages.map((p) => getContentBlocksForPage(p))),
-    getFaqItems(),
+    getFaqCategoriesWithItems(),
   ]);
 
   const blocksByPage = Object.fromEntries(pages.map((p, i) => [p, blocksArrays[i]])) as Record<
@@ -67,10 +57,11 @@ export async function getWebsiteOverviewData(): Promise<WebsiteOverviewData> {
   >;
 
   const allBlocks = blocksArrays.flat();
+  const allFaqItems = faqCategories.flatMap((c) => c.items);
 
   const recentChanges: RecentChange[] = [
     ...allBlocks.map((b) => ({ id: b.id, label: b.label, page: b.page, updatedAt: b.updated_at })),
-    ...faqItems.map((f) => ({
+    ...allFaqItems.map((f) => ({
       id: f.id,
       label: `FAQ: ${f.question}`,
       page: "faq" as ContentPage,
@@ -85,5 +76,5 @@ export async function getWebsiteOverviewData(): Promise<WebsiteOverviewData> {
     .map((b) => ({ id: b.id, label: b.label, page: b.page, imageUrl: b.image_url as string, updatedAt: b.updated_at }))
     .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
 
-  return { blocksByPage, faqItems, recentChanges, mediaItems };
+  return { blocksByPage, faqCategories, recentChanges, mediaItems };
 }

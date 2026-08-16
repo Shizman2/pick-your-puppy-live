@@ -8,6 +8,14 @@ const nextConfig = {
       bodySizeLimit: "10mb",
     },
   },
+  async redirects() {
+    return [
+      // About Us and Happy Homes pages were removed from the site.
+      // Redirect old links/bookmarks to the homepage instead of 404ing.
+      { source: "/about", destination: "/", permanent: false },
+      { source: "/sold", destination: "/", permanent: false },
+    ];
+  },
 };
 
 module.exports = nextConfig;

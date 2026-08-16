@@ -6,23 +6,30 @@ import {
   updateContentBlockText,
   deleteContentBlock,
   uploadContentImage,
+  createFaqCategory,
+  updateFaqCategory,
+  deleteFaqCategory,
+  moveFaqCategory,
   createFaqItem,
   updateFaqItem,
   deleteFaqItem,
+  moveFaqItem,
+  toggleFaqItemVisibility,
 } from "../../../app/admin/website/actions";
 import {
   WEBSITE_PAGES,
+  FAQ_ICON_OPTIONS,
   type ContentBlockRow,
   type ContentPage,
   type ContentType,
-  type FaqItemRow,
+  type FaqCategoryWithItems,
 } from "../../../lib/contentTypes";
 import type { RecentChange, MediaItem } from "../../../lib/content";
 import { formatRelativeTime } from "../../../lib/formatRelative";
 
 interface WebsiteEditorClientProps {
   blocksByPage: Record<ContentPage, ContentBlockRow[]>;
-  faqItems: FaqItemRow[];
+  faqCategories: FaqCategoryWithItems[];
   recentChanges: RecentChange[];
   mediaItems: MediaItem[];
 }
@@ -220,15 +227,22 @@ function AddBlockForm({ page, nextOrder }: { page: ContentPage; nextOrder: numbe
   );
 }
 
-function FaqItemEditor({ item }: { item: FaqItemRow }) {
+function FaqItemEditor({
+  item,
+  categories,
+}: {
+  item: FaqCategoryWithItems["items"][number];
+  categories: FaqCategoryWithItems[];
+}) {
   const [question, setQuestion] = useState(item.question);
   const [answer, setAnswer] = useState(item.answer);
+  const [categoryId, setCategoryId] = useState(item.category_id);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
   async function handleSave() {
     setSaving(true);
-    await updateFaqItem(item.id, question, answer);
+    await updateFaqItem(item.id, question, answer, categoryId);
     setSaving(false);
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
@@ -239,8 +253,32 @@ function FaqItemEditor({ item }: { item: FaqItemRow }) {
     await deleteFaqItem(item.id);
   }
 
+  async function handleMove(direction: "up" | "down") {
+    await moveFaqItem(item.id, item.category_id, direction);
+  }
+
+  async function handleToggleVisible() {
+    await toggleFaqItemVisibility(item.id, !item.is_visible);
+  }
+
   return (
     <div className="faq-item-card">
+      <div style={{ display: "flex", gap: 6, marginBottom: 8 }}>
+        <button type="button" className="admin-btn" onClick={() => handleMove("up")} title="Move up">
+          ↑
+        </button>
+        <button type="button" className="admin-btn" onClick={() => handleMove("down")} title="Move down">
+          ↓
+        </button>
+        <button
+          type="button"
+          className="admin-btn"
+          onClick={handleToggleVisible}
+          title={item.is_visible ? "Visible on the public FAQ page" : "Hidden from the public FAQ page"}
+        >
+          {item.is_visible ? "Visible" : "Hidden"}
+        </button>
+      </div>
       <div className="admin-field">
         <label className="admin-field__label">Question</label>
         <input className="admin-input" value={question} onChange={(e) => setQuestion(e.target.value)} />
@@ -248,6 +286,16 @@ function FaqItemEditor({ item }: { item: FaqItemRow }) {
       <div className="admin-field">
         <label className="admin-field__label">Answer</label>
         <textarea className="admin-textarea" value={answer} onChange={(e) => setAnswer(e.target.value)} />
+      </div>
+      <div className="admin-field">
+        <label className="admin-field__label">Section</label>
+        <select className="admin-input" value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.title}
+            </option>
+          ))}
+        </select>
       </div>
       <div style={{ display: "flex", gap: 8 }}>
         <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>
@@ -261,7 +309,7 @@ function FaqItemEditor({ item }: { item: FaqItemRow }) {
   );
 }
 
-function AddFaqForm({ nextOrder }: { nextOrder: number }) {
+function AddFaqForm({ categoryId, nextOrder }: { categoryId: string; nextOrder: number }) {
   const [open, setOpen] = useState(false);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -271,7 +319,7 @@ function AddFaqForm({ nextOrder }: { nextOrder: number }) {
   async function handleAdd() {
     setError(null);
     setSaving(true);
-    const result = await createFaqItem(question, answer, nextOrder);
+    const result = await createFaqItem(categoryId, question, answer, nextOrder);
     setSaving(false);
     if (!result.success) {
       setError(result.error);
@@ -285,7 +333,7 @@ function AddFaqForm({ nextOrder }: { nextOrder: number }) {
   if (!open) {
     return (
       <button type="button" className="admin-btn admin-btn--primary" onClick={() => setOpen(true)}>
-        + Add FAQ
+        + Add Question
       </button>
     );
   }
@@ -313,6 +361,155 @@ function AddFaqForm({ nextOrder }: { nextOrder: number }) {
   );
 }
 
+function FaqCategoryEditor({
+  category,
+  allCategories,
+}: {
+  category: FaqCategoryWithItems;
+  allCategories: FaqCategoryWithItems[];
+}) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(category.title);
+  const [icon, setIcon] = useState(category.icon || FAQ_ICON_OPTIONS[0].key);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSave() {
+    setError(null);
+    setSaving(true);
+    const result = await updateFaqCategory(category.id, title, icon);
+    setSaving(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    setEditing(false);
+  }
+
+  async function handleDelete() {
+    if (!confirm(`Delete the "${category.title}" section?`)) return;
+    const result = await deleteFaqCategory(category.id);
+    if (!result.success) alert(result.error);
+  }
+
+  async function handleMove(direction: "up" | "down") {
+    await moveFaqCategory(category.id, direction);
+  }
+
+  return (
+    <div className="faq-category-card">
+      <div className="faq-category-header">
+        <div style={{ display: "flex", gap: 6 }}>
+          <button type="button" className="admin-btn" onClick={() => handleMove("up")} title="Move section up">
+            ↑
+          </button>
+          <button type="button" className="admin-btn" onClick={() => handleMove("down")} title="Move section down">
+            ↓
+          </button>
+        </div>
+
+        {editing ? (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flex: 1 }}>
+            <input className="admin-input" value={title} onChange={(e) => setTitle(e.target.value)} />
+            <select className="admin-input" style={{ maxWidth: 160 }} value={icon} onChange={(e) => setIcon(e.target.value)}>
+              {FAQ_ICON_OPTIONS.map((opt) => (
+                <option key={opt.key} value={opt.key}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        ) : (
+          <h3 className="faq-category-title">{category.title}</h3>
+        )}
+
+        <div style={{ display: "flex", gap: 8 }}>
+          {editing ? (
+            <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : "Save"}
+            </button>
+          ) : (
+            <button type="button" className="admin-btn" onClick={() => setEditing(true)}>
+              Edit
+            </button>
+          )}
+          <button type="button" className="admin-btn admin-btn--danger" onClick={handleDelete}>
+            Delete Section
+          </button>
+        </div>
+      </div>
+
+      {error && <div className="inquire-error">{error}</div>}
+
+      <div className="faq-category-items">
+        {category.items.length === 0 && <p className="admin-hint">No questions in this section yet.</p>}
+        {category.items.map((item) => (
+          <FaqItemEditor key={item.id} item={item} categories={allCategories} />
+        ))}
+        <AddFaqForm categoryId={category.id} nextOrder={category.items.length} />
+      </div>
+    </div>
+  );
+}
+
+function AddFaqCategoryForm({ nextOrder }: { nextOrder: number }) {
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [icon, setIcon] = useState(FAQ_ICON_OPTIONS[0].key);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleAdd() {
+    setError(null);
+    setSaving(true);
+    const result = await createFaqCategory(title, icon, nextOrder);
+    setSaving(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    setOpen(false);
+    setTitle("");
+    setIcon(FAQ_ICON_OPTIONS[0].key);
+  }
+
+  if (!open) {
+    return (
+      <button type="button" className="admin-btn admin-btn--primary" onClick={() => setOpen(true)}>
+        + Add Section
+      </button>
+    );
+  }
+
+  return (
+    <div className="add-block-form">
+      {error && <div className="inquire-error">{error}</div>}
+      <div className="admin-field">
+        <label className="admin-field__label">Section Title</label>
+        <input className="admin-input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Getting Your Puppy" />
+      </div>
+      <div className="admin-field">
+        <label className="admin-field__label">Icon</label>
+        <select className="admin-input" value={icon} onChange={(e) => setIcon(e.target.value)}>
+          {FAQ_ICON_OPTIONS.map((opt) => (
+            <option key={opt.key} value={opt.key}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button type="button" className="admin-btn admin-btn--primary" onClick={handleAdd} disabled={saving}>
+          {saving ? "Adding..." : "Add"}
+        </button>
+        <button type="button" className="admin-btn" onClick={() => setOpen(false)}>
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ComingSoonCard({ title }: { title: string }) {
   return (
     <div className="profile-card">
@@ -325,11 +522,12 @@ function ComingSoonCard({ title }: { title: string }) {
   );
 }
 
-export default function WebsiteEditorClient({ blocksByPage, faqItems, recentChanges, mediaItems }: WebsiteEditorClientProps) {
+export default function WebsiteEditorClient({ blocksByPage, faqCategories, recentChanges, mediaItems }: WebsiteEditorClientProps) {
   const [activeTab, setActiveTab] = useState<Tab>("content");
   const [selectedPage, setSelectedPage] = useState<ContentPage | null>(null);
 
-  const sectionCount = (page: ContentPage) => (page === "faq" ? faqItems.length : (blocksByPage[page] || []).length);
+  const sectionCount = (page: ContentPage) =>
+    page === "faq" ? faqCategories.reduce((sum, c) => sum + c.items.length, 0) : (blocksByPage[page] || []).length;
 
   return (
     <div>
@@ -371,15 +569,15 @@ export default function WebsiteEditorClient({ blocksByPage, faqItems, recentChan
 
           {selectedPage === "faq" ? (
             <div>
-              {faqItems.length === 0 && (
+              {faqCategories.length === 0 && (
                 <p className="admin-hint" style={{ marginBottom: 12 }}>
-                  No FAQ items yet. Add one below.
+                  No FAQ sections yet. Add one below.
                 </p>
               )}
-              {faqItems.map((item) => (
-                <FaqItemEditor key={item.id} item={item} />
+              {faqCategories.map((category) => (
+                <FaqCategoryEditor key={category.id} category={category} allCategories={faqCategories} />
               ))}
-              <AddFaqForm nextOrder={faqItems.length} />
+              <AddFaqCategoryForm nextOrder={faqCategories.length} />
             </div>
           ) : (
             <div>

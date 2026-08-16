@@ -46,7 +46,7 @@ export default async function WebsitePage() {
         ) : (
           <WebsiteEditorClient
             blocksByPage={overview.blocksByPage}
-            faqItems={overview.faqItems}
+            faqCategories={overview.faqCategories}
             recentChanges={overview.recentChanges}
             mediaItems={overview.mediaItems}
           />
