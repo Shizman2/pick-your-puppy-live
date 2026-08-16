@@ -1,0 +1,17 @@
+{
+  "name": "ThePuppyPlugs Admin",
+  "short_name": "Puppy Plugs Admin",
+  "description": "Admin dashboard for ThePuppyPlugs.com - required for push notifications on iOS.",
+  "start_url": "/admin",
+  "scope": "/admin/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1b7bff",
+  "icons": [
+    {
+      "src": "/logo-icon.png",
+      "sizes": "152x160",
+      "type": "image/png"
+    }
+  ]
+}

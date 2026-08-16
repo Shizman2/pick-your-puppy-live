@@ -3,6 +3,8 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { normalizePhone, normalizeEmail } from "../../../lib/normalize";
 import { findOrCreateContact } from "../../../lib/duplicateMatch";
 import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
+import { sendPushToAdmins, sanitizeForNotification } from "../../../lib/push";
+import type { NotificationEventType } from "../../../lib/pushTypes";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +33,62 @@ function isRateLimited(ip: string): boolean {
   timestamps.push(now);
   submissionLog.set(ip, timestamps);
   return timestamps.length > RATE_LIMIT_MAX;
+}
+
+/**
+ * Maps a saved inquiry to the admin push notification it should trigger,
+ * if any. Returns null for inquiry types Phase 1 doesn't push for (pypl).
+ * Notification bodies intentionally carry only a first name and
+ * puppy/request context - no email, phone, or other customer detail.
+ */
+function buildAdminNotification(
+  inquiryType: string,
+  body: Record<string, unknown>,
+  firstName: string,
+  contactId: string
+): { eventType: NotificationEventType; payload: { title: string; body: string; url: string; tag: string } } | null {
+  const url = `/admin/contacts/${contactId}`;
+  const name = sanitizeForNotification(firstName, 40) || "Someone";
+
+  if (inquiryType === "puppy_reservation") {
+    const puppyName = sanitizeForNotification(body.puppyName as string, 40) || "a puppy";
+    return {
+      eventType: "reservation_request",
+      payload: { title: "New Reservation Request", body: `${name} wants ${puppyName}.`, url, tag: "reservation_request" },
+    };
+  }
+
+  if (inquiryType === "puppy_finder") {
+    const breed = sanitizeForNotification(body.breed as string, 30);
+    const gender = sanitizeForNotification(body.genderPreference as string, 20);
+    const looking = [gender, breed].filter(Boolean).join(" ") || "a puppy";
+    return {
+      eventType: "puppy_finder_request",
+      payload: {
+        title: "New Puppy Finder Request",
+        body: `${name} is looking for ${looking}.`,
+        url,
+        tag: "puppy_finder_request",
+      },
+    };
+  }
+
+  if (inquiryType === "general") {
+    return {
+      eventType: "contact_message",
+      payload: { title: "New Contact Message", body: `New message from ${name}.`, url, tag: "contact_message" },
+    };
+  }
+
+  if (inquiryType === "puppy_interest") {
+    const puppyName = sanitizeForNotification(body.puppyName as string, 40) || "a puppy";
+    return {
+      eventType: "puppy_inquiry",
+      payload: { title: "New Puppy Inquiry", body: `${name} asked about ${puppyName}.`, url, tag: "puppy_inquiry" },
+    };
+  }
+
+  return null;
 }
 
 export async function POST(request: NextRequest) {
@@ -242,6 +300,15 @@ export async function POST(request: NextRequest) {
       updated_at: now,
     })
     .eq("id", contact.id);
+
+  // 7. Admin push notification - alert layer only, never blocks or fails
+  // this response. Every form funnels through this single route, so
+  // this is the one place notifications are triggered (no risk of the
+  // same submission firing more than one push).
+  const notification = buildAdminNotification(inquiryType, body, firstName, contact.id);
+  if (notification) {
+    await sendPushToAdmins(notification.eventType, notification.payload);
+  }
 
   return NextResponse.json({
     success: true,
