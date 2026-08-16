@@ -17,9 +17,9 @@ export interface HomepagePuppy {
 
 /**
  * Same filter/order as /api/public-puppies (show_on_website = true,
- * ordered by display_order then name), trimmed to the fields the
- * homepage's featured strip actually renders, and capped at 4 to
- * match the current live site.
+ * sold excluded, ordered by display_order then name), trimmed to the
+ * fields the homepage's featured strip actually renders, and capped
+ * at 4 to match the current live site.
  */
 export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
   const admin = createAdminClient();
@@ -30,6 +30,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
       "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order"
     )
     .eq("show_on_website", true)
+    .neq("status", "sold")
     .order("display_order", { ascending: true })
     .order("name", { ascending: true })
     .limit(4);

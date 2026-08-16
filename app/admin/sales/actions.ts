@@ -100,7 +100,7 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
 
   const totalPaid = (allPayments || []).reduce((sum, p) => sum + p.amount_cents, 0);
 
-  const { data: puppy } = await admin.from("puppies").select("name, status, sold_at").eq("id", sale.puppy_id).maybeSingle();
+  const { data: puppy } = await admin.from("puppies").select("name, slug, status, sold_at").eq("id", sale.puppy_id).maybeSingle();
 
   // Did THIS payment newly complete THIS sale? (as opposed to logging an
   // extra payment on a sale that was already fully paid). Checked
@@ -146,6 +146,14 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
   revalidatePath(`/admin/sales/${saleId}`);
   revalidatePath(`/admin/puppies/${sale.puppy_id}`);
   revalidatePath("/admin/dashboard");
+
+  // Same public-route revalidation as updatePuppy in
+  // app/admin/puppies/actions.ts - a payment reaching "paid in full"
+  // can flip puppy status to sold here too, so the public listings
+  // need to drop it immediately rather than wait for the ISR timer.
+  revalidatePath("/", "layout");
+  revalidatePath("/puppies");
+  if (puppy?.slug) revalidatePath(`/puppies/${puppy.slug}`);
 
   return { success: true };
 }

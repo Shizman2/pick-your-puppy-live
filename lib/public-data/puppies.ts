@@ -3,13 +3,14 @@ import { createAdminClient } from "../supabase/admin";
 import type { PuppyRow } from "../puppyTypes";
 import type { HomepagePuppy } from "./homepage";
 
-/** Full list for the /puppies grid — same show_on_website filter as the public API. */
+/** Full list for the /puppies grid — same show_on_website filter as the public API, sold puppies excluded from the listing. */
 export async function getAllVisiblePuppies(): Promise<PuppyRow[]> {
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("puppies")
     .select("*")
     .eq("show_on_website", true)
+    .neq("status", "sold")
     .order("display_order", { ascending: true })
     .order("name", { ascending: true });
 

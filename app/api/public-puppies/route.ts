@@ -18,6 +18,7 @@ export async function GET() {
       "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, size, status, badge_tag, description, photo_urls, vet_checked, vaccinated, delivery_available, is_featured, display_order"
     )
     .eq("show_on_website", true)
+    .neq("status", "sold")
     .order("display_order", { ascending: true })
     .order("name", { ascending: true });
 
