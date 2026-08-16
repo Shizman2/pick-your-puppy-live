@@ -111,10 +111,27 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
 
   const admin = createAdminClient();
 
-  const { data: existing } = await admin.from("puppies").select("name, breed, slug").eq("id", puppyId).maybeSingle();
+  const { data: existing } = await admin
+    .from("puppies")
+    .select("name, breed, slug, status")
+    .eq("id", puppyId)
+    .maybeSingle();
   let slug = existing?.slug;
   if (existing && (existing.name !== fields.name.trim() || existing.breed !== fields.breed.trim())) {
     slug = await uniqueSlug(admin, fields.name, fields.breed, puppyId);
+  }
+
+  // sold_at reflects the moment this puppy's status became "sold" -
+  // used for sales-performance metrics (Sold This Week, goal progress),
+  // separate from inventory status and separate from payments/revenue.
+  // Set fresh each time status newly becomes "sold" (including being
+  // re-marked sold after being changed away from it); cleared whenever
+  // status moves away from "sold".
+  let soldAt: string | null | undefined;
+  if (fields.status === "sold" && existing?.status !== "sold") {
+    soldAt = new Date().toISOString();
+  } else if (fields.status !== "sold" && existing?.status === "sold") {
+    soldAt = null;
   }
 
   const { error } = await admin
@@ -128,6 +145,7 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
       date_of_birth: fields.dateOfBirth || null,
       size: fields.size,
       status: fields.status,
+      ...(soldAt !== undefined ? { sold_at: soldAt } : {}),
       badge_tag: fields.badgeTag,
       description: fields.description.trim() || null,
       vet_checked: fields.vetChecked,
@@ -147,6 +165,7 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
 
   revalidatePath("/admin/puppies");
   revalidatePath(`/admin/puppies/${puppyId}`);
+  revalidatePath("/admin/dashboard");
   revalidatePath("/", "layout");
   revalidatePath("/puppies");
   if (slug) revalidatePath(`/puppies/${slug}`);

@@ -100,11 +100,14 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
 
   const totalPaid = (allPayments || []).reduce((sum, p) => sum + p.amount_cents, 0);
 
-  const { data: puppy } = await admin.from("puppies").select("name, status").eq("id", sale.puppy_id).maybeSingle();
+  const { data: puppy } = await admin.from("puppies").select("name, status, sold_at").eq("id", sale.puppy_id).maybeSingle();
 
   if (totalPaid >= sale.sale_price_cents) {
     if (puppy?.status !== "sold") {
-      await admin.from("puppies").update({ status: "sold" }).eq("id", sale.puppy_id);
+      await admin
+        .from("puppies")
+        .update({ status: "sold", sold_at: puppy?.sold_at || new Date().toISOString() })
+        .eq("id", sale.puppy_id);
     }
 
     // The buyer's contact status should reflect that they actually
@@ -133,6 +136,86 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
   revalidatePath("/admin/sales");
   revalidatePath(`/admin/sales/${saleId}`);
   revalidatePath(`/admin/puppies/${sale.puppy_id}`);
+  revalidatePath("/admin/dashboard");
+
+  return { success: true };
+}
+
+export type UpdatePaymentFields = LogPaymentFields;
+
+/**
+ * Corrects an existing payment in place (amount, method, type, date,
+ * note) - never inserts a second row. Deliberately does NOT touch puppy
+ * status or sold_at: those only change via logPayment's own
+ * full-payment check when a NEW payment is logged, never as a side
+ * effect of editing/deleting a past one, so correcting a typo can't
+ * silently flip a puppy back to available or vice versa.
+ */
+export async function updatePayment(paymentId: string, fields: UpdatePaymentFields): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  if (fields.amountCents <= 0) {
+    return { success: false, error: "Enter an amount greater than zero." };
+  }
+
+  const admin = createAdminClient();
+
+  const { data: payment, error: fetchError } = await admin
+    .from("payments")
+    .select("id, sale_id, sales(puppy_id)")
+    .eq("id", paymentId)
+    .maybeSingle();
+
+  if (fetchError) return { success: false, error: fetchError.message };
+  if (!payment) return { success: false, error: "Payment not found." };
+
+  const { error } = await admin
+    .from("payments")
+    .update({
+      amount_cents: fields.amountCents,
+      payment_method: fields.method,
+      payment_type: fields.type,
+      note: fields.note.trim() || null,
+      paid_at: fields.paidAt || new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", paymentId);
+
+  if (error) return { success: false, error: error.message };
+
+  const puppyId = (payment as unknown as { sales: { puppy_id: string } | null }).sales?.puppy_id;
+  revalidatePath("/admin/sales");
+  revalidatePath(`/admin/sales/${payment.sale_id}`);
+  if (puppyId) revalidatePath(`/admin/puppies/${puppyId}`);
+  revalidatePath("/admin/dashboard");
+
+  return { success: true };
+}
+
+/** Removes a payment entirely (duplicate/mistaken entry) - same "no automatic status changes" rule as updatePayment. */
+export async function deletePayment(paymentId: string): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+
+  const { data: payment, error: fetchError } = await admin
+    .from("payments")
+    .select("id, sale_id, sales(puppy_id)")
+    .eq("id", paymentId)
+    .maybeSingle();
+
+  if (fetchError) return { success: false, error: fetchError.message };
+  if (!payment) return { success: false, error: "Payment not found." };
+
+  const { error } = await admin.from("payments").delete().eq("id", paymentId);
+  if (error) return { success: false, error: error.message };
+
+  const puppyId = (payment as unknown as { sales: { puppy_id: string } | null }).sales?.puppy_id;
+  revalidatePath("/admin/sales");
+  revalidatePath(`/admin/sales/${payment.sale_id}`);
+  if (puppyId) revalidatePath(`/admin/puppies/${puppyId}`);
   revalidatePath("/admin/dashboard");
 
   return { success: true };

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { logPayment, cancelSale } from "../../../app/admin/sales/actions";
+import { logPayment, updatePayment, deletePayment, cancelSale } from "../../../app/admin/sales/actions";
 import type { SaleDetail } from "../../../lib/sales";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
 import {
@@ -14,6 +14,7 @@ import {
   SALE_PROGRESS_LABEL,
   type PaymentMethod,
   type PaymentType,
+  type PaymentRow,
 } from "../../../lib/saleTypes";
 
 function todayDateInput(): string {
@@ -22,6 +23,7 @@ function todayDateInput(): string {
 
 export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
   const router = useRouter();
+  const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<PaymentMethod>("cash_app");
   const [type, setType] = useState<PaymentType>("deposit");
@@ -29,10 +31,32 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
   const [paidAt, setPaidAt] = useState(todayDateInput());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   const remaining = Math.max(0, detail.sale.sale_price_cents - detail.totalPaidCents);
 
-  async function handleLogPayment() {
+  function resetForm() {
+    setEditingPaymentId(null);
+    setAmount("");
+    setMethod("cash_app");
+    setType("deposit");
+    setNote("");
+    setPaidAt(todayDateInput());
+    setError(null);
+  }
+
+  function handleStartEdit(payment: PaymentRow) {
+    setOpenMenuId(null);
+    setError(null);
+    setEditingPaymentId(payment.id);
+    setAmount((payment.amount_cents / 100).toString());
+    setMethod(payment.payment_method);
+    setType(payment.payment_type);
+    setNote(payment.note || "");
+    setPaidAt(payment.paid_at.slice(0, 10));
+  }
+
+  async function handleSubmit() {
     setError(null);
     const amountNum = parseFloat(amount);
     if (isNaN(amountNum) || amountNum <= 0) {
@@ -41,13 +65,16 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
     }
 
     setSaving(true);
-    const result = await logPayment(detail.sale.id, {
+    const fields = {
       amountCents: Math.round(amountNum * 100),
       method,
       type,
       note,
       paidAt: new Date(paidAt).toISOString(),
-    });
+    };
+    const result = editingPaymentId
+      ? await updatePayment(editingPaymentId, fields)
+      : await logPayment(detail.sale.id, fields);
     setSaving(false);
 
     if (!result.success) {
@@ -55,8 +82,24 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
       return;
     }
 
-    setAmount("");
-    setNote("");
+    resetForm();
+    router.refresh();
+  }
+
+  async function handleDelete(payment: PaymentRow) {
+    setOpenMenuId(null);
+    const details = `${formatPriceFromCents(payment.amount_cents)} · ${PAYMENT_TYPE_LABEL[payment.payment_type]} · ${
+      PAYMENT_METHOD_LABEL[payment.payment_method]
+    } · ${new Date(payment.paid_at).toLocaleDateString()}`;
+    if (!confirm(`Delete this payment?\n\n${details}\n\nThis will be removed and financial totals will be recalculated.`)) {
+      return;
+    }
+    const result = await deletePayment(payment.id);
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
+    if (editingPaymentId === payment.id) resetForm();
     router.refresh();
   }
 
@@ -92,7 +135,7 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
       </div>
 
       <div className="profile-card">
-        <h2 className="admin-card__title">Log a Payment</h2>
+        <h2 className="admin-card__title">{editingPaymentId ? "Edit Payment" : "Log a Payment"}</h2>
         {error && <div className="inquire-error">{error}</div>}
 
         <div className="admin-field">
@@ -133,9 +176,16 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
           <input className="admin-input" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
 
-        <button type="button" className="admin-btn admin-btn--primary" onClick={handleLogPayment} disabled={saving}>
-          {saving ? "Saving..." : "Log payment"}
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleSubmit} disabled={saving}>
+            {saving ? "Saving..." : editingPaymentId ? "Save Changes" : "Log payment"}
+          </button>
+          {editingPaymentId && (
+            <button type="button" className="admin-btn" onClick={resetForm} disabled={saving}>
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="profile-card">
@@ -152,7 +202,36 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
                   {p.note ? ` · ${p.note}` : ""}
                 </div>
               </div>
-              <div className="payment-row-meta">{new Date(p.paid_at).toLocaleDateString()}</div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <div className="payment-row-meta">{new Date(p.paid_at).toLocaleDateString()}</div>
+                <div className="payment-row-actions">
+                  <button
+                    type="button"
+                    className="payment-row-menu-btn"
+                    onClick={() => setOpenMenuId(openMenuId === p.id ? null : p.id)}
+                    aria-label="Payment actions"
+                  >
+                    •••
+                  </button>
+                  {openMenuId === p.id && (
+                    <>
+                      <div className="payment-row-menu-backdrop" onClick={() => setOpenMenuId(null)} />
+                      <div className="payment-row-menu">
+                        <button type="button" className="payment-row-menu-item" onClick={() => handleStartEdit(p)}>
+                          Edit Payment
+                        </button>
+                        <button
+                          type="button"
+                          className="payment-row-menu-item payment-row-menu-item--danger"
+                          onClick={() => handleDelete(p)}
+                        >
+                          Delete Payment
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           ))
         )}

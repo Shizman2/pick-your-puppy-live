@@ -21,6 +21,7 @@ export interface PaymentRow {
   note: string | null;
   paid_at: string;
   created_at: string;
+  updated_at: string;
 }
 
 export const PAYMENT_METHOD_OPTIONS: PaymentMethod[] = [
