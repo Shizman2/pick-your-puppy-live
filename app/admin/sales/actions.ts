@@ -102,12 +102,21 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
 
   const { data: puppy } = await admin.from("puppies").select("name, status, sold_at").eq("id", sale.puppy_id).maybeSingle();
 
+  // Did THIS payment newly complete THIS sale? (as opposed to logging an
+  // extra payment on a sale that was already fully paid). Checked
+  // independently of puppy.status - a puppy can already be "sold" from
+  // a prior/cancelled sale when it gets resold, and that resale's
+  // completion still needs to refresh sold_at to the real, new date.
+  const totalPaidBeforeThisPayment = totalPaid - fields.amountCents;
+  const justCompletedThisSale =
+    totalPaidBeforeThisPayment < sale.sale_price_cents && totalPaid >= sale.sale_price_cents;
+
   if (totalPaid >= sale.sale_price_cents) {
-    if (puppy?.status !== "sold") {
-      await admin
-        .from("puppies")
-        .update({ status: "sold", sold_at: puppy?.sold_at || new Date().toISOString() })
-        .eq("id", sale.puppy_id);
+    const puppyUpdates: Record<string, unknown> = {};
+    if (puppy?.status !== "sold") puppyUpdates.status = "sold";
+    if (justCompletedThisSale) puppyUpdates.sold_at = new Date().toISOString();
+    if (Object.keys(puppyUpdates).length > 0) {
+      await admin.from("puppies").update(puppyUpdates).eq("id", sale.puppy_id);
     }
 
     // The buyer's contact status should reflect that they actually

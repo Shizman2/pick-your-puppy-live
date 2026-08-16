@@ -6,6 +6,7 @@ import Link from "next/link";
 import { logPayment, updatePayment, deletePayment, cancelSale } from "../../../app/admin/sales/actions";
 import type { SaleDetail } from "../../../lib/sales";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
+import { formatDateOnly } from "../../../lib/formatDate";
 import {
   PAYMENT_METHOD_OPTIONS,
   PAYMENT_METHOD_LABEL,
@@ -90,7 +91,7 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
     setOpenMenuId(null);
     const details = `${formatPriceFromCents(payment.amount_cents)} · ${PAYMENT_TYPE_LABEL[payment.payment_type]} · ${
       PAYMENT_METHOD_LABEL[payment.payment_method]
-    } · ${new Date(payment.paid_at).toLocaleDateString()}`;
+    } · ${formatDateOnly(payment.paid_at)}`;
     if (!confirm(`Delete this payment?\n\n${details}\n\nThis will be removed and financial totals will be recalculated.`)) {
       return;
     }
@@ -203,7 +204,7 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
                 </div>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <div className="payment-row-meta">{new Date(p.paid_at).toLocaleDateString()}</div>
+                <div className="payment-row-meta">{formatDateOnly(p.paid_at)}</div>
                 <div className="payment-row-actions">
                   <button
                     type="button"
