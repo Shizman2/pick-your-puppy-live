@@ -108,6 +108,9 @@ export async function uploadMediaAsset(formData: FormData): Promise<ActionResult
 }
 
 export async function getAssetUsageCount(assetId: string): Promise<number> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return 0;
+
   const admin = createAdminClient();
   const { count } = await admin
     .from("media_placements")
