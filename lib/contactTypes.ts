@@ -1,4 +1,5 @@
 import type { ActivityRow } from "./activityTypes";
+import type { PuppyFinderProposalRow } from "./puppyFinderTypes";
 
 export type ContactStatus =
   | "new"
@@ -86,6 +87,13 @@ export interface NoteRow {
  * job, not the profile's. See lib/contactProfile.ts.
  */
 
+/** One of the contact's own past Puppy Finder inquiries, shaped for the "link this proposal to a request" picker. */
+export interface PuppyFinderInquiryOption {
+  id: string;
+  breed: string | null;
+  created_at: string;
+}
+
 export interface ContactProfileData {
   contact: ContactRow;
   badges: ContactBadge[];
@@ -93,4 +101,6 @@ export interface ContactProfileData {
   notes: NoteRow[];
   activities: ActivityRow[];
   unreadCount: number;
+  puppyFinderProposals: PuppyFinderProposalRow[];
+  puppyFinderInquiries: PuppyFinderInquiryOption[];
 }

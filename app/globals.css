@@ -503,6 +503,33 @@ button {
   margin-bottom: 12px;
 }
 
+.login-password-wrap {
+  position: relative;
+}
+
+.login-password-wrap .admin-input {
+  padding-right: 42px;
+}
+
+.login-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.login-password-toggle:hover {
+  color: var(--color-text);
+}
+
 /* Responsive: tablet and desktop adaptations of the mobile-first design.
    Content, order, and copy stay identical — only spacing, sizing, and a
    grounding card wrapper change on larger viewports. */

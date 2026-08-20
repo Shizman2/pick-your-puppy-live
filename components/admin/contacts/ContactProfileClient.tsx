@@ -6,6 +6,7 @@ import { STATUS_LABEL } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate } from "../../../lib/formatRelative";
 import { updateContactStatus, addContactNote } from "../../../app/admin/contacts/actions";
 import ContactActivities from "./ContactActivities";
+import PuppyFinderProposalsCard from "./PuppyFinderProposalsCard";
 
 const STATUS_OPTIONS: ContactStatus[] = [
   "new",
@@ -204,6 +205,12 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
           {savedMessage && <span className="admin-hint">{savedMessage}</span>}
         </div>
       </div>
+
+      <PuppyFinderProposalsCard
+        contactId={contact.id}
+        proposals={profile.puppyFinderProposals}
+        finderInquiries={profile.puppyFinderInquiries}
+      />
 
       <ContactActivities contactId={contact.id} initialActivities={profile.activities} />
 

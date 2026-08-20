@@ -1,0 +1,129 @@
+.pf-status-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.pf-status-pill {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 50px;
+  color: #fff;
+}
+.pf-status-pill--proposed {
+  background: #6b7280;
+}
+.pf-status-pill--selected {
+  background: #f59e0b;
+}
+.pf-status-pill--deposit_confirmed {
+  background: #22c55e;
+}
+
+.pf-new-proposal {
+  background: #f9fafb;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pf-proposal-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pf-proposal-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f9fafb;
+  border-radius: 10px;
+}
+.pf-proposal-link {
+  font-weight: 700;
+  font-size: 13.5px;
+  color: #111827;
+}
+.pf-proposal-link:hover {
+  color: #e0261f;
+}
+
+.pf-option-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border-radius: 12px;
+  margin-bottom: 10px;
+}
+.pf-option-summary--withdrawn {
+  opacity: 0.6;
+}
+.pf-option-summary-photo {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pf-option-summary-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pf-option-summary-photo-placeholder {
+  font-size: 22px;
+}
+.pf-option-summary-body {
+  flex: 1;
+  min-width: 0;
+}
+.pf-option-summary-title {
+  font-weight: 800;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.pf-tag {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 9px;
+  border-radius: 50px;
+  color: #fff;
+}
+.pf-tag--selected {
+  background: #22c55e;
+}
+.pf-tag--withdrawn {
+  background: #6b7280;
+}
+.pf-option-summary-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.pf-option-form {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+}

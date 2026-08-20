@@ -3,6 +3,8 @@ import { createAdminClient } from "./supabase/admin";
 import type { ContactProfileData, ContactRow, NoteRow, TimelineEventRow } from "./contactTypes";
 import type { ActivityRow } from "./activityTypes";
 import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./contactBadges";
+import type { PuppyFinderProposalRow } from "./puppyFinderTypes";
+import { createPuppyFinderReadClient } from "./puppyFinderAccess";
 
 /**
  * Fetches everything the Contact Profile page shows: the contact
@@ -33,6 +35,8 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     { data: notesData, error: notesError },
     { data: unreadData, error: unreadError },
     { data: activitiesData, error: activitiesError },
+    { data: proposalsData, error: proposalsError },
+    { data: finderInquiriesData, error: finderInquiriesError },
   ] = await Promise.all([
     admin
       .from("inquiries")
@@ -60,6 +64,22 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
       .select("*")
       .eq("contact_id", contactId)
       .order("created_at", { ascending: false }),
+    // Uses a dedicated no-store client, not the shared `admin` one above:
+    // proposal deletes/status changes happen from a different page (the
+    // proposal editor) than this one, so this exact fetch can't rely on
+    // a revalidatePath call elsewhere to keep it fresh - see the comment
+    // on createPuppyFinderReadClient for the full explanation.
+    createPuppyFinderReadClient()
+      .from("puppy_finder_proposals")
+      .select("*")
+      .eq("contact_id", contactId)
+      .order("created_at", { ascending: false }),
+    admin
+      .from("inquiries")
+      .select("id, breed, created_at")
+      .eq("contact_id", contactId)
+      .eq("inquiry_type", "puppy_finder")
+      .order("created_at", { ascending: false }),
   ]);
 
   if (inquiriesError) throw new Error(inquiriesError.message);
@@ -68,6 +88,8 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
   if (notesError) throw new Error(notesError.message);
   if (unreadError) throw new Error(unreadError.message);
   if (activitiesError) throw new Error(activitiesError.message);
+  if (proposalsError) throw new Error(proposalsError.message);
+  if (finderInquiriesError) throw new Error(finderInquiriesError.message);
 
   const inquiries = (inquiriesData || []) as InquiryForBadges[];
   const interestRows = (interestsData || []) as { inquiry_id: string | null; is_active: boolean }[];
@@ -80,5 +102,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     notes: (notesData || []) as NoteRow[],
     activities: (activitiesData || []) as ActivityRow[],
     unreadCount: (unreadData || []).length,
+    puppyFinderProposals: (proposalsData || []) as PuppyFinderProposalRow[],
+    puppyFinderInquiries: finderInquiriesData || [],
   };
 }

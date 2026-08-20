@@ -180,14 +180,22 @@ export async function POST(request: NextRequest) {
   } else if (inquiryType === "puppy_finder") {
     inquiryColumns.breed = body.breed || null;
     inquiryColumns.gender_preference = body.genderPreference || null;
-    // Fixed price point, not a user-entered range: if they confirmed
-    // the $1,500 starting price works for them, record that as the
-    // floor. budget_max is intentionally left null - there's no
-    // upper-bound question in this version of the form.
-    inquiryColumns.budget_min = body.budgetConfirmed === "yes" ? 1500 : null;
+    // The current form sends a budget RANGE string (e.g. "1500-2000"),
+    // not a yes/no confirmation of a fixed floor - map it to real
+    // min/max numbers. "flexible" (and anything unrecognized) falls
+    // through to null/null, same as "no preference".
+    const budgetRangeMap: Record<string, [number, number | null]> = {
+      "1250-1500": [1250, 1500],
+      "1500-2000": [1500, 2000],
+      "2000+": [2000, null],
+    };
+    const budgetRange = budgetRangeMap[body.budgetRange as string];
+    inquiryColumns.budget_min = budgetRange ? budgetRange[0] : null;
+    inquiryColumns.budget_max = budgetRange ? budgetRange[1] : null;
     inquiryColumns.timeframe = body.timeframe || null;
+    // The form sends this as "yes" / "no" / "not_sure", not a boolean.
     inquiryColumns.delivery_needed =
-      typeof body.deliveryNeeded === "boolean" ? body.deliveryNeeded : null;
+      body.deliveryNeeded === "yes" ? true : body.deliveryNeeded === "no" ? false : null;
     interestLabel = `Puppy Finder: ${body.breed || "any breed"}`;
   } else if (inquiryType === "pypl") {
     // Look up the current event, if any, so PYPL registrations link

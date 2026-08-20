@@ -69,7 +69,11 @@ export async function updateNotificationPreferences(
   prefs: Partial<
     Pick<
       AdminNotificationPreferencesRow,
-      "notify_reservation_requests" | "notify_puppy_finder_requests" | "notify_contact_messages" | "notify_puppy_inquiries"
+      | "notify_reservation_requests"
+      | "notify_puppy_finder_requests"
+      | "notify_contact_messages"
+      | "notify_puppy_inquiries"
+      | "notify_puppy_finder_selections"
     >
   >
 ): Promise<ActionResult> {

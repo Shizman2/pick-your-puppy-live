@@ -57,7 +57,11 @@ function getDeviceLabel(): string {
 const PREFERENCE_TOGGLES: {
   key: keyof Pick<
     AdminNotificationPreferencesRow,
-    "notify_reservation_requests" | "notify_puppy_finder_requests" | "notify_contact_messages" | "notify_puppy_inquiries"
+    | "notify_reservation_requests"
+    | "notify_puppy_finder_requests"
+    | "notify_contact_messages"
+    | "notify_puppy_inquiries"
+    | "notify_puppy_finder_selections"
   >;
   label: string;
 }[] = [
@@ -65,6 +69,7 @@ const PREFERENCE_TOGGLES: {
   { key: "notify_puppy_finder_requests", label: "Puppy Finder Requests" },
   { key: "notify_contact_messages", label: "Contact Messages" },
   { key: "notify_puppy_inquiries", label: "Puppy Inquiries" },
+  { key: "notify_puppy_finder_selections", label: "Puppy Finder Selections" },
 ];
 
 const DEFAULT_PREFS = {
@@ -72,6 +77,7 @@ const DEFAULT_PREFS = {
   notify_puppy_finder_requests: true,
   notify_contact_messages: true,
   notify_puppy_inquiries: true,
+  notify_puppy_finder_selections: true,
 };
 
 export default function NotificationSettingsClient({
