@@ -159,7 +159,11 @@
 /* Primary button */
 .pp-btn-primary {
   background: var(--pp-blue);
-  color: #fff;
+  /* !important because ".pp-body a { color: inherit }" above has higher
+     selector specificity (class+tag) than ".pp-btn-primary" (class only)
+     and would otherwise silently win, leaving anchor-tag buttons with
+     inherited (often dark) text instead of the intended white. */
+  color: #fff !important;
   font-size: 14px;
   font-weight: 800;
   padding: 13px 20px;

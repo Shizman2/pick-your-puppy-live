@@ -216,47 +216,6 @@ export default async function HomePage() {
       </section>
 
       <BundleSection />
-
-      <div className="trust-strip">
-        <div className="trust-badge">
-          <div className="trust-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 2L3 7v5c0 5.25 3.75 10.15 9 11.35C17.25 22.15 21 17.25 21 12V7L12 2z"
-                fill="#1B7BFF"
-                opacity=".15"
-                stroke="#1B7BFF"
-                strokeWidth="1.5"
-              />
-              <path d="M9 12l2 2 4-4" stroke="#1B7BFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="trust-title">Real Puppies</div>
-          <div className="trust-desc">All from trusted breeders.</div>
-        </div>
-        <div className="trust-badge">
-          <div className="trust-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="3" width="14" height="18" rx="3" fill="#1B7BFF" opacity=".15" stroke="#1B7BFF" strokeWidth="1.5" />
-              <path d="M12 8v8M8 12h8" stroke="#1B7BFF" strokeWidth="2" strokeLinecap="round" />
-            </svg>
-          </div>
-          <div className="trust-title">Health Records</div>
-          <div className="trust-desc">Vaccines & vet certified.</div>
-        </div>
-        <div className="trust-badge">
-          <div className="trust-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <rect x="1" y="8" width="14" height="9" rx="2" fill="#1B7BFF" opacity=".2" stroke="#1B7BFF" strokeWidth="1.5" />
-              <path d="M15 10h4l3 4v3h-7V10z" fill="#1B7BFF" stroke="#1B7BFF" strokeWidth="1" strokeLinejoin="round" />
-              <circle cx="6" cy="18" r="2" fill="#1B7BFF" />
-              <circle cx="18" cy="18" r="2" fill="#1B7BFF" />
-            </svg>
-          </div>
-          <div className="trust-title">Delivery</div>
-          <div className="trust-desc">Safe delivery nationwide.</div>
-        </div>
-      </div>
     </>
   );
 }

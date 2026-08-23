@@ -295,10 +295,16 @@
 }
 .pypl-countdown-date {
   text-align: center;
-  font-weight: 700;
-  font-size: 13px;
-  color: #5b7a9e;
-  margin-bottom: 4px;
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--pp-blue);
+  margin-bottom: 8px;
+}
+@media (max-width: 360px) {
+  .pypl-countdown-date {
+    font-size: 18px;
+  }
 }
 .pypl-countdown-eyebrow {
   text-align: center;
