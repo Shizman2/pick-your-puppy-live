@@ -9,14 +9,32 @@ import PlacementPreviewOverlay from "../../components/public-site/PlacementPrevi
 
 export const revalidate = 60;
 
+/**
+ * Highlights "Better Way" in blue within the hero headline, matching the
+ * approved design. The headline itself stays a single freeform CMS text
+ * field (no new content-block keys) - this is purely a render-time
+ * accent, not a data-model change. If the text is ever edited to no
+ * longer contain that phrase, it just renders as plain text.
+ */
+function renderHeroHeadline(text: string) {
+  const highlight = "Better Way";
+  const idx = text.indexOf(highlight);
+  if (idx === -1) return text;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="blue">{highlight}</span>
+      {text.slice(idx + highlight.length)}
+    </>
+  );
+}
+
 const FALLBACK: Record<string, string> = {
-  hero_heading_line1: "Find Your",
-  hero_heading_line2: "New Bestie",
-  hero_subtext: "Real puppies. Clear prices.\nSimple help from start to home.",
+  hero_heading_line1: "There's A Better Way To Find Your New Puppy.",
   featured_heading: "Available Puppies",
-  finder_heading_line1: "Can't Find the",
+  finder_heading_line1: "Don't See the",
   finder_heading_line2: "Puppy You Want?",
-  finder_subtext: "Let us help you find your perfect match! Tell us what you're looking for & we'll notify you when the perfect puppy arrives.",
+  finder_subtext: "Tell us what you're looking for.\nWe'll find the right puppy for you.",
 };
 
 export default async function HomePage() {
@@ -60,19 +78,7 @@ export default async function HomePage() {
       <section className="hero" id="home">
         <div className="hero-top">
           <div className="hero-text">
-            <h1>
-              {text.hero_heading_line1}
-              <br />
-              <span className="blue">{text.hero_heading_line2}</span>
-            </h1>
-            <p>
-              {text.hero_subtext.split("\n").map((line, i) => (
-                <span key={i}>
-                  {line}
-                  <br />
-                </span>
-              ))}
-            </p>
+            <h1>{renderHeroHeadline(text.hero_heading_line1)}</h1>
             <div className="hero-btns">
               <a className="pp-btn-primary" href="/puppies">
                 View Puppies ›
@@ -115,7 +121,14 @@ export default async function HomePage() {
               <br />
               <span className="blue">{text.finder_heading_line2}</span>
             </h2>
-            <p>{text.finder_subtext}</p>
+            <p>
+              {text.finder_subtext.split("\n").map((line, i) => (
+                <span key={i}>
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </p>
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img className="finder-promo-img" src="/finder-puppy.webp" width={282} height={370} alt="Cute puppy" />

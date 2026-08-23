@@ -13,7 +13,6 @@
   font-weight: 900;
   line-height: 1.18;
   margin-bottom: 10px;
-  white-space: nowrap;
 }
 .hero-text h1 .blue {
   color: var(--pp-blue);
