@@ -68,7 +68,7 @@ label {
 }
 .timeline-step {
   position: relative;
-  margin-bottom: 18px;
+  margin-bottom: 10px;
 }
 .timeline-step:last-child {
   margin-bottom: 0;
@@ -76,7 +76,8 @@ label {
 .timeline-num {
   position: absolute;
   left: -46px;
-  top: 18px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 30px;
   height: 30px;
   background: var(--pp-blue);
@@ -92,44 +93,84 @@ label {
 }
 .timeline-card {
   background: #fff;
-  border-radius: 22px;
-  padding: 20px 18px;
-  box-shadow: 0 6px 20px rgba(17, 24, 39, 0.07);
+  border-radius: 16px;
+  padding: 14px 16px;
+  box-shadow: 0 4px 14px rgba(17, 24, 39, 0.06);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
 }
 .timeline-icon {
-  width: 46px;
-  height: 46px;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
   background: var(--pp-blue-light);
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
+}
+.timeline-card-text {
+  flex: 1;
+  min-width: 0;
 }
 .timeline-title {
-  font-size: 21px;
+  font-size: 16px;
   font-weight: 900;
   line-height: 1.25;
-  margin-bottom: 5px;
+  margin-bottom: 2px;
 }
 .timeline-desc {
-  font-size: 17.5px;
+  font-size: 13.5px;
   color: var(--pp-muted);
   font-weight: 600;
-  line-height: 1.5;
+  line-height: 1.4;
+}
+
+/* ── PHASE GROUP LABELS ── */
+.phase-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 20px 0 10px;
+}
+.phase-label-row:first-child {
+  margin-top: 2px;
+}
+.phase-label-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--pp-blue);
+}
+.phase-label-text {
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--pp-blue);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.phase-label-line {
+  flex: 1;
+  min-width: 16px;
+  height: 1.5px;
+  background: var(--pp-blue);
+  opacity: 0.45;
 }
 
 /* ── CONCIERGE VALUE + FEE ── */
 .concierge-card {
   background: var(--pp-blue-light);
   border-radius: var(--pp-radius);
-  padding: 22px;
+  padding: 18px;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 14px;
 }
 .concierge-main {
-  flex: 1.4;
+  flex: 1;
   min-width: 0;
 }
 .concierge-icon {
@@ -161,23 +202,60 @@ label {
   background: #c4d9fb;
   flex-shrink: 0;
 }
-.concierge-fee {
+.concierge-included {
   flex: 1;
   min-width: 0;
   text-align: center;
 }
-.concierge-fee-label {
-  font-size: 15px;
+.concierge-included-label {
+  font-size: 18px;
   font-weight: 800;
   color: var(--pp-text);
-  line-height: 1.35;
+  line-height: 1.25;
   margin-bottom: 8px;
 }
-.concierge-fee-amount {
-  font-size: 38px;
+.concierge-included-badge {
+  font-size: 24px;
   font-weight: 900;
   color: var(--pp-blue);
-  line-height: 1;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+.concierge-included-rule {
+  width: 36px;
+  height: 2px;
+  background: var(--pp-blue);
+  opacity: 0.45;
+  margin: 0 auto 8px;
+}
+.concierge-included-note-bold {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: var(--pp-text);
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+.concierge-included-note-blue {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--pp-blue);
+  line-height: 1.3;
+}
+
+/* Below this width, stack the two-column concierge box so neither side
+   gets cramped or overflows on very narrow phones. */
+@media (max-width: 360px) {
+  .concierge-card {
+    flex-direction: column;
+  }
+  .concierge-divider {
+    width: auto;
+    height: 1.5px;
+    align-self: stretch;
+  }
 }
 
 .form-card {
@@ -223,6 +301,20 @@ label {
   font-size: 12.5px;
   font-weight: 600;
   line-height: 1.4;
+}
+.checkbox-row-main {
+  display: block;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pp-text);
+}
+.checkbox-row-sub {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.4;
+  margin-top: 2px;
 }
 .checkbox-row input {
   width: auto;

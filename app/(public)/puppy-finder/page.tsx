@@ -8,6 +8,21 @@ export const metadata = {
   title: "Puppy Finder Concierge – ThePuppyPlugs.com",
 };
 
+function PersonIcon({ size = 22 }: { size?: number }) {
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
+      <circle cx="12" cy="8" r="3.5" stroke="#1B7BFF" strokeWidth="1.8" />
+      <path
+        d="M4.5 20c1.5-4 4.5-6 7.5-6s6 2 7.5 6"
+        stroke="#1B7BFF"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function ClipboardIcon() {
   return (
     <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
@@ -18,9 +33,9 @@ function ClipboardIcon() {
   );
 }
 
-function SearchIcon() {
+function SearchIcon({ size = 22 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
       <circle cx="10" cy="10" r="6" stroke="#1B7BFF" strokeWidth="1.8" />
       <path d="M15 15l5 5" stroke="#1B7BFF" strokeWidth="1.8" strokeLinecap="round" />
     </svg>
@@ -37,9 +52,9 @@ function PhotoIcon() {
   );
 }
 
-function HeartIcon() {
+function HeartIcon({ size = 22 }: { size?: number }) {
   return (
-    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+    <svg viewBox="0 0 24 24" width={size} height={size} fill="none">
       <path
         d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21z"
         stroke="#1B7BFF"
@@ -94,14 +109,63 @@ function ShieldStarIcon() {
   );
 }
 
-const STEPS = [
-  { title: "Tell Us What You Want", desc: "Share the details of the puppy you’re looking for.", icon: <ClipboardIcon /> },
-  { title: "We Search", desc: "We find puppies that match.", icon: <SearchIcon /> },
-  { title: "Review Your Options", desc: "See photos, videos, and pricing.", icon: <PhotoIcon /> },
-  { title: "Choose & Reserve", desc: "Pick your puppy and reserve it.", icon: <HeartIcon /> },
-  { title: "We Pick Up Your Puppy", desc: "We coordinate pickup for you.", icon: <CarIcon /> },
-  { title: "Bring Your Puppy Home", desc: "Choose local pickup or delivery.", icon: <HouseIcon /> },
+interface TimelineStep {
+  title: string;
+  desc: string;
+  icon: React.ReactNode;
+}
+
+interface TimelinePhase {
+  label: string;
+  icon: React.ReactNode;
+  steps: TimelineStep[];
+}
+
+const PHASES: TimelinePhase[] = [
+  {
+    label: "YOU TELL US",
+    icon: <PersonIcon size={16} />,
+    steps: [
+      { title: "Tell Us What You Want", desc: "Tell us exactly what you're looking for.", icon: <ClipboardIcon /> },
+    ],
+  },
+  {
+    label: "WE DO THE WORK",
+    icon: <SearchIcon size={16} />,
+    steps: [
+      { title: "We Search", desc: "We find puppies that match your request.", icon: <SearchIcon /> },
+      { title: "Review Your Options", desc: "See your personalized puppy matches.", icon: <PhotoIcon /> },
+    ],
+  },
+  {
+    label: "YOU CHOOSE — WE HANDLE THE REST",
+    icon: <HeartIcon size={16} />,
+    steps: [
+      { title: "Choose & Reserve", desc: "Choose your puppy and reserve it.", icon: <HeartIcon /> },
+      { title: "We Pick Up Your Puppy", desc: "We coordinate pickup and handle the details.", icon: <CarIcon /> },
+      { title: "Bring Your Puppy Home", desc: "Choose local pickup or delivery.", icon: <HouseIcon /> },
+    ],
+  },
 ];
+
+// Flattened once at module scope so each step keeps one continuous 1-6
+// number across phase groups, without a mutable counter inside the render.
+type TimelineItem =
+  | { kind: "phase"; label: string; icon: React.ReactNode }
+  | { kind: "step"; number: number; title: string; desc: string; icon: React.ReactNode };
+
+const TIMELINE_ITEMS: TimelineItem[] = (() => {
+  const items: TimelineItem[] = [];
+  let stepNumber = 0;
+  for (const phase of PHASES) {
+    items.push({ kind: "phase", label: phase.label, icon: phase.icon });
+    for (const step of phase.steps) {
+      stepNumber += 1;
+      items.push({ kind: "step", number: stepNumber, title: step.title, desc: step.desc, icon: step.icon });
+    }
+  }
+  return items;
+})();
 
 export default async function PuppyFinderPage() {
   let heroImage = "/concierge-hero-puppy.jpg";
@@ -135,16 +199,26 @@ export default async function PuppyFinderPage() {
         <div className="timeline-wrap">
           <div className="timeline-rail" />
 
-          {STEPS.map((step, i) => (
-            <div className="timeline-step" key={step.title}>
-              <div className="timeline-num">{i + 1}</div>
-              <div className="timeline-card">
-                <div className="timeline-icon">{step.icon}</div>
-                <div className="timeline-title">{step.title}</div>
-                <div className="timeline-desc">{step.desc}</div>
+          {TIMELINE_ITEMS.map((item) =>
+            item.kind === "phase" ? (
+              <div className="phase-label-row" key={`phase-${item.label}`}>
+                <span className="phase-label-icon">{item.icon}</span>
+                <span className="phase-label-text">{item.label}</span>
+                <span className="phase-label-line" />
               </div>
-            </div>
-          ))}
+            ) : (
+              <div className="timeline-step" key={item.title}>
+                <div className="timeline-num">{item.number}</div>
+                <div className="timeline-card">
+                  <div className="timeline-icon">{item.icon}</div>
+                  <div className="timeline-card-text">
+                    <div className="timeline-title">{item.title}</div>
+                    <div className="timeline-desc">{item.desc}</div>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
         </div>
       </section>
 
@@ -156,14 +230,17 @@ export default async function PuppyFinderPage() {
             </div>
             <div className="concierge-title">We Handle Everything For You</div>
             <div className="concierge-desc">
-              From sourcing and due diligence to pickup and delivery &mdash; we handle the details so you can enjoy
-              the experience.
+              Sourcing. Due diligence. Coordination. Pickup. Delivery. We handle the details so you can enjoy the
+              experience.
             </div>
           </div>
           <div className="concierge-divider" />
-          <div className="concierge-fee">
-            <div className="concierge-fee-label">Puppy Finder Concierge Fee</div>
-            <div className="concierge-fee-amount">$250</div>
+          <div className="concierge-included">
+            <div className="concierge-included-label">Puppy Finder Concierge</div>
+            <div className="concierge-included-badge">INCLUDED</div>
+            <div className="concierge-included-rule" />
+            <div className="concierge-included-note-bold">No additional fee.</div>
+            <div className="concierge-included-note-blue">It&apos;s all part of the service.</div>
           </div>
         </div>
       </section>

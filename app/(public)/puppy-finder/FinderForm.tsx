@@ -20,7 +20,7 @@ export default function FinderForm() {
   const [altBreed, setAltBreed] = useState("");
   const [delivery, setDelivery] = useState("");
   const [notes, setNotes] = useState("");
-  const [pypl, setPypl] = useState(false);
+  const [readyToSearch, setReadyToSearch] = useState(false);
   const [consent, setConsent] = useState(false);
   const [website, setWebsite] = useState(""); // honeypot
 
@@ -60,6 +60,10 @@ export default function FinderForm() {
       setError("Please enter your first name and at least a phone number or email.");
       return;
     }
+    if (!readyToSearch) {
+      setError("Please confirm you're ready to start your Puppy Finder search before submitting.");
+      return;
+    }
     if (!consent) {
       setError("Please check the box consenting to be contacted before submitting.");
       return;
@@ -87,7 +91,7 @@ export default function FinderForm() {
           considerAnotherBreed: altBreed,
           deliveryNeeded: delivery,
           notes: notes.trim(),
-          notifyForPYPL: pypl,
+          readyToStartSearch: readyToSearch,
           consentToContact: consent,
           website,
           sourceUrl: typeof window !== "undefined" ? window.location.href : "/puppy-finder",
@@ -256,19 +260,30 @@ export default function FinderForm() {
 
       <div className="form-field" style={{ marginTop: 16 }}>
         <label className="checkbox-row">
-          <input type="checkbox" checked={pypl} onChange={(e) => setPypl(e.target.checked)} />
-          Notify me when a matching puppy will be featured on Pick Your Puppy Live.
+          <input
+            type="checkbox"
+            checked={readyToSearch}
+            onChange={(e) => setReadyToSearch(e.target.checked)}
+            required
+          />
+          <span>
+            <span className="checkbox-row-main">Yes, I&rsquo;m ready to start my Puppy Finder search.</span>
+            <span className="checkbox-row-sub">
+              I understand The Puppy Plugs will personally search for 3&ndash;4 puppy options based on what
+              I&rsquo;m looking for.
+            </span>
+          </span>
         </label>
       </div>
       <div className="form-field">
         <label className="checkbox-row">
-          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-          I agree to be contacted by phone, text, or email about my puppy search.
+          <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} required />
+          I agree to be contacted by phone, text, or email about my Puppy Finder request.
         </label>
       </div>
 
       <button className="pp-btn-primary" onClick={handleSubmit} disabled={submitting}>
-        {submitting ? "Submitting..." : "🐾 Start My Puppy Search"}
+        {submitting ? "Submitting..." : "START MY PUPPY SEARCH →"}
       </button>
       <div style={{ textAlign: "center", fontSize: 11, color: "var(--pp-muted)", fontWeight: 600, marginTop: 10 }}>
         🔒 Your information is safe and secure.
