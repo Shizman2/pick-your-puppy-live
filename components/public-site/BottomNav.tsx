@@ -1,10 +1,6 @@
 "use client";
 
-export default function BottomNav({
-  onMenuClick,
-}: {
-  onMenuClick: () => void;
-}) {
+export default function BottomNav() {
   return (
     <nav className="pp-bottom-nav">
       <a className="pp-nav-item" href="/">
@@ -52,17 +48,6 @@ export default function BottomNav({
         </svg>
         Live
       </a>
-      <button className="pp-nav-item" onClick={onMenuClick}>
-        <svg viewBox="0 0 24 24" fill="none">
-          <path
-            d="M3 6h18M3 12h18M3 18h18"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-        </svg>
-        Menu
-      </button>
     </nav>
   );
 }

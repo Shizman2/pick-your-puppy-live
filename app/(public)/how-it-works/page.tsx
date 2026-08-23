@@ -156,9 +156,7 @@ export default function HowItWorksPage() {
       <div className="hiw-paths">
         <div className="hiw-path-card">
           <div className="hiw-path-header">
-            <div className="hiw-path-icon">
-              <PawIcon color="var(--pp-blue)" />
-            </div>
+            <div className="hiw-path-icon">1</div>
             <div>
               <div className="hiw-path-title">Available Puppies</div>
               <div className="hiw-path-tag" style={{ color: "var(--pp-blue)" }}>
@@ -182,9 +180,7 @@ export default function HowItWorksPage() {
 
         <div className="hiw-path-card">
           <div className="hiw-path-header">
-            <div className="hiw-path-icon" style={{ background: "var(--pp-blue-light)" }}>
-              <SearchIcon color="var(--pp-blue-dark)" />
-            </div>
+            <div className="hiw-path-icon">2</div>
             <div>
               <div className="hiw-path-title">Puppy Finder</div>
               <div className="hiw-path-tag" style={{ color: "var(--pp-blue-dark)" }}>

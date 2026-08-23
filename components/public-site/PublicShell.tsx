@@ -27,7 +27,7 @@ export default function PublicShell({ children }: { children: React.ReactNode })
         onClose={() => setNavOpen(false)}
       />
       {children}
-      <BottomNav onMenuClick={() => setNavOpen((v) => !v)} />
+      <BottomNav />
     </div>
   );
 }
