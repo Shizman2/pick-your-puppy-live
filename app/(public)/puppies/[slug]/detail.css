@@ -140,74 +140,60 @@
   margin-bottom: 4px;
 }
 
-/* Healthy, Checked & Ready */
-.healthy-section {
-  margin: 24px 0 4px;
-  background: var(--pp-blue-light);
-  border-radius: var(--pp-radius);
-  padding: 16px;
-}
-.healthy-title {
-  font-size: 15px;
-  font-weight: 900;
-  margin-bottom: 12px;
-  text-align: center;
-}
-.healthy-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-}
-.healthy-pill {
-  background: #fff;
-  border-radius: 50px;
-  padding: 8px 12px;
-  font-size: 12px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-/* Reserve CTA */
+/* CTA cluster: Call the Seller / I'm Interested / Reserve This Puppy */
 .detail-cta {
   padding: 20px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* Question form */
-.question-collapsed {
-  margin: 20px 20px 30px;
-  background: #f9fafb;
-  border-radius: var(--pp-radius);
-  padding: 16px 18px;
+/* Call the Seller - the visually strongest CTA, per approved spec */
+.call-seller-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.question-collapsed-text {
-  font-size: 12.5px;
-  color: var(--pp-muted);
-  font-weight: 600;
-  line-height: 1.4;
-  margin: 0;
-}
-.question-collapsed-btn {
-  flex-shrink: 0;
-  background: none;
-  border: 1.5px solid var(--pp-blue);
-  color: var(--pp-blue);
-  font-size: 12.5px;
+  justify-content: center;
+  gap: 8px;
+  background: #16a34a;
+  color: #fff;
+  font-size: 15px;
   font-weight: 800;
-  padding: 9px 16px;
+  padding: 15px 20px;
   border-radius: 50px;
-  cursor: pointer;
+  text-decoration: none;
+  width: 100%;
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  animation: call-seller-pulse 1.8s ease-in-out infinite;
+}
+@keyframes call-seller-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow: 0 6px 20px rgba(22, 163, 74, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .call-seller-btn {
+    animation: none;
+  }
+}
+
+/* "I'm Interested" collapsed state - a clean button matching its
+   Call the Seller / Reserve siblings (reuses .pp-btn-outline), now
+   positioned between them instead of its own explanatory card. */
+.im-interested-btn {
+  font-size: 15px;
 }
 
 .question-form {
-  margin: 20px 20px 30px;
+  margin: 0;
   background: #f9fafb;
   border-radius: var(--pp-radius);
   padding: 18px;
@@ -261,7 +247,7 @@
   font-weight: 700;
 }
 .question-success {
-  margin: 20px 20px 30px;
+  margin: 0;
   background: #e8fff3;
   border: 1.5px solid #22c55e;
   border-radius: var(--pp-radius);
@@ -272,4 +258,60 @@
   font-size: 14px;
   font-weight: 700;
   color: #15803d;
+}
+
+/* Share This Puppy - compact secondary utility card, deliberately lower
+   visual weight than the Call/Interested/Reserve CTAs above. */
+.share-puppy {
+  margin: 18px 20px 0;
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  padding: 16px;
+}
+.share-puppy-label {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+.share-puppy-row {
+  display: flex;
+  justify-content: space-around;
+}
+.share-icon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.share-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.share-icon-circle--link {
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+}
+.share-icon-circle--sms {
+  background: #22c55e;
+}
+.share-icon-circle--messenger {
+  background: var(--pp-blue);
+}
+.share-icon-circle--facebook {
+  background: #1877f2;
+}
+.share-icon-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pp-muted);
 }

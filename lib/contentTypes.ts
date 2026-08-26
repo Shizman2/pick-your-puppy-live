@@ -1,4 +1,4 @@
-export type ContentPage = "homepage" | "contact" | "faq" | "puppies" | "footer" | "puppy_finder";
+export type ContentPage = "homepage" | "contact" | "faq" | "puppies" | "footer" | "puppy_finder" | "settings";
 export type ContentType = "text" | "image";
 
 export interface ContentBlockRow {

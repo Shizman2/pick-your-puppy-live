@@ -1,9 +1,11 @@
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import NotificationSettingsClient from "../../../components/admin/settings/NotificationSettingsClient";
+import SellerSettingsClient from "../../../components/admin/settings/SellerSettingsClient";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getSellerPhoneNumber } from "../../../lib/content";
 import type { AdminNotificationPreferencesRow, PushSubscriptionRow } from "../../../lib/pushTypes";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
@@ -14,6 +16,7 @@ export const dynamic = "force-dynamic";
 export default async function SettingsPage() {
   const userEmail = await getAdminUserEmail();
   const unreadMessageCount = await getUnreadMessageCount();
+  const sellerPhone = await getSellerPhoneNumber();
 
   const supabase = createServerSupabaseClient();
   const {
@@ -55,6 +58,8 @@ export default async function SettingsPage() {
             <p className="contacts-subtitle">Manage admin notifications for ThePuppyPlugs.com.</p>
           </div>
         </div>
+
+        <SellerSettingsClient initialPhone={sellerPhone} />
 
         {loadError ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>

@@ -94,6 +94,49 @@ export async function updateNotificationPreferences(
   return { success: true };
 }
 
+/**
+ * Seller Phone Number - a single global setting reusing the existing
+ * content_blocks CMS mechanism (page: "settings"), rather than a new
+ * settings table. Upserted by section_key since there's exactly one
+ * row for this setting.
+ */
+export async function updateSellerPhoneNumber(phone: string): Promise<ActionResult> {
+  const auth = await requireAdminUserId();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const value = phone.trim() || null;
+
+  const { data: existing, error: fetchError } = await admin
+    .from("content_blocks")
+    .select("id")
+    .eq("page", "settings")
+    .eq("section_key", "seller_phone_number")
+    .maybeSingle();
+
+  if (fetchError) return { success: false, error: fetchError.message };
+
+  const { error } = existing
+    ? await admin
+        .from("content_blocks")
+        .update({ text_value: value, updated_at: new Date().toISOString() })
+        .eq("id", existing.id)
+    : await admin.from("content_blocks").insert({
+        page: "settings",
+        section_key: "seller_phone_number",
+        label: "Seller Phone Number",
+        content_type: "text",
+        text_value: value,
+        display_order: 1,
+      });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
+  return { success: true };
+}
+
 export async function sendTestNotification(): Promise<ActionResult> {
   const auth = await requireAdminUserId();
   if (!auth.ok) return { success: false, error: auth.error };

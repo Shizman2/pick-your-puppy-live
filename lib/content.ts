@@ -15,6 +15,24 @@ export async function getContentBlocksForPage(page: ContentPage): Promise<Conten
   return (data || []) as ContentBlockRow[];
 }
 
+/**
+ * The seller's phone number is a single global setting, not per-page
+ * copy - it lives in the "settings" content_blocks bucket (reusing the
+ * existing CMS mechanism) and is managed from the admin Settings page,
+ * not the Website Editor. Returns null if it hasn't been configured
+ * yet, so callers can hide the Call the Seller button instead of
+ * rendering a broken tel: link.
+ */
+export async function getSellerPhoneNumber(): Promise<string | null> {
+  try {
+    const blocks = await getContentBlocksForPage("settings");
+    const block = blocks.find((b) => b.section_key === "seller_phone_number");
+    return block?.text_value?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
 export interface RecentChange {
   id: string;
   label: string;

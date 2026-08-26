@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import "./detail.css";
 import { getPuppyBySlug } from "../../../../lib/public-data/puppies";
+import { getSellerPhoneNumber } from "../../../../lib/content";
 import { STATUS_DISPLAY_LABEL, formatPriceFromCents } from "../../../../lib/puppyTypes";
 import PuppyGallery from "./PuppyGallery";
-import HealthyCheckedReady from "./HealthyCheckedReady";
 import PuppyQuestionForm from "./PuppyQuestionForm";
+import CallSellerButton from "./CallSellerButton";
+import ShareThisPuppy from "./ShareThisPuppy";
 import BundleSection from "../../../../components/public-site/BundleSection";
 import PlacementSlot from "../../../../components/public-site/PlacementSlot";
 import PlacementPreviewOverlay from "../../../../components/public-site/PlacementPreviewOverlay";
@@ -27,7 +29,7 @@ const STATUS_COLOR: Record<string, string> = {
 };
 
 export default async function PuppyDetailPage({ params }: { params: { slug: string } }) {
-  const puppy = await getPuppyBySlug(params.slug);
+  const [puppy, sellerPhone] = await Promise.all([getPuppyBySlug(params.slug), getSellerPhoneNumber()]);
   if (!puppy) notFound();
 
   let ageDisplay = "—";
@@ -41,6 +43,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
 
   const statusLabel = STATUS_DISPLAY_LABEL[puppy.status];
   const statusColor = STATUS_COLOR[puppy.status] || STATUS_COLOR.available;
+  const puppyName = puppy.name || puppy.breed;
 
   return (
     <>
@@ -51,12 +54,12 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         ← Back to Puppies
       </a>
 
-      <PuppyGallery photos={puppy.photo_urls || []} alt={puppy.name || puppy.breed} />
+      <PuppyGallery photos={puppy.photo_urls || []} alt={puppyName} />
 
       <div className="detail-info">
         <div className="detail-header">
           <div>
-            <div className="detail-name">{puppy.name || puppy.breed}</div>
+            <div className="detail-name">{puppyName}</div>
             <div className="detail-breed">{puppy.breed}</div>
           </div>
           <div className="detail-price">
@@ -103,25 +106,20 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
 
         {puppy.description && (
           <>
-            <div className="about-title">About {puppy.name || puppy.breed}</div>
+            <div className="about-title">About {puppyName}</div>
             <p className="detail-desc">{puppy.description}</p>
           </>
         )}
-      </div>
-
-      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
-      <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
-
-      <BundleSection />
-
-      <div className="detail-info">
-        <HealthyCheckedReady />
       </div>
 
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
 
       <div className="detail-cta">
+        <CallSellerButton phone={sellerPhone} />
+
+        <PuppyQuestionForm puppyId={puppy.id} puppyName={puppyName} breed={puppy.breed} slug={puppy.slug} />
+
         {puppy.status === "sold" ? (
           <button className="pp-btn-primary" disabled style={{ opacity: 0.5, cursor: "default" }}>
             This Puppy Has Been Sold
@@ -137,7 +135,12 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         )}
       </div>
 
-      <PuppyQuestionForm puppyId={puppy.id} puppyName={puppy.name || puppy.breed} breed={puppy.breed} slug={puppy.slug} />
+      <ShareThisPuppy puppyName={puppyName} slug={puppy.slug} />
+
+      <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
+      <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
+
+      <BundleSection />
     </>
   );
 }
