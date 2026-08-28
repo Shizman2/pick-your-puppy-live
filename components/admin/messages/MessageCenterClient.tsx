@@ -55,6 +55,13 @@ function inquiryFieldLines(inquiry: MessageCenterData["detailsByContactId"][stri
   return lines;
 }
 
+/** Same digit-stripping convention as CallSellerButton, so tel: links behave consistently everywhere. */
+function telHref(phone: string | null): string | null {
+  if (!phone) return null;
+  const digitsOnly = phone.replace(/[^\d+]/g, "");
+  return digitsOnly ? `tel:${digitsOnly}` : null;
+}
+
 const INQUIRY_TYPE_LABEL: Record<string, string> = {
   puppy_interest: "Puppy Interest",
   puppy_finder: "Puppy Finder",
@@ -207,8 +214,14 @@ export default function MessageCenterClient({ list, detailsByContactId, initialS
                         </Link>
                       </div>
                       <div className="msgcenter-thread-sub">
-                        {selectedDetail.contact.phone || "No phone"} ·{" "}
-                        {selectedDetail.contact.email || "No email"}
+                        {telHref(selectedDetail.contact.phone) ? (
+                          <a href={telHref(selectedDetail.contact.phone)!} className="msgcenter-tel-link">
+                            {selectedDetail.contact.phone}
+                          </a>
+                        ) : (
+                          selectedDetail.contact.phone || "No phone"
+                        )}{" "}
+                        · {selectedDetail.contact.email || "No email"}
                       </div>
                     </div>
                     <button

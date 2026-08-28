@@ -168,6 +168,11 @@
   margin-top: 2px;
 }
 
+.msgcenter-tel-link {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .msgcenter-section-title {
   font-weight: 700;
   font-size: 13px;
