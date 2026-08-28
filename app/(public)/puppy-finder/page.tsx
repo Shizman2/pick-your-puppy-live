@@ -1,7 +1,9 @@
 import "./puppy-finder.css";
+import "../../../components/public-site/shareButtons.css";
 import FinderForm from "./FinderForm";
 import PlacementSlot from "../../../components/public-site/PlacementSlot";
 import PlacementPreviewOverlay from "../../../components/public-site/PlacementPreviewOverlay";
+import ShareButtons from "../../../components/public-site/ShareButtons";
 import { getContentBlocksForPage } from "../../../lib/content";
 
 export const metadata = {
@@ -257,6 +259,13 @@ export default async function PuppyFinderPage() {
         <PlacementPreviewOverlay pageType="puppy_finder" slot="puppy_finder_above_form" />
         <FinderForm />
       </section>
+
+      <ShareButtons
+        heading="Share This Page"
+        smsMessage="Check out our Puppy Finder"
+        shareText="Check out our Puppy Finder!"
+        shareTitle="Puppy Finder – ThePuppyPlugs.com"
+      />
     </>
   );
 }

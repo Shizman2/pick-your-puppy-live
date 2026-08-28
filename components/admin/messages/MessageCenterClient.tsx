@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { MessageCenterData, MessageCenterListItem } from "../../../lib/messageCenter";
 import { STATUS_LABEL, STATUS_CLASS } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate } from "../../../lib/formatRelative";
-import { markConversationRead } from "../../../app/admin/messages/actions";
+import { markConversationRead, deleteConversation } from "../../../app/admin/messages/actions";
 
-interface Props extends MessageCenterData {}
+/** Desktop split-pane still auto-shows the most recent conversation for
+ * convenience, matching the CSS breakpoint that switches to the mobile
+ * single-column layout (see messageCenter.css). Mobile deliberately
+ * shows the list first instead - see handleInitialSelection below. */
+const DESKTOP_BREAKPOINT_QUERY = "(min-width: 861px)";
+
+interface Props extends MessageCenterData {
+  /** contactId from the /admin/messages/[contactId] route, or null on the plain /admin/messages list route. */
+  initialSelectedId: string | null;
+}
 
 /** Pretty-prints an inquiry's promoted fields for the detail card. */
 function inquiryFieldLines(inquiry: MessageCenterData["detailsByContactId"][string]["inquiries"][number]): string[] {
@@ -53,12 +63,15 @@ const INQUIRY_TYPE_LABEL: Record<string, string> = {
   puppy_reservation: "Puppy Reservation",
 };
 
-export default function MessageCenterClient({ list, detailsByContactId }: Props) {
-  const [selectedId, setSelectedId] = useState<string | null>(list[0]?.contactId ?? null);
+export default function MessageCenterClient({ list, detailsByContactId, initialSelectedId }: Props) {
+  const router = useRouter();
+  const [selectedId, setSelectedId] = useState<string | null>(initialSelectedId);
   const [localList, setLocalList] = useState<MessageCenterListItem[]>(list);
+  const [deletingConversation, setDeletingConversation] = useState(false);
 
   function handleSelect(contactId: string) {
     setSelectedId(contactId);
+    router.push(`/admin/messages/${contactId}`);
 
     const item = localList.find((i) => i.contactId === contactId);
     if (item && item.unreadCount > 0) {
@@ -71,15 +84,46 @@ export default function MessageCenterClient({ list, detailsByContactId }: Props)
     }
   }
 
+  function handleBack() {
+    setSelectedId(null);
+    router.push("/admin/messages");
+  }
+
+  async function handleDeleteConversation(contactId: string) {
+    if (!confirm("Delete this conversation? This action cannot be undone.")) return;
+
+    setDeletingConversation(true);
+    const result = await deleteConversation(contactId);
+    setDeletingConversation(false);
+
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
+
+    setLocalList((prev) => prev.filter((i) => i.contactId !== contactId));
+    setSelectedId(null);
+    router.push("/admin/messages");
+  }
+
   const selectedDetail = selectedId ? detailsByContactId[selectedId] : null;
 
   useEffect(() => {
-    const hashId = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
-    if (hashId && detailsByContactId[hashId]) {
-      handleSelect(hashId);
+    // A direct link (e.g. from Recent Activity or a contact profile)
+    // already resolved server-side via initialSelectedId - nothing to do.
+    if (initialSelectedId) return;
+    if (typeof window === "undefined") return;
+
+    // On the plain /admin/messages list route, preserve the existing
+    // desktop convenience of auto-showing the most recent conversation
+    // in the split pane. On mobile-width screens, deliberately leave it
+    // unselected so the list shows first instead of jumping straight
+    // into a conversation.
+    if (window.matchMedia(DESKTOP_BREAKPOINT_QUERY).matches) {
+      setSelectedId(list[0]?.contactId ?? null);
     }
-    // Only run once on mount - this is meant to catch the initial
-    // deep link, not fight with subsequent manual selections.
+    // Only run once on mount - a one-time default, not meant to fight
+    // with the user's subsequent manual selections or react to resizing.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -100,7 +144,7 @@ export default function MessageCenterClient({ list, detailsByContactId }: Props)
       <div className="contacts-page-header">
         <h1 className="contacts-title">Messages</h1>
         <p className="contacts-subtitle">
-          {list.reduce((sum, i) => sum + i.unreadCount, 0)} unread
+          {localList.reduce((sum, i) => sum + i.unreadCount, 0)} unread
         </p>
       </div>
 
@@ -149,24 +193,32 @@ export default function MessageCenterClient({ list, detailsByContactId }: Props)
           ) : (
             <>
               <div className="msgcenter-thread-col">
-                <button
-                  type="button"
-                  className="msgcenter-back-btn"
-                  onClick={() => setSelectedId(null)}
-                >
+                <button type="button" className="msgcenter-back-btn" onClick={handleBack}>
                   ← Back to Messages
                 </button>
 
                 <div className="msgcenter-thread-header">
-                  <div className="msgcenter-thread-name">
-                    <Link href={`/admin/contacts/${selectedDetail.contact.id}`}>
-                      {selectedDetail.contact.display_name ||
-                        `${selectedDetail.contact.first_name} ${selectedDetail.contact.last_name || ""}`.trim()}
-                    </Link>
-                  </div>
-                  <div className="msgcenter-thread-sub">
-                    {selectedDetail.contact.phone || "No phone"} ·{" "}
-                    {selectedDetail.contact.email || "No email"}
+                  <div className="msgcenter-thread-header-row">
+                    <div>
+                      <div className="msgcenter-thread-name">
+                        <Link href={`/admin/contacts/${selectedDetail.contact.id}`}>
+                          {selectedDetail.contact.display_name ||
+                            `${selectedDetail.contact.first_name} ${selectedDetail.contact.last_name || ""}`.trim()}
+                        </Link>
+                      </div>
+                      <div className="msgcenter-thread-sub">
+                        {selectedDetail.contact.phone || "No phone"} ·{" "}
+                        {selectedDetail.contact.email || "No email"}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="admin-btn admin-btn--danger"
+                      disabled={deletingConversation}
+                      onClick={() => handleDeleteConversation(selectedDetail.contact.id)}
+                    >
+                      {deletingConversation ? "Deleting…" : "Delete Conversation"}
+                    </button>
                   </div>
                 </div>
 

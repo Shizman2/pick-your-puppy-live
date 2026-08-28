@@ -1,7 +1,10 @@
 import Logo from "./Logo";
 import CountdownTimer from "./CountdownTimer";
 import PrivacyNotice from "./PrivacyNotice";
+import ShareButtons from "../public-site/ShareButtons";
 import type { EventRow } from "../../lib/eventTypes";
+import "../../styles/public-tokens.css";
+import "../public-site/shareButtons.css";
 
 interface CountdownScreenProps {
   event: EventRow;
@@ -28,6 +31,8 @@ export default function CountdownScreen({
   showDateDisplay,
   showTimeDisplay,
 }: CountdownScreenProps) {
+  const showName = event.event_title || "Pick Your Puppy Live";
+
   return (
     <div className="page-shell">
       <div className="page-inner">
@@ -61,6 +66,13 @@ export default function CountdownScreen({
         </div>
 
         <PrivacyNotice message={event.private_waiting_message} />
+
+        <ShareButtons
+          heading="Share This Page"
+          smsMessage={`Check out ${showName}`}
+          shareText={`Check out ${showName}!`}
+          shareTitle={showName}
+        />
       </div>
     </div>
   );

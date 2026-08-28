@@ -107,42 +107,44 @@ export default async function DashboardPage() {
                   {activeSales.length === 0 ? (
                     <p className="admin-hint">No active sales right now.</p>
                   ) : (
-                    <table className="dash2-sales-table">
-                      <thead>
-                        <tr>
-                          <th>Puppy</th>
-                          <th>Breed</th>
-                          <th>Customer</th>
-                          <th>Status</th>
-                          <th>Price</th>
-                          <th>Paid</th>
-                          <th>Balance</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {activeSales.slice(0, 6).map((item) => (
-                          <tr key={item.sale.id}>
-                            <td>
-                              <Link href={`/admin/sales/${item.sale.id}`}>{item.puppyName}</Link>
-                            </td>
-                            <td>{item.breed}</td>
-                            <td>{item.contactName}</td>
-                            <td>
-                              <span className={`dash2-progress-pill ${item.progress}`}>
-                                {SALE_PROGRESS_LABEL[item.progress]}
-                              </span>
-                            </td>
-                            <td>{formatPriceFromCents(item.sale.sale_price_cents)}</td>
-                            <td>{formatPriceFromCents(item.totalPaidCents)}</td>
-                            <td>{formatPriceFromCents(Math.max(0, item.sale.sale_price_cents - item.totalPaidCents))}</td>
+                    <div className="dash2-table-scroll">
+                      <table className="dash2-sales-table">
+                        <thead>
+                          <tr>
+                            <th>Puppy</th>
+                            <th>Breed</th>
+                            <th>Customer</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                            <th>Paid</th>
+                            <th>Balance</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody>
+                          {activeSales.slice(0, 6).map((item) => (
+                            <tr key={item.sale.id}>
+                              <td>
+                                <Link href={`/admin/sales/${item.sale.id}`}>{item.puppyName}</Link>
+                              </td>
+                              <td>{item.breed}</td>
+                              <td>{item.contactName}</td>
+                              <td>
+                                <span className={`dash2-progress-pill ${item.progress}`}>
+                                  {SALE_PROGRESS_LABEL[item.progress]}
+                                </span>
+                              </td>
+                              <td>{formatPriceFromCents(item.sale.sale_price_cents)}</td>
+                              <td>{formatPriceFromCents(item.totalPaidCents)}</td>
+                              <td>{formatPriceFromCents(Math.max(0, item.sale.sale_price_cents - item.totalPaidCents))}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   )}
                 </div>
 
-                <div className="dash2-grid" style={{ gridTemplateColumns: "1fr 1fr", marginBottom: 0 }}>
+                <div className="dash2-grid" style={{ gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", marginBottom: 0 }}>
                   <div className="dash2-section">
                     <div className="dash2-section-header">
                       <div className="dash2-section-title">Puppy Status Overview</div>
@@ -232,7 +234,14 @@ export default async function DashboardPage() {
                           <Link href={`/admin/contacts/${item.contactId}`} style={{ color: "#111827", fontWeight: 700, textDecoration: "none" }}>
                             {item.contactName}
                           </Link>{" "}
-                          — {item.description}
+                          —{" "}
+                          {item.relatedHref ? (
+                            <Link href={item.relatedHref} style={{ color: "#374151", textDecoration: "underline" }}>
+                              {item.description}
+                            </Link>
+                          ) : (
+                            <span>{item.description}</span>
+                          )}
                           <div className="dash2-activity-time">{formatRelativeTime(item.createdAt)}</div>
                         </div>
                       </div>

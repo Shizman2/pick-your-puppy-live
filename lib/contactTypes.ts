@@ -31,6 +31,7 @@ export interface ContactRow {
   last_activity_at: string | null;
   next_follow_up_at: string | null;
   needs_duplicate_review: boolean;
+  is_archived: boolean;
   created_at: string;
   updated_at: string;
 }

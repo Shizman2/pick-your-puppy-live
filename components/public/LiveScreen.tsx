@@ -1,6 +1,9 @@
 import Logo from "./Logo";
 import PrivacyNotice from "./PrivacyNotice";
+import ShareButtons from "../public-site/ShareButtons";
 import type { EventRow } from "../../lib/eventTypes";
+import "../../styles/public-tokens.css";
+import "../public-site/shareButtons.css";
 
 const DASH_ANGLES = [0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330];
 
@@ -16,6 +19,8 @@ interface LiveScreenProps {
  * before the server confirmed the show had started.
  */
 export default function LiveScreen({ event, liveShowLink }: LiveScreenProps) {
+  const showName = event.event_title || "Pick Your Puppy Live";
+
   return (
     <div className="page-shell">
       <div className="page-inner">
@@ -67,6 +72,13 @@ export default function LiveScreen({ event, liveShowLink }: LiveScreenProps) {
         <div className="live-divider" />
 
         <PrivacyNotice message={event.private_live_message} />
+
+        <ShareButtons
+          heading="Share This Page"
+          smsMessage={`Check out ${showName}`}
+          shareText={`Check out ${showName}!`}
+          shareTitle={showName}
+        />
       </div>
     </div>
   );

@@ -1,10 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import type { ContactProfileData, ContactStatus, InterestLevel } from "../../../lib/contactTypes";
 import { STATUS_LABEL } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate } from "../../../lib/formatRelative";
-import { updateContactStatus, addContactNote } from "../../../app/admin/contacts/actions";
+import {
+  updateContactStatus,
+  addContactNote,
+  archiveContact,
+  deleteContactCompletely,
+} from "../../../app/admin/contacts/actions";
 import ContactActivities from "./ContactActivities";
 import PuppyFinderProposalsCard from "./PuppyFinderProposalsCard";
 
@@ -39,6 +45,7 @@ function toDateInputValue(iso: string | null): string {
 
 export default function ContactProfileClient({ profile }: { profile: ContactProfileData }) {
   const { contact } = profile;
+  const router = useRouter();
 
   const [status, setStatus] = useState<ContactStatus>(contact.status);
   const [interestLevel, setInterestLevel] = useState<InterestLevel | "">(
@@ -53,6 +60,12 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
   const [isPending, startTransition] = useTransition();
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [noteError, setNoteError] = useState<string | null>(null);
+
+  const [isArchiving, setIsArchiving] = useState(false);
+  const [showDeleteAllPanel, setShowDeleteAllPanel] = useState(false);
+  const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
+  const [isDeletingAll, setIsDeletingAll] = useState(false);
+  const [dangerError, setDangerError] = useState<string | null>(null);
 
   function handleSaveStatus() {
     startTransition(async () => {
@@ -85,6 +98,36 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
       ]);
       setNoteBody("");
     });
+  }
+
+  async function handleArchiveContact() {
+    if (
+      !confirm("Delete this contact? Related sales and historical business records will be preserved.")
+    ) {
+      return;
+    }
+    setDangerError(null);
+    setIsArchiving(true);
+    const result = await archiveContact(contact.id);
+    setIsArchiving(false);
+    if (!result.success) {
+      setDangerError(result.error);
+      return;
+    }
+    router.push("/admin/contacts");
+  }
+
+  async function handleDeleteEverything() {
+    if (deleteAllConfirmText !== "DELETE") return;
+    setDangerError(null);
+    setIsDeletingAll(true);
+    const result = await deleteContactCompletely(contact.id);
+    setIsDeletingAll(false);
+    if (!result.success) {
+      setDangerError(result.error);
+      return;
+    }
+    router.push("/admin/contacts");
   }
 
   return (
@@ -223,7 +266,7 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
             ? `${profile.unreadCount} unread message${profile.unreadCount === 1 ? "" : "s"}.`
             : "No unread messages."}
         </p>
-        <a href={`/admin/messages#${contact.id}`} className="admin-btn">
+        <a href={`/admin/messages/${contact.id}`} className="admin-btn">
           Open in Message Center →
         </a>
       </div>
@@ -287,6 +330,88 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
               </li>
             ))}
           </ul>
+        )}
+      </div>
+
+      {/* Danger Zone */}
+      <div className="profile-card profile-danger-zone">
+        <h2 className="admin-card__title">Danger Zone</h2>
+
+        <div className="profile-danger-row">
+          <div>
+            <strong>Delete Contact</strong>
+            <p className="admin-hint">
+              Archives this contact and removes them from the Contacts list. Sales, payments, and
+              historical records are preserved.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="admin-btn admin-btn--danger"
+            onClick={handleArchiveContact}
+            disabled={isArchiving}
+          >
+            {isArchiving ? "Deleting…" : "Delete Contact"}
+          </button>
+        </div>
+
+        <div className="profile-danger-row">
+          <div>
+            <strong>Delete Everything Related</strong>
+            <p className="admin-hint">
+              Permanently deletes this contact along with every message, inquiry, note, Puppy
+              Finder proposal, and any linked sale and payments. This can&apos;t be undone. For
+              removing fake or test customers only.
+            </p>
+          </div>
+          {!showDeleteAllPanel ? (
+            <button
+              type="button"
+              className="admin-btn admin-btn--danger"
+              onClick={() => setShowDeleteAllPanel(true)}
+            >
+              Delete Everything Related
+            </button>
+          ) : (
+            <div className="profile-danger-confirm">
+              <label className="admin-field__label">Type DELETE to confirm</label>
+              <input
+                type="text"
+                className="admin-input"
+                value={deleteAllConfirmText}
+                onChange={(e) => setDeleteAllConfirmText(e.target.value)}
+                placeholder="DELETE"
+                autoComplete="off"
+              />
+              <div className="profile-danger-confirm-actions">
+                <button
+                  type="button"
+                  className="admin-btn"
+                  onClick={() => {
+                    setShowDeleteAllPanel(false);
+                    setDeleteAllConfirmText("");
+                  }}
+                  disabled={isDeletingAll}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="admin-btn admin-btn--danger"
+                  onClick={handleDeleteEverything}
+                  disabled={deleteAllConfirmText !== "DELETE" || isDeletingAll}
+                >
+                  {isDeletingAll ? "Deleting…" : "Delete Everything Related"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {dangerError && (
+          <p className="admin-hint" style={{ color: "var(--color-accent)", marginTop: 10 }}>
+            {dangerError}
+          </p>
         )}
       </div>
     </div>

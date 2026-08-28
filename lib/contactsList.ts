@@ -17,6 +17,7 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
   const { data: contactsData, error: contactsError } = await admin
     .from("contacts")
     .select("*")
+    .eq("is_archived", false)
     .order("created_at", { ascending: false });
 
   if (contactsError) throw new Error(contactsError.message);

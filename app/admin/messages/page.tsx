@@ -34,7 +34,7 @@ export default async function MessagesPage() {
           </div>
         </div>
       ) : (
-        <MessageCenterClient list={data.list} detailsByContactId={data.detailsByContactId} />
+        <MessageCenterClient list={data.list} detailsByContactId={data.detailsByContactId} initialSelectedId={null} />
       )}
     </AdminSidebar>
   );

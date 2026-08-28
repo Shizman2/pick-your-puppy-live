@@ -1,12 +1,13 @@
 import { notFound } from "next/navigation";
 import "./detail.css";
+import "../../../../components/public-site/shareButtons.css";
 import { getPuppyBySlug } from "../../../../lib/public-data/puppies";
 import { getSellerPhoneNumber } from "../../../../lib/content";
 import { STATUS_DISPLAY_LABEL, formatPriceFromCents } from "../../../../lib/puppyTypes";
 import PuppyGallery from "./PuppyGallery";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import CallSellerButton from "./CallSellerButton";
-import ShareThisPuppy from "./ShareThisPuppy";
+import ShareButtons from "../../../../components/public-site/ShareButtons";
 import BundleSection from "../../../../components/public-site/BundleSection";
 import PlacementSlot from "../../../../components/public-site/PlacementSlot";
 import PlacementPreviewOverlay from "../../../../components/public-site/PlacementPreviewOverlay";
@@ -135,7 +136,12 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         )}
       </div>
 
-      <ShareThisPuppy puppyName={puppyName} slug={puppy.slug} />
+      <ShareButtons
+        heading="Share This Puppy"
+        smsMessage={`Check out ${puppyName}`}
+        shareText={`Check out ${puppyName}!`}
+        shareTitle={puppyName}
+      />
 
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />

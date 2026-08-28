@@ -195,3 +195,97 @@ export async function addContact(fields: NewContactFields): Promise<AddContactRe
 
   return { success: true, contactId: newContact.id, matchedExisting: false };
 }
+
+/**
+ * "Delete Contact" - archives rather than deletes. Never touches
+ * inquiries/messages/notes/activities/timeline/sales, so it can never
+ * conflict with the `sales.contact_id` foreign key (confirmed RESTRICT
+ * via live testing - a contact with a linked sale can't be hard-deleted
+ * anyway). An archived contact just stops showing up in
+ * getContactsListData() and the Message Center list.
+ */
+export async function archiveContact(contactId: string): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("contacts")
+    .update({ is_archived: true, updated_at: new Date().toISOString() })
+    .eq("id", contactId);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/contacts");
+  revalidatePath("/admin/messages");
+  revalidatePath("/admin/dashboard");
+  return { success: true };
+}
+
+/**
+ * "Delete Everything Related" - the one and only path that is allowed
+ * to remove a sale. Deletes in FK-safe order (both sales.contact_id and
+ * payments.sale_id are RESTRICT, confirmed via live testing, so payments
+ * must go before sales, and sales before the contact): payments -> sales
+ * -> contact. Deleting the contact itself then cascades everything else
+ * (inquiries, interests, conversations, messages, notes, activities,
+ * timeline_events, contact_tags, puppy_finder_proposals/options) via the
+ * `on delete cascade` foreign keys already in the schema. Puppies are
+ * never deleted - only reverted to "available" if this was the puppy's
+ * only sale, so a cleaned-up test sale doesn't leave real inventory
+ * stuck hidden from the public site.
+ */
+export async function deleteContactCompletely(contactId: string): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+
+  const { data: sales, error: salesFetchError } = await admin
+    .from("sales")
+    .select("id, puppy_id")
+    .eq("contact_id", contactId);
+
+  if (salesFetchError) return { success: false, error: salesFetchError.message };
+
+  const saleIds = (sales || []).map((s) => s.id);
+  const puppyIds = Array.from(new Set((sales || []).map((s) => s.puppy_id)));
+
+  if (saleIds.length > 0) {
+    const { error: paymentsError } = await admin.from("payments").delete().in("sale_id", saleIds);
+    if (paymentsError) return { success: false, error: paymentsError.message };
+
+    const { error: salesError } = await admin.from("sales").delete().in("id", saleIds);
+    if (salesError) return { success: false, error: salesError.message };
+  }
+
+  const revivedPuppySlugs: string[] = [];
+  for (const puppyId of puppyIds) {
+    const { data: remainingSales } = await admin.from("sales").select("id").eq("puppy_id", puppyId).limit(1);
+    if (remainingSales && remainingSales.length > 0) continue;
+
+    const { data: puppy } = await admin.from("puppies").select("status, slug").eq("id", puppyId).maybeSingle();
+    if (puppy?.status === "sold") {
+      await admin.from("puppies").update({ status: "available", sold_at: null }).eq("id", puppyId);
+      if (puppy.slug) revivedPuppySlugs.push(puppy.slug);
+    }
+  }
+
+  const { error: contactError } = await admin.from("contacts").delete().eq("id", contactId);
+  if (contactError) return { success: false, error: contactError.message };
+
+  revalidatePath("/admin/contacts");
+  revalidatePath("/admin/messages");
+  revalidatePath("/admin/dashboard");
+  revalidatePath("/admin/sales");
+  for (const puppyId of puppyIds) {
+    revalidatePath(`/admin/puppies/${puppyId}`);
+  }
+  revalidatePath("/", "layout");
+  revalidatePath("/puppies");
+  for (const slug of revivedPuppySlugs) {
+    revalidatePath(`/puppies/${slug}`);
+  }
+
+  return { success: true };
+}

@@ -1,0 +1,59 @@
+/* Share This Puppy / Share This Page - compact secondary utility card,
+   shared by ShareButtons.tsx across the puppy detail page and the
+   general public pages that reuse it. Deliberately lower visual weight
+   than a page's primary CTA. Moved here from the puppy detail page's
+   own detail.css so every page importing this component gets the exact
+   same styling from one place, instead of duplicating these rules. */
+.share-puppy {
+  margin: 18px 20px 0;
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  padding: 16px;
+}
+.share-puppy-label {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+.share-puppy-row {
+  display: flex;
+  justify-content: space-around;
+}
+.share-icon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.share-icon-circle {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.share-icon-circle--link {
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+}
+.share-icon-circle--sms {
+  background: #22c55e;
+}
+.share-icon-circle--messenger {
+  background: var(--pp-blue);
+}
+.share-icon-circle--facebook {
+  background: #1877f2;
+}
+.share-icon-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--pp-muted);
+}

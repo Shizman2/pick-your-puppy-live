@@ -36,7 +36,36 @@ export interface DashboardData {
     staleHighInterest: { contactId: string; contactName: string; lastActivityAt: string | null }[];
     possibleDuplicates: { contactId: string; contactName: string }[];
   };
-  recentActivity: { id: string; description: string; contactId: string; contactName: string; createdAt: string }[];
+  recentActivity: {
+    id: string;
+    description: string;
+    contactId: string;
+    contactName: string;
+    createdAt: string;
+    /** Where the activity text (after the dash) should link, if anywhere - null means plain text, no dead links. */
+    relatedHref: string | null;
+  }[];
+}
+
+/**
+ * Only timeline_events this app actually knows a real destination for
+ * get a link - everything else stays plain text rather than guessing.
+ * "form_submitted" always carries an inquiry, which lives in that
+ * contact's Message Center thread; "puppy_finder_option_selected"
+ * carries the proposal it belongs to.
+ */
+function relatedHrefForTimelineEvent(
+  eventType: string,
+  contactId: string,
+  metadata: Record<string, unknown> | null
+): string | null {
+  if (eventType === "form_submitted") {
+    return `/admin/messages/${contactId}`;
+  }
+  if (eventType === "puppy_finder_option_selected" && typeof metadata?.proposal_id === "string") {
+    return `/admin/puppy-finder/${metadata.proposal_id}`;
+  }
+  return null;
 }
 
 /**
@@ -71,7 +100,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         .eq("direction", "inbound"),
       admin
         .from("timeline_events")
-        .select("id, contact_id, description, event_type, created_at")
+        .select("id, contact_id, description, event_type, metadata, created_at")
         .order("created_at", { ascending: false })
         .limit(15),
     ]);
@@ -155,6 +184,7 @@ export async function getDashboardData(): Promise<DashboardData> {
     contactId: t.contact_id,
     contactName: contactNameById.get(t.contact_id) || "Unknown contact",
     createdAt: t.created_at,
+    relatedHref: relatedHrefForTimelineEvent(t.event_type, t.contact_id, t.metadata as Record<string, unknown> | null),
   }));
 
   return {

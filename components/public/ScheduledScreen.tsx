@@ -1,6 +1,9 @@
 import Logo from "./Logo";
 import PrivacyNotice from "./PrivacyNotice";
+import ShareButtons from "../public-site/ShareButtons";
 import type { EventRow } from "../../lib/eventTypes";
+import "../../styles/public-tokens.css";
+import "../public-site/shareButtons.css";
 
 interface ScheduledScreenProps {
   event: EventRow;
@@ -11,6 +14,8 @@ interface ScheduledScreenProps {
  * Phase 5: content now comes from the real database row, not fakeEvent.
  */
 export default function ScheduledScreen({ event }: ScheduledScreenProps) {
+  const showName = event.event_title || "Pick Your Puppy Live";
+
   return (
     <div className="page-shell">
       <div className="page-inner">
@@ -40,6 +45,13 @@ export default function ScheduledScreen({ event }: ScheduledScreenProps) {
         </div>
 
         <PrivacyNotice message={event.private_waiting_message} />
+
+        <ShareButtons
+          heading="Share This Page"
+          smsMessage={`Check out ${showName}`}
+          shareText={`Check out ${showName}!`}
+          shareTitle={showName}
+        />
       </div>
     </div>
   );

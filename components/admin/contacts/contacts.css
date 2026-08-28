@@ -374,6 +374,67 @@ a.contacts-row:hover {
   margin-bottom: 16px;
 }
 
+.profile-danger-zone {
+  border-color: #f6cac8;
+}
+
+.profile-danger-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.profile-danger-row:first-of-type {
+  border-top: none;
+  padding-top: 10px;
+}
+
+.profile-danger-row > div:first-child {
+  max-width: 480px;
+  min-width: 0;
+}
+
+.profile-danger-row .admin-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.profile-danger-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 220px;
+}
+
+.profile-danger-confirm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 640px) {
+  .profile-danger-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-danger-row .admin-btn {
+    white-space: normal;
+    width: 100%;
+  }
+
+  .profile-danger-confirm {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .profile-danger-confirm-actions .admin-btn {
+    flex: 1;
+  }
+}
+
 .profile-info-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

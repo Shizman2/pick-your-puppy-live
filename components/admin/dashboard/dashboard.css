@@ -210,7 +210,12 @@
 
 .dash2-stat-row {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  /* 130px (not 140px) is deliberate: at the narrowest supported phone
+     width (320px), .adminshell-main's 16px side padding leaves 288px of
+     content - two 140px tracks plus the 12px gap (292px) narrowly
+     exceeded that and forced the whole page a few pixels wider than the
+     viewport. 130px keeps two columns fitting with room to spare. */
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 12px;
   margin-bottom: 16px;
 }
@@ -287,6 +292,17 @@
   font-weight: 700;
   color: #8B6BFF;
   text-decoration: none;
+}
+
+/* A real <table> won't shrink below the width its own cell content
+   needs (7 columns of names/prices), so on a narrow phone it was
+   forcing the whole page wider than the viewport instead of just
+   scrolling itself. Containing that overflow here - not with
+   overflow-x: hidden, which would silently cut columns off - keeps
+   every column reachable via a horizontal swipe within this card only. */
+.dash2-table-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .dash2-sales-table {

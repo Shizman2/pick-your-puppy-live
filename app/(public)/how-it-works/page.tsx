@@ -1,4 +1,6 @@
 import "./how-it-works.css";
+import "../../../components/public-site/shareButtons.css";
+import ShareButtons from "../../../components/public-site/ShareButtons";
 
 export const metadata = {
   title: "How It Works – ThePuppyPlugs.com",
@@ -222,6 +224,13 @@ export default function HowItWorksPage() {
           </div>
         </div>
       </div>
+
+      <ShareButtons
+        heading="Share This Page"
+        smsMessage="Check this out"
+        shareText="Check this out!"
+        shareTitle="How It Works – ThePuppyPlugs.com"
+      />
     </>
   );
 }

@@ -154,17 +154,28 @@ export async function getMessageCenterData(): Promise<MessageCenterData> {
 
     const unreadCount = contactMessages.filter((m) => m.direction === "inbound" && !m.is_read).length;
 
-    list.push({
-      contactId: contact.id,
-      contactName: contact.display_name || `${contact.first_name} ${contact.last_name || ""}`.trim(),
-      badges,
-      sources,
-      receivedAt: contactInquiries[0]?.created_at || contact.created_at,
-      lastActivityAt: contact.last_activity_at,
-      leadScore: contact.lead_score,
-      status: contact.status,
-      unreadCount,
-    });
+    // A contact with no inquiries and no messages has nothing to show in
+    // an inbox - most commonly a contact whose conversation was just
+    // deleted (see deleteConversation in app/admin/messages/actions.ts),
+    // which intentionally leaves the contact itself intact. Skipping it
+    // here is what makes that delete actually disappear from view,
+    // rather than lingering as an empty row. The full detail bundle
+    // below is still built for every contact regardless, so a direct
+    // link (e.g. from the Contact Profile's "Open in Message Center")
+    // still resolves correctly even with an empty thread.
+    if (contactInquiries.length > 0 || contactMessages.length > 0) {
+      list.push({
+        contactId: contact.id,
+        contactName: contact.display_name || `${contact.first_name} ${contact.last_name || ""}`.trim(),
+        badges,
+        sources,
+        receivedAt: contactInquiries[0]?.created_at || contact.created_at,
+        lastActivityAt: contact.last_activity_at,
+        leadScore: contact.lead_score,
+        status: contact.status,
+        unreadCount,
+      });
+    }
 
     detailsByContactId[contact.id] = {
       contact,

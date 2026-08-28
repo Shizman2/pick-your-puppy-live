@@ -7,12 +7,30 @@ function isIOS(): boolean {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as unknown as { MSStream?: unknown }).MSStream;
 }
 
-export default function ShareThisPuppy({ puppyName, slug }: { puppyName: string; slug: string }) {
+interface ShareButtonsProps {
+  /** "Share This Puppy" or "Share This Page" - the paw-emoji wrapper and colon are added here. */
+  heading: string;
+  /** Text before ": <url>" in the SMS body, e.g. "Check out Reese" or "Check out our Puppy Finder". */
+  smsMessage: string;
+  /** The Web Share API "text" field used for the Messenger button. */
+  shareText: string;
+  /** The Web Share API "title" field used for the Messenger button. */
+  shareTitle: string;
+}
+
+/**
+ * The single shared "Share This ___" row: Copy Link, SMS, Messenger,
+ * Facebook. Originally built just for the puppy detail page (as
+ * ShareThisPuppy) - generalized so any public page can reuse the exact
+ * same look and behavior, sharing whatever page it's rendered on via
+ * window.location.href, rather than a page-specific URL prop.
+ */
+export default function ShareButtons({ heading, smsMessage, shareText, shareTitle }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
 
   function getUrl(): string {
-    if (typeof window === "undefined") return `/puppies/${slug}`;
-    return `${window.location.origin}/puppies/${slug}`;
+    if (typeof window === "undefined") return "";
+    return window.location.href;
   }
 
   async function handleCopyLink() {
@@ -39,7 +57,7 @@ export default function ShareThisPuppy({ puppyName, slug }: { puppyName: string;
 
   function handleSms() {
     const url = getUrl();
-    const message = `Check out ${puppyName}: ${url}`;
+    const message = `${smsMessage}: ${url}`;
     // iOS wants "&body=", Android (and most others) want "?body=" when no
     // recipient number is included in the URI.
     const separator = isIOS() ? "&" : "?";
@@ -51,7 +69,7 @@ export default function ShareThisPuppy({ puppyName, slug }: { puppyName: string;
     const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
     if (nav.share) {
       try {
-        await nav.share({ title: puppyName, text: `Check out ${puppyName}!`, url });
+        await nav.share({ title: shareTitle, text: shareText, url });
         return;
       } catch {
         // User cancelled the share sheet, or it failed - fall back to Copy Link.
@@ -69,7 +87,7 @@ export default function ShareThisPuppy({ puppyName, slug }: { puppyName: string;
   return (
     <div className="share-puppy">
       <div className="share-puppy-label">
-        <span aria-hidden="true">🐾</span> Share This Puppy: <span aria-hidden="true">🐾</span>
+        <span aria-hidden="true">🐾</span> {heading}: <span aria-hidden="true">🐾</span>
       </div>
       <div className="share-puppy-row">
         <button type="button" className="share-icon-btn" onClick={handleCopyLink} aria-label="Copy link">

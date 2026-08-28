@@ -140,6 +140,13 @@
   margin-bottom: 20px;
 }
 
+.msgcenter-thread-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
 .msgcenter-thread-name {
   font-weight: 800;
   font-size: 18px;
@@ -230,6 +237,25 @@
   margin-bottom: 2px;
 }
 
+/* Hidden by default (desktop shows both columns side by side, so a
+   "back" control has nothing useful to do there) - the mobile media
+   query below turns it on. This must come BEFORE that media query:
+   both rules target the same selector with equal specificity, so
+   whichever is declared later in the file wins the cascade even while
+   the media query's condition is true - if this were declared after
+   the mobile override instead, it would silently win at every screen
+   size and the button would never be visible at all. */
+.msgcenter-back-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #2563eb;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  padding: 0;
+}
+
 /* --- Mobile: single column, list or detail, not both --- */
 @media (max-width: 860px) {
   .msgcenter {
@@ -270,15 +296,4 @@
   .msgcenter-detail-col.msgcenter-hide-mobile {
     display: none;
   }
-}
-
-.msgcenter-back-btn {
-  display: none;
-  background: none;
-  border: none;
-  color: #2563eb;
-  font-weight: 700;
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0;
 }
