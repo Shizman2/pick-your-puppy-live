@@ -1,0 +1,154 @@
+/*
+ * Puppy Purchase Acknowledgement - the printable sheet itself.
+ * Self-contained, same reasoning as the other three documents' CSS:
+ * also read server-side and inlined into a finalized document's frozen
+ * rendered_html snapshot (see lib/renderDocument.tsx), so a finalized
+ * document's appearance can never change even if this file is edited
+ * later. Never rely on anything defined outside this file. Own class
+ * prefix (ppa-) so this never collides with the other three documents'
+ * CSS when loaded on the same admin page.
+ *
+ * Sized to true US Letter (8.5in x 11in). Deliberately plain
+ * black-on-white, matching the Bill of Sale/Health Guarantee/Refund
+ * Policy - no color accents, no decorative icons, no brand/URL above
+ * the title (removed on purpose, per instruction).
+ */
+
+.ppa-page {
+  width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  padding: 0.55in 0.6in;
+  box-sizing: border-box;
+  background: #fff;
+  border: 2px solid #111;
+  border-radius: 10px;
+  color: #111;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.35;
+}
+
+.ppa-header {
+  text-align: center;
+  margin-bottom: 0.18in;
+}
+
+.ppa-title {
+  font-size: 21pt;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.ppa-intro {
+  font-size: 9pt;
+  color: #333;
+  max-width: 7.2in;
+  margin: 0.12in auto 0;
+}
+
+.ppa-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.4in;
+  border-top: 1.5px solid #111;
+  padding-top: 0.15in;
+}
+
+.ppa-section {
+  margin-bottom: 0.16in;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.ppa-section-title {
+  font-size: 10.5pt;
+  font-weight: 800;
+  border-bottom: 1px solid #999;
+  padding-bottom: 3px;
+  margin-bottom: 5px;
+}
+
+.ppa-paragraph {
+  margin: 0 0 5px;
+}
+
+.ppa-list {
+  margin: 0 0 5px;
+  padding-left: 1.1em;
+}
+
+.ppa-list li {
+  margin-bottom: 2px;
+}
+
+.ppa-checkbox-row {
+  margin-bottom: 4px;
+}
+
+.ppa-checkbox {
+  font-size: 11pt;
+}
+
+.ppa-acknowledgment {
+  border-top: 1.5px solid #111;
+  padding-top: 0.1in;
+  margin: 0.14in 0;
+  font-size: 8.5pt;
+}
+
+.ppa-acknowledgment-heading {
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.ppa-acknowledgment p {
+  margin: 0;
+}
+
+.ppa-signature-field {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.ppa-signature-label {
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.ppa-signature-blank {
+  flex: 1;
+  border-bottom: 1px solid #111;
+  min-height: 1.1em;
+}
+
+.ppa-signature-blank--seller {
+  display: flex;
+  align-items: flex-end;
+  font-family: "Brush Script MT", "Segoe Script", "Apple Chancery", cursive;
+  font-size: 15pt;
+  padding-bottom: 1px;
+}
+
+.ppa-footer {
+  text-align: center;
+  font-style: italic;
+  font-size: 9.5pt;
+  margin-top: 0.15in;
+}
+
+@page {
+  size: 8.5in 11in;
+  margin: 0;
+}
+
+@media print {
+  .ppa-page {
+    margin: 0;
+    box-shadow: none;
+  }
+}

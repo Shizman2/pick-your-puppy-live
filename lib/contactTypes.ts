@@ -23,6 +23,8 @@ export interface ContactRow {
   email: string | null;
   city: string | null;
   state: string | null;
+  address: string | null;
+  zip: string | null;
   source: string | null;
   status: ContactStatus;
   closed_reason: string | null;

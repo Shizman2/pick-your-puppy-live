@@ -4,7 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { logPayment, updatePayment, deletePayment, cancelSale } from "../../../app/admin/sales/actions";
+import {
+  generateBillOfSale,
+  generateHealthGuarantee,
+  generateRefundPolicy,
+  generatePuppyPurchaseAcknowledgement,
+} from "../../../app/admin/documents/actions";
 import type { SaleDetail } from "../../../lib/sales";
+import type { GeneratedDocumentListItem } from "../../../lib/documents";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
 import { formatDateOnly } from "../../../lib/formatDate";
 import {
@@ -22,7 +29,12 @@ function todayDateInput(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
+interface SaleDetailClientProps {
+  detail: SaleDetail;
+  documents: GeneratedDocumentListItem[];
+}
+
+export default function SaleDetailClient({ detail, documents }: SaleDetailClientProps) {
   const router = useRouter();
   const [editingPaymentId, setEditingPaymentId] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -33,6 +45,7 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [generating, setGenerating] = useState(false);
 
   const remaining = Math.max(0, detail.sale.sale_price_cents - detail.totalPaidCents);
 
@@ -108,6 +121,54 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
     if (!confirm("Cancel this sale? Payments already logged will stay on record.")) return;
     await cancelSale(detail.sale.id);
     router.push("/admin/sales");
+  }
+
+  async function handleGenerateBillOfSale() {
+    setError(null);
+    setGenerating(true);
+    const result = await generateBillOfSale(detail.sale.id);
+    setGenerating(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    router.push(`/admin/documents/${result.documentId}`);
+  }
+
+  async function handleGenerateHealthGuarantee() {
+    setError(null);
+    setGenerating(true);
+    const result = await generateHealthGuarantee(detail.sale.id);
+    setGenerating(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    router.push(`/admin/documents/${result.documentId}`);
+  }
+
+  async function handleGenerateRefundPolicy() {
+    setError(null);
+    setGenerating(true);
+    const result = await generateRefundPolicy(detail.sale.id);
+    setGenerating(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    router.push(`/admin/documents/${result.documentId}`);
+  }
+
+  async function handleGeneratePuppyPurchaseAcknowledgement() {
+    setError(null);
+    setGenerating(true);
+    const result = await generatePuppyPurchaseAcknowledgement(detail.sale.id);
+    setGenerating(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    router.push(`/admin/documents/${result.documentId}`);
   }
 
   return (
@@ -236,6 +297,54 @@ export default function SaleDetailClient({ detail }: { detail: SaleDetail }) {
             </div>
           ))
         )}
+      </div>
+
+      <div className="profile-card">
+        <h2 className="admin-card__title">Documents</h2>
+        {error && <div className="inquire-error" style={{ marginBottom: 10 }}>{error}</div>}
+        {documents.length === 0 ? (
+          <p className="admin-hint" style={{ marginBottom: 10 }}>
+            No documents generated yet for this sale.
+          </p>
+        ) : (
+          <div className="docview-generated-list" style={{ marginBottom: 10 }}>
+            {documents.map((d) => (
+              <div key={d.id} className="docview-generated-row">
+                <div>
+                  <div style={{ fontWeight: 700 }}>{d.templateName}</div>
+                  <div className="admin-hint">{formatDateOnly(d.generatedAt)}</div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span className={`docview-status-badge ${d.status}`}>
+                    {d.status === "finalized" ? "Finalized" : "Draft"}
+                  </span>
+                  <Link href={`/admin/documents/${d.id}`} className="admin-btn">
+                    Open
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleGenerateBillOfSale} disabled={generating}>
+            {generating ? "Generating…" : "Generate Bill of Sale"}
+          </button>
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleGenerateHealthGuarantee} disabled={generating}>
+            {generating ? "Generating…" : "Generate Health Guarantee"}
+          </button>
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleGenerateRefundPolicy} disabled={generating}>
+            {generating ? "Generating…" : "Generate Refund Policy"}
+          </button>
+          <button
+            type="button"
+            className="admin-btn admin-btn--primary"
+            onClick={handleGeneratePuppyPurchaseAcknowledgement}
+            disabled={generating}
+          >
+            {generating ? "Generating…" : "Generate Purchase Acknowledgement"}
+          </button>
+        </div>
       </div>
 
       {detail.sale.status === "active" && (

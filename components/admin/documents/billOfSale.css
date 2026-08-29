@@ -1,0 +1,242 @@
+/*
+ * Puppy Purchase Record & Bill of Sale - the printable sheet itself.
+ * Self-contained on purpose: this file is also read server-side and
+ * inlined verbatim into a finalized document's frozen rendered_html
+ * snapshot (see finalizeGeneratedDocument in
+ * app/admin/documents/actions.ts), so a finalized document's on-screen
+ * and printed appearance can never change even if this file is edited
+ * afterward. Never rely on any class/token defined outside this file.
+ *
+ * Sized to true US Letter (8.5in x 11in) - physical units (in), not
+ * px, so the vaccination sticker boxes land at their real physical
+ * size on paper regardless of screen DPI.
+ */
+
+.bos-page {
+  width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  padding: 0.45in 0.55in;
+  box-sizing: border-box;
+  background: #fff;
+  border: 2px solid #111;
+  border-radius: 10px;
+  color: #111;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 10.5pt;
+  line-height: 1.35;
+}
+
+.bos-header {
+  text-align: center;
+  margin-bottom: 0.2in;
+}
+
+.bos-brand {
+  font-size: 22pt;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.bos-title {
+  font-size: 13pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.bos-intro {
+  font-size: 8.5pt;
+  color: #333;
+  max-width: 7.2in;
+  margin: 0.12in auto 0;
+}
+
+.bos-columns {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 0 0.35in;
+}
+
+.bos-section {
+  margin-bottom: 0.18in;
+}
+
+.bos-section-title {
+  font-size: 10.5pt;
+  font-weight: 800;
+  border-bottom: 1.5px solid #111;
+  padding-bottom: 2px;
+  margin-bottom: 6px;
+}
+
+.bos-field {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.bos-field-label {
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bos-field-value {
+  flex: 1;
+  border-bottom: 1px solid #999;
+  min-height: 1.1em;
+  overflow-wrap: anywhere;
+}
+
+.bos-photo-frame {
+  width: 2.6in;
+  height: 2.6in;
+  border: 1.5px solid #111;
+  border-radius: 6px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6f6f6;
+  margin: 0 auto;
+}
+
+.bos-photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bos-photo-placeholder {
+  font-size: 9pt;
+  color: #999;
+}
+
+.bos-sticker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.2in;
+  margin-bottom: 0.14in;
+}
+
+.bos-sticker-box {
+  width: 2.2in;
+  height: 1in;
+  flex-shrink: 0;
+  border: 1.5px dashed #999;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bos-sticker-label {
+  font-size: 8.5pt;
+  color: #999;
+}
+
+.bos-sticker-date {
+  font-size: 9.5pt;
+  white-space: nowrap;
+}
+
+.bos-vaccination-complete {
+  font-size: 9.5pt;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.bos-checkbox {
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+.bos-purchase-section {
+  border-top: 1.5px solid #111;
+  padding-top: 0.14in;
+}
+
+.bos-purchase-row {
+  display: flex;
+  gap: 0.4in;
+  margin-bottom: 4px;
+}
+
+.bos-purchase-row .bos-field {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.bos-notes-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.bos-notes-label {
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.bos-notes-line {
+  flex: 1;
+  border-bottom: 1px solid #999;
+  min-height: 1.1em;
+}
+
+.bos-signatures {
+  border-top: 1.5px solid #111;
+  padding-top: 0.14in;
+}
+
+.bos-signature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5in;
+  margin-top: 0.2in;
+}
+
+.bos-signature-line {
+  border-bottom: 1px solid #111;
+  height: 0.4in;
+}
+
+/* Seller Signature is pre-filled (see getSellerSignatureName in
+   lib/content.ts) rather than left blank for a manual signature - a
+   script/cursive treatment so it reads as a signature sitting on the
+   line, not plain typed text. */
+.bos-signature-line--seller {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-family: "Brush Script MT", "Segoe Script", "Apple Chancery", cursive;
+  font-size: 17pt;
+  padding-bottom: 2px;
+}
+
+.bos-signature-caption {
+  font-size: 9pt;
+  margin-top: 4px;
+}
+
+.bos-footer {
+  text-align: center;
+  font-style: italic;
+  font-size: 9.5pt;
+  margin-top: 0.22in;
+}
+
+@page {
+  size: 8.5in 11in;
+  margin: 0;
+}
+
+@media print {
+  .bos-page {
+    margin: 0;
+    box-shadow: none;
+  }
+}

@@ -33,6 +33,28 @@ export async function getSellerPhoneNumber(): Promise<string | null> {
   }
 }
 
+/**
+ * One reusable seller-signature value for the Puppy Documents system -
+ * same "settings" content_blocks bucket as the phone number above, so
+ * every document type (Bill of Sale, Health Guarantee, Refund Policy,
+ * Puppy Purchase Acknowledgement, and any future one) renders the same
+ * pre-filled signature instead of requiring a manual signature on every
+ * printed copy. Resolved once per generated document and frozen into
+ * its resolved_data at generation time - same treatment as business
+ * phone/email - so a finalized document keeps whichever signature was
+ * configured then. Falls back to "The Puppy Plugs" if never configured,
+ * rather than leaving a document with a blank seller line.
+ */
+export async function getSellerSignatureName(): Promise<string> {
+  try {
+    const blocks = await getContentBlocksForPage("settings");
+    const block = blocks.find((b) => b.section_key === "seller_signature_name");
+    return block?.text_value?.trim() || "The Puppy Plugs";
+  } catch {
+    return "The Puppy Plugs";
+  }
+}
+
 export interface RecentChange {
   id: string;
   label: string;

@@ -1,0 +1,157 @@
+/*
+ * Health Guarantee - the printable sheet itself. Self-contained, same
+ * reasoning as billOfSale.css: also read server-side and inlined into
+ * a finalized document's frozen rendered_html snapshot (see
+ * lib/renderDocument.tsx), so a finalized document's appearance can
+ * never change even if this file is edited later. Never rely on
+ * anything defined outside this file. Own class prefix (hg-) so this
+ * never collides with billOfSale.css's (bos-) when both are loaded on
+ * the same admin page.
+ *
+ * Sized to true US Letter (8.5in x 11in), same as the Bill of Sale.
+ * Allowed to run onto a second page if the content needs it - no
+ * shrinking text to force one page.
+ */
+
+.hg-page {
+  width: 8.5in;
+  min-height: 11in;
+  margin: 0 auto;
+  padding: 0.5in 0.6in;
+  box-sizing: border-box;
+  background: #fff;
+  border: 2px solid #111;
+  border-radius: 10px;
+  color: #111;
+  font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+  font-size: 11pt;
+  line-height: 1.4;
+}
+
+.hg-header {
+  text-align: center;
+  margin-bottom: 0.15in;
+}
+
+.hg-brand {
+  font-size: 24pt;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.hg-title {
+  font-size: 20pt;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.hg-identity-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 18px;
+  justify-content: center;
+  font-size: 9.5pt;
+  border-bottom: 1.5px solid #111;
+  padding-bottom: 10px;
+  margin-bottom: 0.2in;
+}
+
+.hg-identity-label {
+  font-weight: 700;
+}
+
+.hg-section {
+  margin-bottom: 0.2in;
+}
+
+.hg-section-title {
+  font-size: 12pt;
+  font-weight: 800;
+  border-bottom: 1.5px solid #111;
+  padding-bottom: 3px;
+  margin-bottom: 6px;
+}
+
+.hg-paragraph {
+  margin: 0 0 6px;
+}
+
+.hg-list {
+  margin: 0 0 6px;
+  padding-left: 1.1em;
+}
+
+.hg-list li {
+  margin-bottom: 3px;
+}
+
+.hg-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.4in;
+}
+
+.hg-section--compact {
+  margin-bottom: 0.1in;
+}
+
+.hg-disclaimer {
+  text-align: center;
+  font-size: 9pt;
+  color: #555;
+  border-top: 1px solid #999;
+  padding-top: 8px;
+  margin: 0.05in 0 0.2in;
+}
+
+.hg-acknowledgment {
+  font-size: 10pt;
+  margin-bottom: 0.25in;
+}
+
+.hg-signatures {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5in;
+  margin-bottom: 0.2in;
+}
+
+.hg-signature-line {
+  border-bottom: 1px solid #111;
+  height: 0.4in;
+}
+
+/* Seller Signature is pre-filled (see getSellerSignatureName in
+   lib/content.ts) rather than left blank for a manual signature. */
+.hg-signature-line--seller {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-family: "Brush Script MT", "Segoe Script", "Apple Chancery", cursive;
+  font-size: 17pt;
+  padding-bottom: 2px;
+}
+
+.hg-signature-caption {
+  font-size: 9pt;
+  margin-top: 4px;
+}
+
+.hg-footer {
+  text-align: center;
+  font-style: italic;
+  font-size: 9.5pt;
+}
+
+@page {
+  size: 8.5in 11in;
+  margin: 0;
+}
+
+@media print {
+  .hg-page {
+    margin: 0;
+    box-shadow: none;
+  }
+}

@@ -1,0 +1,68 @@
+.docview-toolbar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.docview-status-badge {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+
+.docview-status-badge.draft {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.docview-status-badge.finalized {
+  background: #e0f7ec;
+  color: #12855a;
+}
+
+.docview-sheet-wrap {
+  background: #e5e7eb;
+  padding: 40px 20px;
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.docview-generated-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.docview-generated-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+/* Hides the admin chrome around the sheet when printing - the sheet
+   itself (.bos-page) carries its own @page/@media print rules from
+   billOfSale.css and is unaffected by this. */
+@media print {
+  .no-print,
+  .adminshell-sidebar,
+  .adminshell-mobile-toggle {
+    display: none !important;
+  }
+
+  .docview-sheet-wrap {
+    background: none !important;
+    padding: 0 !important;
+  }
+
+  .adminshell-main {
+    padding: 0 !important;
+  }
+}

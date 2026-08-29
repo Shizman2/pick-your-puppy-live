@@ -2,20 +2,24 @@ import Link from "next/link";
 import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import SaleDetailClient from "../../../../components/admin/sales/SaleDetailClient";
 import { getSaleById } from "../../../../lib/sales";
+import { getGeneratedDocumentsForSale, type GeneratedDocumentListItem } from "../../../../lib/documents";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/sales/sales.css";
+import "../../../../components/admin/documents/documentView.css";
 
 export const dynamic = "force-dynamic";
 
 export default async function SaleDetailPage({ params }: { params: { id: string } }) {
   let detail = null;
+  let documents: GeneratedDocumentListItem[] = [];
   let loadError: string | null = null;
 
   try {
     detail = await getSaleById(params.id);
+    documents = await getGeneratedDocumentsForSale(params.id);
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Unknown error loading this sale.";
   }
@@ -45,7 +49,7 @@ export default async function SaleDetailPage({ params }: { params: { id: string 
         ) : !detail ? (
           <div className="contacts-empty">Sale not found.</div>
         ) : (
-          <SaleDetailClient detail={detail} />
+          <SaleDetailClient detail={detail} documents={documents} />
         )}
       </div>
     </AdminSidebar>

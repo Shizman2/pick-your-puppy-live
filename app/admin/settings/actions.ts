@@ -137,6 +137,49 @@ export async function updateSellerPhoneNumber(phone: string): Promise<ActionResu
   return { success: true };
 }
 
+/**
+ * Seller Signature - same content_blocks("settings") mechanism as the
+ * phone number above. This one value is reused across every Puppy
+ * Documents template (Bill of Sale, Health Guarantee, Refund Policy,
+ * Puppy Purchase Acknowledgement, ...) rather than hardcoded per
+ * document component.
+ */
+export async function updateSellerSignatureName(name: string): Promise<ActionResult> {
+  const auth = await requireAdminUserId();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const value = name.trim() || null;
+
+  const { data: existing, error: fetchError } = await admin
+    .from("content_blocks")
+    .select("id")
+    .eq("page", "settings")
+    .eq("section_key", "seller_signature_name")
+    .maybeSingle();
+
+  if (fetchError) return { success: false, error: fetchError.message };
+
+  const { error } = existing
+    ? await admin
+        .from("content_blocks")
+        .update({ text_value: value, updated_at: new Date().toISOString() })
+        .eq("id", existing.id)
+    : await admin.from("content_blocks").insert({
+        page: "settings",
+        section_key: "seller_signature_name",
+        label: "Seller Signature Name",
+        content_type: "text",
+        text_value: value,
+        display_order: 2,
+      });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/settings");
+  return { success: true };
+}
+
 export async function sendTestNotification(): Promise<ActionResult> {
   const auth = await requireAdminUserId();
   if (!auth.ok) return { success: false, error: auth.error };

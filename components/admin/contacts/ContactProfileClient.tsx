@@ -10,6 +10,7 @@ import {
   addContactNote,
   archiveContact,
   deleteContactCompletely,
+  updateContactAddress,
 } from "../../../app/admin/contacts/actions";
 import ContactActivities from "./ContactActivities";
 import PuppyFinderProposalsCard from "./PuppyFinderProposalsCard";
@@ -57,6 +58,12 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
   const [noteBody, setNoteBody] = useState("");
   const [notes, setNotes] = useState(profile.notes);
 
+  const [addrCity, setAddrCity] = useState(contact.city || "");
+  const [addrState, setAddrState] = useState(contact.state || "");
+  const [addrStreet, setAddrStreet] = useState(contact.address || "");
+  const [addrZip, setAddrZip] = useState(contact.zip || "");
+  const [addressSaved, setAddressSaved] = useState<string | null>(null);
+
   const [isPending, startTransition] = useTransition();
   const [savedMessage, setSavedMessage] = useState<string | null>(null);
   const [noteError, setNoteError] = useState<string | null>(null);
@@ -97,6 +104,18 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
         ...prev,
       ]);
       setNoteBody("");
+    });
+  }
+
+  function handleSaveAddress() {
+    startTransition(async () => {
+      const result = await updateContactAddress(contact.id, {
+        city: addrCity,
+        state: addrState,
+        address: addrStreet,
+        zip: addrZip,
+      });
+      setAddressSaved(result.success ? "Saved." : result.error);
     });
   }
 
@@ -246,6 +265,39 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
             {isPending ? "Saving…" : "Save"}
           </button>
           {savedMessage && <span className="admin-hint">{savedMessage}</span>}
+        </div>
+      </div>
+
+      {/* Mailing address - added for Puppy Documents (the Bill of Sale
+          needs a full buyer address), so this is also the one place a
+          contact's city/state can be corrected after creation. */}
+      <div className="profile-card">
+        <h2 className="admin-card__title">Mailing Address</h2>
+
+        <div className="profile-status-grid">
+          <div className="admin-field">
+            <label className="admin-field__label">Street address</label>
+            <input className="admin-input" value={addrStreet} onChange={(e) => setAddrStreet(e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label className="admin-field__label">City</label>
+            <input className="admin-input" value={addrCity} onChange={(e) => setAddrCity(e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label className="admin-field__label">State</label>
+            <input className="admin-input" value={addrState} onChange={(e) => setAddrState(e.target.value)} />
+          </div>
+          <div className="admin-field">
+            <label className="admin-field__label">ZIP</label>
+            <input className="admin-input" value={addrZip} onChange={(e) => setAddrZip(e.target.value)} />
+          </div>
+        </div>
+
+        <div className="profile-save-row">
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleSaveAddress} disabled={isPending}>
+            {isPending ? "Saving…" : "Save"}
+          </button>
+          {addressSaved && <span className="admin-hint">{addressSaved}</span>}
         </div>
       </div>
 

@@ -32,6 +32,9 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
   const [status, setStatus] = useState<PuppyRow["status"]>(existing?.status || "available");
   const [badgeTag, setBadgeTag] = useState<PuppyRow["badge_tag"]>(existing?.badge_tag || null);
   const [description, setDescription] = useState(existing?.description || "");
+  const [color, setColor] = useState(existing?.color || "");
+  const [registration, setRegistration] = useState(existing?.registration || "");
+  const [microchip, setMicrochip] = useState(existing?.microchip || "");
   const [vetChecked, setVetChecked] = useState(existing?.vet_checked ?? true);
   const [vaccinated, setVaccinated] = useState(existing?.vaccinated ?? true);
   const [deliveryAvailable, setDeliveryAvailable] = useState(existing?.delivery_available ?? true);
@@ -73,6 +76,9 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
       status,
       badgeTag,
       description,
+      color,
+      registration,
+      microchip,
       vetChecked,
       vaccinated,
       deliveryAvailable,
@@ -289,6 +295,27 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
       <div className="admin-field">
         <label className="admin-field__label">Description</label>
         <textarea className="admin-textarea" value={description} onChange={(e) => setDescription(e.target.value)} />
+      </div>
+
+      <div className="puppy-form-row">
+        <div className="admin-field">
+          <label className="admin-field__label">Color / markings (optional)</label>
+          <input className="admin-input" value={color} onChange={(e) => setColor(e.target.value)} />
+        </div>
+        <div className="admin-field">
+          <label className="admin-field__label">Registration (optional)</label>
+          <input
+            className="admin-input"
+            placeholder="e.g. AKC, or None"
+            value={registration}
+            onChange={(e) => setRegistration(e.target.value)}
+          />
+        </div>
+      </div>
+
+      <div className="admin-field">
+        <label className="admin-field__label">Microchip # (optional)</label>
+        <input className="admin-input" value={microchip} onChange={(e) => setMicrochip(e.target.value)} />
       </div>
 
       <label className="puppy-checkbox-row">

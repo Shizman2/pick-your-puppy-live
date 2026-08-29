@@ -17,6 +17,9 @@ export interface PuppyRow {
   status: PuppyStatus;
   badge_tag: PuppyBadgeTag | null;
   description: string | null;
+  color: string | null;
+  registration: string | null;
+  microchip: string | null;
   photo_urls: string[];
   vet_checked: boolean;
   vaccinated: boolean;

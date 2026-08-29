@@ -43,6 +43,9 @@ export interface PuppyFormFields {
   status: PuppyRow["status"];
   badgeTag: PuppyRow["badge_tag"];
   description: string;
+  color: string;
+  registration: string;
+  microchip: string;
   vetChecked: boolean;
   vaccinated: boolean;
   deliveryAvailable: boolean;
@@ -79,6 +82,9 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
       status: fields.status,
       badge_tag: fields.badgeTag,
       description: fields.description.trim() || null,
+      color: fields.color.trim() || null,
+      registration: fields.registration.trim() || null,
+      microchip: fields.microchip.trim() || null,
       vet_checked: fields.vetChecked,
       vaccinated: fields.vaccinated,
       delivery_available: fields.deliveryAvailable,
@@ -148,6 +154,9 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
       ...(soldAt !== undefined ? { sold_at: soldAt } : {}),
       badge_tag: fields.badgeTag,
       description: fields.description.trim() || null,
+      color: fields.color.trim() || null,
+      registration: fields.registration.trim() || null,
+      microchip: fields.microchip.trim() || null,
       vet_checked: fields.vetChecked,
       vaccinated: fields.vaccinated,
       delivery_available: fields.deliveryAvailable,

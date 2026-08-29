@@ -5,7 +5,7 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
-import { getSellerPhoneNumber } from "../../../lib/content";
+import { getSellerPhoneNumber, getSellerSignatureName } from "../../../lib/content";
 import type { AdminNotificationPreferencesRow, PushSubscriptionRow } from "../../../lib/pushTypes";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
@@ -17,6 +17,7 @@ export default async function SettingsPage() {
   const userEmail = await getAdminUserEmail();
   const unreadMessageCount = await getUnreadMessageCount();
   const sellerPhone = await getSellerPhoneNumber();
+  const sellerSignatureName = await getSellerSignatureName();
 
   const supabase = createServerSupabaseClient();
   const {
@@ -59,7 +60,7 @@ export default async function SettingsPage() {
           </div>
         </div>
 
-        <SellerSettingsClient initialPhone={sellerPhone} />
+        <SellerSettingsClient initialPhone={sellerPhone} initialSignatureName={sellerSignatureName} />
 
         {loadError ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>

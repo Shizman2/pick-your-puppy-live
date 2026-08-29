@@ -76,6 +76,45 @@ export async function updateContactStatus(
   return { success: true };
 }
 
+export interface ContactAddressFields {
+  city: string;
+  state: string;
+  address: string;
+  zip: string;
+}
+
+/**
+ * Saves the buyer's mailing address - added for the Bill of Sale
+ * (Puppy Documents), which needs a full address the profile previously
+ * had no way to edit after initial creation (city/state could only be
+ * set once, at addContact time).
+ */
+export async function updateContactAddress(
+  contactId: string,
+  fields: ContactAddressFields
+): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("contacts")
+    .update({
+      city: fields.city.trim() || null,
+      state: fields.state.trim() || null,
+      address: fields.address.trim() || null,
+      zip: fields.zip.trim() || null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", contactId);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath(`/admin/contacts/${contactId}`);
+  revalidatePath("/admin/contacts");
+  return { success: true };
+}
+
 export async function addContactNote(contactId: string, body: string): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
@@ -103,6 +142,8 @@ export interface NewContactFields {
   email: string;
   city: string;
   state: string;
+  address: string;
+  zip: string;
   status: ContactStatus;
 }
 
@@ -175,6 +216,8 @@ export async function addContact(fields: NewContactFields): Promise<AddContactRe
       email_normalized: emailNormalized,
       city: fields.city.trim() || null,
       state: fields.state.trim() || null,
+      address: fields.address.trim() || null,
+      zip: fields.zip.trim() || null,
       status: fields.status,
       source: "manual_admin_entry",
       last_activity_at: new Date().toISOString(),

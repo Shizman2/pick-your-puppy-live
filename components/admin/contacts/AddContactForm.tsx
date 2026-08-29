@@ -23,6 +23,8 @@ export default function AddContactForm() {
   const [email, setEmail] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [address, setAddress] = useState("");
+  const [zip, setZip] = useState("");
   const [status, setStatus] = useState<ContactStatus>("new");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ export default function AddContactForm() {
     }
 
     setSaving(true);
-    const result = await addContact({ firstName, lastName, phone, email, city, state, status });
+    const result = await addContact({ firstName, lastName, phone, email, city, state, address, zip, status });
     setSaving(false);
 
     if (!result.success) {
@@ -91,6 +93,16 @@ export default function AddContactForm() {
       <div className="admin-field">
         <label className="admin-field__label">State</label>
         <input className="admin-input" value={state} onChange={(e) => setState(e.target.value)} />
+      </div>
+
+      <div className="admin-field">
+        <label className="admin-field__label">Street address (optional)</label>
+        <input className="admin-input" value={address} onChange={(e) => setAddress(e.target.value)} />
+      </div>
+
+      <div className="admin-field">
+        <label className="admin-field__label">ZIP (optional)</label>
+        <input className="admin-input" value={zip} onChange={(e) => setZip(e.target.value)} />
       </div>
 
       <div className="admin-field">
