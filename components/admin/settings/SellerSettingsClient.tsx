@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { updateSellerPhoneNumber, updateSellerSignatureName } from "../../../app/admin/settings/actions";
+import PhoneInput from "../../PhoneInput";
 
 interface SellerSettingsClientProps {
   initialPhone: string | null;
@@ -59,13 +60,7 @@ export default function SellerSettingsClient({ initialPhone, initialSignatureNam
 
       <div className="admin-field">
         <label className="admin-field__label">Seller Phone Number</label>
-        <input
-          className="admin-input"
-          type="tel"
-          placeholder="e.g. (267) 774-3553"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-        />
+        <PhoneInput className="admin-input" placeholder="e.g. 267-774-3553" value={phone} onChange={setPhone} />
       </div>
 
       <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>

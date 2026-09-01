@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { addContact } from "../../../app/admin/contacts/actions";
 import type { ContactStatus } from "../../../lib/contactTypes";
+import PhoneInput from "../../PhoneInput";
 
 const STATUS_OPTIONS: ContactStatus[] = [
   "new",
@@ -77,7 +78,7 @@ export default function AddContactForm() {
 
       <div className="admin-field">
         <label className="admin-field__label">Phone</label>
-        <input className="admin-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <PhoneInput className="admin-input" value={phone} onChange={setPhone} />
       </div>
 
       <div className="admin-field">

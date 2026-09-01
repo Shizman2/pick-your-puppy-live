@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PhoneInput from "../PhoneInput";
 
 type InquiryType = "puppy_interest" | "puppy_finder" | "pypl" | "general";
 
@@ -236,7 +237,7 @@ export default function InquireForm({
 
       <div className="inquire-field">
         <label className="inquire-label">Phone number</label>
-        <input className="inquire-input" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <PhoneInput className="inquire-input" value={phone} onChange={setPhone} />
       </div>
 
       <div className="inquire-field">

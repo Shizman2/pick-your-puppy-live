@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { ContactProfileData, ContactStatus, InterestLevel } from "../../../lib/contactTypes";
 import { STATUS_LABEL } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate } from "../../../lib/formatRelative";
+import { formatPhoneDisplay, phoneTelHref } from "../../../lib/phone";
 import {
   updateContactStatus,
   addContactNote,
@@ -170,7 +171,13 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
         <div className="profile-info-grid">
           <div>
             <span className="profile-info-label">Phone</span>
-            <span className="profile-info-value">{contact.phone || "—"}</span>
+            <span className="profile-info-value">
+              {phoneTelHref(contact.phone) ? (
+                <a href={phoneTelHref(contact.phone)!}>{formatPhoneDisplay(contact.phone)}</a>
+              ) : (
+                contact.phone || "—"
+              )}
+            </span>
           </div>
           <div>
             <span className="profile-info-label">Email</span>

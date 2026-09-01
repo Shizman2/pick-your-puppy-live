@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PhoneInput from "../../../../../components/PhoneInput";
 
 interface Props {
   puppyId: string;
@@ -105,7 +106,7 @@ export default function ReservationForm({ puppyId, puppyName, slug }: Props) {
       </div>
       <div className="reserve-field">
         <label>Phone Number</label>
-        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 000-0000" />
+        <PhoneInput value={phone} onChange={setPhone} placeholder="609-440-6809" />
       </div>
       <div className="reserve-field">
         <label>Email Address</label>

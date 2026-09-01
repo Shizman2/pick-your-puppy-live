@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PhoneInput from "../../../components/PhoneInput";
 
 type RadioGroupName = "gender" | "altBreed" | "delivery";
 
@@ -156,7 +157,7 @@ export default function FinderForm() {
         </div>
         <div className="form-field">
           <label>Phone Number</label>
-          <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <PhoneInput value={phone} onChange={setPhone} />
         </div>
       </div>
       <div className="form-row">

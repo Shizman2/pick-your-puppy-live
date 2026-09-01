@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PhoneInput from "../../../components/PhoneInput";
 
 interface Props {
   breedOptions: string[];
@@ -104,7 +105,7 @@ export default function ContactForm({ breedOptions }: Props) {
       </div>
       <div className="form-group">
         <label>Phone (optional)</label>
-        <input type="tel" placeholder="(555) 000-0000" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        <PhoneInput placeholder="609-440-6809" value={phone} onChange={setPhone} />
       </div>
       <div className="form-group">
         <label>I am interested in...</label>

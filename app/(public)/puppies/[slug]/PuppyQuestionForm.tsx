@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PhoneInput from "../../../../components/PhoneInput";
 
 interface Props {
   puppyId: string;
@@ -104,7 +105,7 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
 
       <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
       <input type="email" placeholder="Your email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input type="tel" placeholder="Your phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+      <PhoneInput placeholder="Your phone" value={phone} onChange={setPhone} />
       <textarea
         placeholder="Your message or question..."
         value={message}

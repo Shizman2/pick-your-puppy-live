@@ -7,6 +7,8 @@ import type { MessageCenterData, MessageCenterListItem } from "../../../lib/mess
 import { STATUS_LABEL, STATUS_CLASS } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate } from "../../../lib/formatRelative";
 import { markConversationRead, deleteConversation } from "../../../app/admin/messages/actions";
+import { formatPhoneDisplay, phoneTelHref } from "../../../lib/phone";
+import { formValueLabel } from "../../../lib/formValueLabels";
 
 /** Desktop split-pane still auto-shows the most recent conversation for
  * convenience, matching the CSS breakpoint that switches to the mobile
@@ -38,28 +40,21 @@ function inquiryFieldLines(inquiry: MessageCenterData["detailsByContactId"][stri
   }
   const fd = inquiry.form_data || {};
   if (typeof fd.genderPreference === "string" && fd.genderPreference) {
-    lines.push(`Gender preference: ${fd.genderPreference}`);
+    lines.push(`Gender preference: ${formValueLabel("genderPreference", fd.genderPreference)}`);
   }
   if (typeof fd.budgetConfirmed === "string" && fd.budgetConfirmed) {
-    lines.push(`$1,500+ okay: ${fd.budgetConfirmed === "yes" ? "Yes" : "No"}`);
+    lines.push(`$1,500+ okay: ${formValueLabel("budgetConfirmed", fd.budgetConfirmed)}`);
   }
   if (typeof fd.timeframe === "string" && fd.timeframe) {
-    lines.push(`Timeframe: ${fd.timeframe}`);
+    lines.push(`Timeframe: ${formValueLabel("timeframe", fd.timeframe)}`);
   }
   if (typeof fd.readyForDeposit === "string" && fd.readyForDeposit) {
-    lines.push(`Ready for deposit: ${fd.readyForDeposit.replace("_", " ")}`);
+    lines.push(`Ready for deposit: ${formValueLabel("readyForDeposit", fd.readyForDeposit)}`);
   }
   if (typeof fd.notes === "string" && fd.notes.trim()) {
     lines.push(`Notes: ${fd.notes.trim()}`);
   }
   return lines;
-}
-
-/** Same digit-stripping convention as CallSellerButton, so tel: links behave consistently everywhere. */
-function telHref(phone: string | null): string | null {
-  if (!phone) return null;
-  const digitsOnly = phone.replace(/[^\d+]/g, "");
-  return digitsOnly ? `tel:${digitsOnly}` : null;
 }
 
 const INQUIRY_TYPE_LABEL: Record<string, string> = {
@@ -214,9 +209,9 @@ export default function MessageCenterClient({ list, detailsByContactId, initialS
                         </Link>
                       </div>
                       <div className="msgcenter-thread-sub">
-                        {telHref(selectedDetail.contact.phone) ? (
-                          <a href={telHref(selectedDetail.contact.phone)!} className="msgcenter-tel-link">
-                            {selectedDetail.contact.phone}
+                        {phoneTelHref(selectedDetail.contact.phone) ? (
+                          <a href={phoneTelHref(selectedDetail.contact.phone)!} className="msgcenter-tel-link">
+                            {formatPhoneDisplay(selectedDetail.contact.phone)}
                           </a>
                         ) : (
                           selectedDetail.contact.phone || "No phone"

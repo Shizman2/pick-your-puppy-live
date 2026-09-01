@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ContactListItem } from "../../../lib/contactTypes";
 import { STATUS_CLASS, STATUS_LABEL } from "../../../lib/contactStatus";
 import { formatRelativeTime, formatShortDate, isFollowUpDue } from "../../../lib/formatRelative";
+import { formatPhoneDisplay } from "../../../lib/phone";
 
 type FilterKey =
   | "all"
@@ -230,7 +231,7 @@ export default function ContactsListClient({ contacts }: { contacts: ContactList
                 </div>
 
                 <div data-label="Phone" className="contacts-cell" role="cell">
-                  {contact.phone || "—"}
+                  {contact.phone ? formatPhoneDisplay(contact.phone) : "—"}
                 </div>
 
                 <div data-label="Email" className="contacts-cell" role="cell">

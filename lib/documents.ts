@@ -5,6 +5,7 @@ import { formatPriceFromCents } from "./puppyTypes";
 import { PAYMENT_METHOD_LABEL } from "./saleTypes";
 import type { PaymentRow } from "./saleTypes";
 import { getSellerPhoneNumber, getSellerSignatureName, getContentBlocksForPage } from "./content";
+import { formatPhoneDisplay } from "./phone";
 import type {
   DocumentTemplateRow,
   DocumentTemplateVersionRow,
@@ -151,7 +152,7 @@ export async function getSaleDocumentContext(saleId: string): Promise<SaleDocume
 
   const resolvedData: BillOfSaleResolvedData = {
     buyer_name: contact.display_name || `${contact.first_name} ${contact.last_name || ""}`.trim(),
-    buyer_phone: contact.phone || "",
+    buyer_phone: formatPhoneDisplay(contact.phone),
     buyer_email: contact.email || "",
     buyer_address: contact.address || "",
     buyer_city: contact.city || "",
@@ -176,7 +177,7 @@ export async function getSaleDocumentContext(saleId: string): Promise<SaleDocume
 
     business_name: BUSINESS_NAME,
     business_website: BUSINESS_WEBSITE,
-    business_phone: businessPhone || "",
+    business_phone: formatPhoneDisplay(businessPhone),
     business_email: businessEmail,
 
     seller_signature: sellerSignature,
