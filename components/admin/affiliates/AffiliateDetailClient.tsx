@@ -88,22 +88,59 @@ export default function AffiliateDetailClient({
     await run(() => reinstateAffiliate(affiliate.id));
   }
 
+  // Commission/Payout/Notes saves don't otherwise change anything visible
+  // on the page (unlike approve/reject/suspend, which flip the status
+  // pill) - without an explicit confirmation, a successful save looks
+  // identical to nothing happening at all. These three get their own
+  // "Saved." indicator instead of going through the silent run() helper.
+  const [savedCommission, setSavedCommission] = useState(false);
+  const [savedPayout, setSavedPayout] = useState(false);
+  const [savedNotes, setSavedNotes] = useState(false);
+
   async function handleSaveCommission() {
-    await run(() =>
-      updateAffiliateCommissionSettings(affiliate.id, {
-        type: commissionType,
-        flatCents: flatCents ? Math.round(parseFloat(flatCents) * 100) : null,
-        percentBp: percentBp ? Math.round(parseFloat(percentBp) * 100) : null,
-      })
-    );
+    setError(null);
+    setSavedCommission(false);
+    setBusy(true);
+    const result = await updateAffiliateCommissionSettings(affiliate.id, {
+      type: commissionType,
+      flatCents: flatCents ? Math.round(parseFloat(flatCents) * 100) : null,
+      percentBp: percentBp ? Math.round(parseFloat(percentBp) * 100) : null,
+    });
+    setBusy(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    setSavedCommission(true);
+    router.refresh();
   }
 
   async function handleSavePayoutInfo() {
-    await run(() => updateAffiliatePayoutInfo(affiliate.id, { method: payoutMethod || null, handle: payoutHandle, notes: payoutNotes }));
+    setError(null);
+    setSavedPayout(false);
+    setBusy(true);
+    const result = await updateAffiliatePayoutInfo(affiliate.id, { method: payoutMethod || null, handle: payoutHandle, notes: payoutNotes });
+    setBusy(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    setSavedPayout(true);
+    router.refresh();
   }
 
   async function handleSaveNotes() {
-    await run(() => updateAffiliateAdminNotes(affiliate.id, notes));
+    setError(null);
+    setSavedNotes(false);
+    setBusy(true);
+    const result = await updateAffiliateAdminNotes(affiliate.id, notes);
+    setBusy(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    setSavedNotes(true);
+    router.refresh();
   }
 
   async function handleBulkVoid() {
@@ -204,9 +241,12 @@ export default function AffiliateDetailClient({
             </div>
           )}
         </div>
-        <button type="button" className="admin-btn admin-btn--primary" onClick={handleSaveCommission} disabled={busy}>
-          Save Commission Rate
-        </button>
+        <div className="profile-save-row">
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleSaveCommission} disabled={busy}>
+            Save Commission Rate
+          </button>
+          {savedCommission && <span className="admin-hint">Saved.</span>}
+        </div>
       </div>
 
       <div className="profile-card">
@@ -235,9 +275,12 @@ export default function AffiliateDetailClient({
           <label className="admin-field__label">Notes (optional)</label>
           <input className="admin-input" value={payoutNotes} onChange={(e) => setPayoutNotes(e.target.value)} />
         </div>
-        <button type="button" className="admin-btn admin-btn--primary" onClick={handleSavePayoutInfo} disabled={busy}>
-          Save Payout Info
-        </button>
+        <div className="profile-save-row">
+          <button type="button" className="admin-btn admin-btn--primary" onClick={handleSavePayoutInfo} disabled={busy}>
+            Save Payout Info
+          </button>
+          {savedPayout && <span className="admin-hint">Saved.</span>}
+        </div>
       </div>
 
       <div className="profile-card">
@@ -245,9 +288,12 @@ export default function AffiliateDetailClient({
         <div className="admin-field">
           <textarea className="admin-input" rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
-        <button type="button" className="admin-btn" onClick={handleSaveNotes} disabled={busy}>
-          Save Notes
-        </button>
+        <div className="profile-save-row">
+          <button type="button" className="admin-btn" onClick={handleSaveNotes} disabled={busy}>
+            Save Notes
+          </button>
+          {savedNotes && <span className="admin-hint">Saved.</span>}
+        </div>
       </div>
 
       <div className="profile-card">
