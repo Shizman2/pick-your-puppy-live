@@ -57,7 +57,20 @@ export default function AffiliateDetailClient({
 
   async function handleApprove() {
     if (!confirm(`Approve ${affiliateDisplayName(affiliate)}? This sends them an email to set up their login.`)) return;
-    await run(() => approveAffiliate(affiliate.id));
+    setError(null);
+    setBusy(true);
+    const result = await approveAffiliate(affiliate.id);
+    setBusy(false);
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
+    if (result.linkedExistingAccount) {
+      alert(
+        "This email already had an account, so no invite email was sent - the affiliate role was added to that existing account. They can log in with their existing password."
+      );
+    }
+    router.refresh();
   }
 
   async function handleReject() {

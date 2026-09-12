@@ -6,6 +6,9 @@ import { requireAdminUser } from "../../../lib/authz";
 import type { AffiliateCommissionType, AffiliatePayoutMethod } from "../../../lib/affiliateTypes";
 
 export type ActionResult = { success: true } | { success: false; error: string };
+export type ApproveAffiliateResult =
+  | { success: true; linkedExistingAccount: boolean }
+  | { success: false; error: string };
 
 /**
  * Approves a pending application: creates the real login via Supabase's
@@ -16,8 +19,17 @@ export type ActionResult = { success: true } | { success: false; error: string }
  * comment) - inviteUserByEmail uses the service-role Admin API, which
  * bypasses that restriction intentionally, the same way an admin
  * account here is only ever created directly, never via self sign-up.
+ *
+ * If the applicant's email already has an auth.users account (e.g. it's
+ * the same email as an existing admin account, or they had some other
+ * reason to already be registered), inviteUserByEmail fails with
+ * "already been registered" - that's a real, expected case, not a bug
+ * to surface as a hard failure. In that case this links the affiliate
+ * role onto the EXISTING account instead of trying to create a new one,
+ * and reports that no invite email was sent (they already have a
+ * password for that account).
  */
-export async function approveAffiliate(affiliateId: string): Promise<ActionResult> {
+export async function approveAffiliate(affiliateId: string): Promise<ApproveAffiliateResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
 
@@ -27,19 +39,46 @@ export async function approveAffiliate(affiliateId: string): Promise<ActionResul
   if (!affiliate) return { success: false, error: "Affiliate not found." };
   if (affiliate.status !== "pending") return { success: false, error: "This application is not pending." };
 
+  let authUserId: string | null = null;
+  let linkedExistingAccount = false;
+
   const { data: invite, error: inviteError } = await admin.auth.admin.inviteUserByEmail(affiliate.email);
-  if (inviteError || !invite.user) {
-    return { success: false, error: inviteError?.message || "Could not create affiliate login." };
+
+  if (inviteError) {
+    const alreadyRegistered = /already.*registered/i.test(inviteError.message || "");
+    if (!alreadyRegistered) {
+      return { success: false, error: inviteError.message };
+    }
+
+    // Find the existing auth user by email instead of failing the
+    // approval outright - listUsers() has no server-side email filter
+    // in this supabase-js version, so page through results and match
+    // case-insensitively. One page comfortably covers this business's
+    // user count; if that ever changes, this is the first place to revisit.
+    const { data: usersPage, error: listError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    if (listError) return { success: false, error: `Could not resolve the existing account: ${listError.message}` };
+
+    const match = usersPage.users.find((u) => u.email?.toLowerCase() === affiliate.email.toLowerCase());
+    if (!match) {
+      return { success: false, error: "An account with this email already exists, but it could not be located to link." };
+    }
+
+    authUserId = match.id;
+    linkedExistingAccount = true;
+  } else {
+    authUserId = invite?.user?.id ?? null;
   }
+
+  if (!authUserId) return { success: false, error: "Could not determine the affiliate's account." };
 
   const { error: updateError } = await admin
     .from("affiliates")
-    .update({ auth_user_id: invite.user.id, status: "approved", approved_at: new Date().toISOString(), approved_by: auth.userId })
+    .update({ auth_user_id: authUserId, status: "approved", approved_at: new Date().toISOString(), approved_by: auth.userId })
     .eq("id", affiliateId);
 
   if (updateError) return { success: false, error: updateError.message };
 
-  await admin.from("user_roles").upsert({ user_id: invite.user.id, role: "affiliate" }, { onConflict: "user_id,role", ignoreDuplicates: true });
+  await admin.from("user_roles").upsert({ user_id: authUserId, role: "affiliate" }, { onConflict: "user_id,role", ignoreDuplicates: true });
 
   await admin.from("affiliate_audit_log").insert({
     entity_type: "affiliate",
@@ -47,11 +86,12 @@ export async function approveAffiliate(affiliateId: string): Promise<ActionResul
     action: "approved",
     actor_user_id: auth.userId,
     actor_label: auth.email || "admin",
+    metadata: linkedExistingAccount ? { linked_existing_account: true } : undefined,
   });
 
   revalidatePath("/admin/affiliates");
   revalidatePath(`/admin/affiliates/${affiliateId}`);
-  return { success: true };
+  return { success: true, linkedExistingAccount };
 }
 
 export async function rejectAffiliate(affiliateId: string, reason: string): Promise<ActionResult> {
