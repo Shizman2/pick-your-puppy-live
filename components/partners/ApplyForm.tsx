@@ -89,11 +89,19 @@ export default function ApplyForm() {
         <textarea className="admin-input" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} />
       </div>
 
+      {/*
+        Honeypot - real applicants never see or fill this in. Hidden with
+        display:none (not off-screen positioning): off-screen-but-rendered
+        inputs are frequently filled by browser autofill/password-manager
+        "fill form" features, which was silently tripping this for real
+        applicants and making a genuine submission look successful while
+        never reaching the database. display:none is skipped by autofill.
+      */}
       <input
         type="text"
         value={website}
         onChange={(e) => setWebsite(e.target.value)}
-        style={{ position: "absolute", left: "-9999px", width: 1, height: 1 }}
+        style={{ display: "none" }}
         tabIndex={-1}
         autoComplete="off"
         aria-hidden="true"

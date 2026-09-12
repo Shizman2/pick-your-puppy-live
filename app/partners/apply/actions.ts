@@ -65,36 +65,50 @@ export async function submitAffiliateApplication(fields: AffiliateApplicationFie
   if (existing) {
     return {
       success: false,
-      error: "An application with this email already exists. We'll be in touch if it's still under review.",
+      error: "An application with this email has already been submitted. We'll be in touch if it's still under review.",
     };
   }
 
-  const referralCode = await generateUniqueReferralCode(firstName);
   const settings = await getAffiliateProgramSettings();
 
-  const { error } = await admin.from("affiliates").insert({
-    first_name: firstName,
-    last_name: fields.lastName.trim() || null,
-    display_name: `${firstName} ${fields.lastName.trim() || ""}`.trim(),
-    email,
-    email_normalized: emailNormalized,
-    phone: fields.phone.trim() || null,
-    social_url: fields.socialUrl.trim() || null,
-    promotion_plan: fields.promotionPlan.trim() || null,
-    application_notes: fields.notes.trim() || null,
-    referral_code: referralCode,
-    status: "pending",
-    // New applicants start on the program default commission rate -
-    // the CHECK constraint on affiliates requires a value matching
-    // whichever commission_type is set, so both must be written here.
-    commission_type: settings.default_commission_type,
-    commission_flat_cents: settings.default_commission_type === "flat_cents" ? settings.default_commission_value : null,
-    commission_percent_bp: settings.default_commission_type === "percent_bp" ? settings.default_commission_value : null,
-  });
+  // generateUniqueReferralCode checks for a collision before returning a
+  // code, but that check-then-insert has a race window (two submissions
+  // with the same first name landing at nearly the same time could both
+  // pass the check before either has inserted). Rather than rely on the
+  // check alone, retry with a freshly generated code if the insert itself
+  // hits the referral_code unique constraint - this is a real, if rare,
+  // race the checked-then-insert pattern can't fully close on its own.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const referralCode = await generateUniqueReferralCode(firstName);
 
-  if (error) {
-    return { success: false, error: "Could not submit your application. Please try again." };
+    const { error } = await admin.from("affiliates").insert({
+      first_name: firstName,
+      last_name: fields.lastName.trim() || null,
+      display_name: `${firstName} ${fields.lastName.trim() || ""}`.trim(),
+      email,
+      email_normalized: emailNormalized,
+      phone: fields.phone.trim() || null,
+      social_url: fields.socialUrl.trim() || null,
+      promotion_plan: fields.promotionPlan.trim() || null,
+      application_notes: fields.notes.trim() || null,
+      referral_code: referralCode,
+      status: "pending",
+      // New applicants start on the program default commission rate -
+      // the CHECK constraint on affiliates requires a value matching
+      // whichever commission_type is set, so both must be written here.
+      commission_type: settings.default_commission_type,
+      commission_flat_cents: settings.default_commission_type === "flat_cents" ? settings.default_commission_value : null,
+      commission_percent_bp: settings.default_commission_type === "percent_bp" ? settings.default_commission_value : null,
+    });
+
+    if (!error) return { success: true };
+
+    const isReferralCodeCollision = error.code === "23505" && error.message.includes("referral_code");
+    if (!isReferralCodeCollision) {
+      return { success: false, error: "Could not submit your application. Please try again." };
+    }
+    // else: loop and retry with a new code.
   }
 
-  return { success: true };
+  return { success: false, error: "Could not submit your application. Please try again." };
 }
