@@ -180,6 +180,50 @@ export async function updateSellerSignatureName(name: string): Promise<ActionRes
   return { success: true };
 }
 
+export interface AffiliateProgramSettingsFields {
+  commissionHoldDays: number;
+  attributionWindowDays: number;
+  defaultCommissionType: "flat_cents" | "percent_bp";
+  defaultCommissionValue: number;
+}
+
+/**
+ * Program-wide affiliate tunables, in their own typed table
+ * (affiliate_program_settings) rather than the generic content_blocks
+ * "settings" bucket used above - those are free-text site content,
+ * this is typed financial config that other code reads as numbers
+ * (commission math, the eligibility cron), not display strings.
+ */
+export async function updateAffiliateProgramSettings(fields: AffiliateProgramSettingsFields): Promise<ActionResult> {
+  const auth = await requireAdminUserId();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  if (fields.commissionHoldDays < 0 || fields.attributionWindowDays < 0) {
+    return { success: false, error: "Days must be zero or greater." };
+  }
+  if (fields.defaultCommissionValue <= 0) {
+    return { success: false, error: "Enter a default commission value greater than zero." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("affiliate_program_settings")
+    .update({
+      commission_hold_days: fields.commissionHoldDays,
+      attribution_window_days: fields.attributionWindowDays,
+      default_commission_type: fields.defaultCommissionType,
+      default_commission_value: fields.defaultCommissionValue,
+      updated_at: new Date().toISOString(),
+      updated_by: auth.userId,
+    })
+    .eq("id", true);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/settings");
+  return { success: true };
+}
+
 export async function sendTestNotification(): Promise<ActionResult> {
   const auth = await requireAdminUserId();
   if (!auth.ok) return { success: false, error: auth.error };

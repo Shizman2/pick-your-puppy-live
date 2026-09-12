@@ -8,6 +8,16 @@ export interface SaleRow {
   contact_id: string;
   sale_price_cents: number;
   status: SaleStatus;
+  fulfillment_method: "pickup" | "delivery" | null;
+  fulfillment_status: "pending" | "scheduled" | "completed";
+  scheduled_fulfillment_at: string | null;
+  fulfilled_at: string | null;
+  fulfillment_notes: string | null;
+  paid_in_full_at: string | null;
+  closed_at: string | null;
+  closed_reason: string | null;
+  affiliate_id: string | null;
+  affiliate_attribution_id: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -44,7 +54,13 @@ export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
   other: "Other",
 };
 
-export const PAYMENT_TYPE_OPTIONS: PaymentType[] = ["deposit", "balance", "full", "refund", "other"];
+// "refund" is deliberately excluded here - refunds now go through the
+// dedicated Refund Sale workflow (see refundSale in
+// app/admin/sales/actions.ts), which stores them as a negative amount
+// and closes the sale. It stays in PaymentType/PAYMENT_TYPE_LABEL below
+// purely so existing/future refund rows still render a label in
+// Payment History.
+export const PAYMENT_TYPE_OPTIONS: PaymentType[] = ["deposit", "balance", "full", "other"];
 
 export const PAYMENT_TYPE_LABEL: Record<PaymentType, string> = {
   deposit: "Deposit",

@@ -4,6 +4,28 @@ import type { SaleRow, PaymentRow } from "./saleTypes";
 import { computeSaleProgress } from "./saleTypes";
 import type { PuppyRow } from "./puppyTypes";
 
+function saleRowFromQueryRow(row: any): SaleRow {
+  return {
+    id: row.id,
+    puppy_id: row.puppy_id,
+    contact_id: row.contact_id,
+    sale_price_cents: row.sale_price_cents,
+    status: row.status,
+    fulfillment_method: row.fulfillment_method,
+    fulfillment_status: row.fulfillment_status,
+    scheduled_fulfillment_at: row.scheduled_fulfillment_at,
+    fulfilled_at: row.fulfilled_at,
+    fulfillment_notes: row.fulfillment_notes,
+    paid_in_full_at: row.paid_in_full_at,
+    closed_at: row.closed_at,
+    closed_reason: row.closed_reason,
+    affiliate_id: row.affiliate_id,
+    affiliate_attribution_id: row.affiliate_attribution_id,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
 export interface SaleListItem {
   sale: SaleRow;
   puppyName: string;
@@ -23,6 +45,8 @@ export interface SaleDetail {
   payments: PaymentRow[];
   totalPaidCents: number;
   progress: ReturnType<typeof computeSaleProgress>;
+  affiliateName: string | null;
+  commission: { id: string; amountCents: number; status: string } | null;
 }
 
 export interface DashboardSalesSummary {
@@ -71,15 +95,7 @@ export async function getSalesListData(): Promise<SaleListItem[]> {
     const totalPaidCents = paymentsBySale.get(row.id) || 0;
     const contact = row.contacts;
     return {
-      sale: {
-        id: row.id,
-        puppy_id: row.puppy_id,
-        contact_id: row.contact_id,
-        sale_price_cents: row.sale_price_cents,
-        status: row.status,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      },
+      sale: saleRowFromQueryRow(row),
       puppyName: row.puppies?.name || "Unknown puppy",
       puppyId: row.puppy_id,
       breed: row.puppies?.breed || "",
@@ -114,22 +130,36 @@ export async function getSaleById(id: string): Promise<SaleDetail | null> {
   const totalPaidCents = (payments || []).reduce((sum: number, p: any) => sum + p.amount_cents, 0);
   const contact = (row as any).contacts;
 
+  let affiliateName: string | null = null;
+  if (row.affiliate_id) {
+    const { data: affiliate } = await admin
+      .from("affiliates")
+      .select("first_name, last_name, display_name")
+      .eq("id", row.affiliate_id)
+      .maybeSingle();
+    if (affiliate) {
+      affiliateName = affiliate.display_name || `${affiliate.first_name} ${affiliate.last_name || ""}`.trim();
+    }
+  }
+
+  const { data: commissionRow } = await admin
+    .from("affiliate_commissions")
+    .select("id, amount_cents, status")
+    .eq("sale_id", id)
+    .maybeSingle();
+
   return {
-    sale: {
-      id: row.id,
-      puppy_id: row.puppy_id,
-      contact_id: row.contact_id,
-      sale_price_cents: row.sale_price_cents,
-      status: row.status,
-      created_at: row.created_at,
-      updated_at: row.updated_at,
-    },
+    sale: saleRowFromQueryRow(row),
     puppy: (row as any).puppies as PuppyRow,
     contactName: contact?.display_name || `${contact?.first_name ?? ""} ${contact?.last_name ?? ""}`.trim() || "Unknown",
     contactId: row.contact_id,
     payments: (payments || []) as PaymentRow[],
     totalPaidCents,
     progress: computeSaleProgress(totalPaidCents, row.sale_price_cents),
+    affiliateName,
+    commission: commissionRow
+      ? { id: commissionRow.id, amountCents: commissionRow.amount_cents, status: commissionRow.status }
+      : null,
   };
 }
 

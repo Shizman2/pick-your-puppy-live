@@ -47,14 +47,23 @@ export default function ProposalEditor({
 
   function handleConfirmDeposit() {
     setError(null);
+    const priceInput = prompt("Sale price for this puppy, in dollars (e.g. 1800):");
+    if (priceInput === null) return;
+    const priceNum = parseFloat(priceInput);
+    if (isNaN(priceNum) || priceNum <= 0) {
+      setError("Enter a valid sale price to confirm the deposit and start the sale.");
+      return;
+    }
+
     startTransition(async () => {
-      const result = await confirmDepositReceived(proposal.id);
+      const result = await confirmDepositReceived(proposal.id, Math.round(priceNum * 100));
       if (!result.success) {
         setError(result.error);
         return;
       }
       setStatus("deposit_confirmed");
       setDepositConfirmedAt(new Date().toISOString());
+      router.push(`/admin/sales/${result.saleId}`);
     });
   }
 

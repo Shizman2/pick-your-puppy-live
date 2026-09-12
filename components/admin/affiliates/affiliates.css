@@ -1,0 +1,143 @@
+/* Affiliate Program admin pages. Self-contained table pattern (not
+   reused from contacts.css) because contacts-row hardcodes a 9-column
+   grid-template-columns for that page's specific layout - reusing the
+   class here but overriding the column count from a second CSS file
+   would depend on stylesheet import order for a cascade tie-break,
+   including inside contacts.css's own mobile media query, which is too
+   fragile. This duplicates the same stacked-card-on-mobile idea
+   instead, fully self-contained, with the column template supplied
+   per-table via an inline style (gridTemplateColumns) so one set of
+   classes works for affiliates/commissions/payouts tables that each
+   have a different number of columns. */
+
+.aff-list {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.aff-row {
+  display: grid;
+  gap: 10px;
+  padding: 14px 18px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  text-decoration: none;
+  color: inherit;
+}
+
+a.aff-row:hover {
+  background: #fafafa;
+  cursor: pointer;
+}
+
+.aff-row:last-child {
+  border-bottom: none;
+}
+
+.aff-row--header {
+  background: #fafafa;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.aff-cell {
+  font-size: 13px;
+  color: var(--color-text);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.aff-name {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+@media (max-width: 900px) {
+  .aff-row--header {
+    display: none;
+  }
+
+  .aff-row {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+    padding: 16px;
+  }
+
+  .aff-cell {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .aff-cell::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+  }
+}
+
+.aff-status {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.aff-status--pending { background: #fff4d6; color: #a3760a; }
+.aff-status--approved { background: #e0f7ec; color: #12855a; }
+.aff-status--suspended { background: #fdeee0; color: #c9701a; }
+.aff-status--rejected { background: #f1f1f2; color: #6b7076; }
+
+.aff-status--in_payout { background: #e6f0ff; color: #2b5fd9; }
+.aff-status--paid { background: #e0f7ec; color: #12855a; }
+.aff-status--void { background: #f1f1f2; color: #6b7076; }
+
+.aff-referral-link {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+.aff-referral-link input {
+  flex: 1;
+}
+
+.aff-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.aff-checkbox-row:last-child {
+  border-bottom: none;
+}
+
+.aff-flagged-badge {
+  display: inline-block;
+  background: #fdeee0;
+  color: #c9701a;
+  border-radius: 999px;
+  padding: 2px 9px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-left: 6px;
+}

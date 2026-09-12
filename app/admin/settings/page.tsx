@@ -1,14 +1,17 @@
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import NotificationSettingsClient from "../../../components/admin/settings/NotificationSettingsClient";
 import SellerSettingsClient from "../../../components/admin/settings/SellerSettingsClient";
+import AffiliateProgramSettingsClient from "../../../components/admin/settings/AffiliateProgramSettingsClient";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
 import { getSellerPhoneNumber, getSellerSignatureName } from "../../../lib/content";
+import { getAffiliateProgramSettings } from "../../../lib/affiliateSettings";
 import type { AdminNotificationPreferencesRow, PushSubscriptionRow } from "../../../lib/pushTypes";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
+import "../../../components/admin/puppies/puppies.css";
 import "../../../components/admin/settings/settings.css";
 
 export const dynamic = "force-dynamic";
@@ -18,6 +21,7 @@ export default async function SettingsPage() {
   const unreadMessageCount = await getUnreadMessageCount();
   const sellerPhone = await getSellerPhoneNumber();
   const sellerSignatureName = await getSellerSignatureName();
+  const affiliateSettings = await getAffiliateProgramSettings();
 
   const supabase = createServerSupabaseClient();
   const {
@@ -61,6 +65,7 @@ export default async function SettingsPage() {
         </div>
 
         <SellerSettingsClient initialPhone={sellerPhone} initialSignatureName={sellerSignatureName} />
+        <AffiliateProgramSettingsClient initial={affiliateSettings} />
 
         {loadError ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>

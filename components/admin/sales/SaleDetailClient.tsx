@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { logPayment, updatePayment, deletePayment, cancelSale } from "../../../app/admin/sales/actions";
+import {
+  logPayment,
+  updatePayment,
+  deletePayment,
+  cancelSale,
+  refundSale,
+  updateFulfillment,
+} from "../../../app/admin/sales/actions";
 import {
   generateBillOfSale,
   generateHealthGuarantee,
@@ -24,6 +31,13 @@ import {
   type PaymentType,
   type PaymentRow,
 } from "../../../lib/saleTypes";
+import {
+  FULFILLMENT_METHOD_OPTIONS,
+  FULFILLMENT_STATUS_OPTIONS,
+  COMMISSION_STATUS_LABEL,
+  type FulfillmentMethod,
+  type FulfillmentStatus,
+} from "../../../lib/affiliateTypes";
 
 function todayDateInput(): string {
   return new Date().toISOString().slice(0, 10);
@@ -46,6 +60,22 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
   const [error, setError] = useState<string | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [generating, setGenerating] = useState(false);
+
+  const [fulfillMethod, setFulfillMethod] = useState<FulfillmentMethod | "">(detail.sale.fulfillment_method || "");
+  const [fulfillStatus, setFulfillStatus] = useState<FulfillmentStatus>(detail.sale.fulfillment_status);
+  const [scheduledAt, setScheduledAt] = useState(detail.sale.scheduled_fulfillment_at?.slice(0, 10) || "");
+  const [fulfilledAt, setFulfilledAt] = useState(detail.sale.fulfilled_at?.slice(0, 10) || todayDateInput());
+  const [fulfillNotes, setFulfillNotes] = useState(detail.sale.fulfillment_notes || "");
+  const [savingFulfillment, setSavingFulfillment] = useState(false);
+  const [fulfillmentError, setFulfillmentError] = useState<string | null>(null);
+
+  const [showRefundForm, setShowRefundForm] = useState(false);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundMethod, setRefundMethod] = useState<PaymentMethod>("cash_app");
+  const [refundReason, setRefundReason] = useState("");
+  const [refundAt, setRefundAt] = useState(todayDateInput());
+  const [refunding, setRefunding] = useState(false);
+  const [refundError, setRefundError] = useState<string | null>(null);
 
   const remaining = Math.max(0, detail.sale.sale_price_cents - detail.totalPaidCents);
 
@@ -118,9 +148,75 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
   }
 
   async function handleCancel() {
-    if (!confirm("Cancel this sale? Payments already logged will stay on record.")) return;
-    await cancelSale(detail.sale.id);
+    const reason = prompt("Reason for cancelling this sale?");
+    if (reason === null) return;
+    if (
+      !confirm(
+        "Cancel this sale? Payments already logged will stay on record. Any unpaid affiliate commission on it will be voided."
+      )
+    ) {
+      return;
+    }
+    const result = await cancelSale(detail.sale.id, reason);
+    if (!result.success) {
+      alert(result.error);
+      return;
+    }
     router.push("/admin/sales");
+  }
+
+  async function handleSaveFulfillment() {
+    setFulfillmentError(null);
+    setSavingFulfillment(true);
+    const result = await updateFulfillment(detail.sale.id, {
+      method: fulfillMethod || null,
+      status: fulfillStatus,
+      scheduledFulfillmentAt: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+      fulfilledAt: fulfillStatus === "completed" ? new Date(fulfilledAt).toISOString() : null,
+      notes: fulfillNotes,
+    });
+    setSavingFulfillment(false);
+    if (!result.success) {
+      setFulfillmentError(result.error);
+      return;
+    }
+    router.refresh();
+  }
+
+  async function handleRefund() {
+    setRefundError(null);
+    const amountNum = parseFloat(refundAmount);
+    if (isNaN(amountNum) || amountNum <= 0) {
+      setRefundError("Enter a valid refund amount.");
+      return;
+    }
+    if (!refundReason.trim()) {
+      setRefundError("A reason is required.");
+      return;
+    }
+    if (
+      !confirm(
+        `Refund ${formatPriceFromCents(Math.round(amountNum * 100))} and close this sale? This cannot be undone from here.`
+      )
+    ) {
+      return;
+    }
+
+    setRefunding(true);
+    const result = await refundSale(detail.sale.id, {
+      amountCents: Math.round(amountNum * 100),
+      method: refundMethod,
+      reason: refundReason.trim(),
+      refundedAt: new Date(refundAt).toISOString(),
+    });
+    setRefunding(false);
+
+    if (!result.success) {
+      setRefundError(result.error);
+      return;
+    }
+    router.refresh();
+    setShowRefundForm(false);
   }
 
   async function handleGenerateBillOfSale() {
@@ -194,6 +290,103 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
             <span>{formatPriceFromCents(remaining)}</span>
           </div>
         </div>
+
+        {detail.sale.paid_in_full_at && (
+          <p className="admin-hint" style={{ marginTop: 8 }}>
+            Paid in full on {formatDateOnly(detail.sale.paid_in_full_at)}
+          </p>
+        )}
+
+        {detail.sale.closed_at && (
+          <p className="admin-hint" style={{ marginTop: 4 }}>
+            {detail.sale.status === "refunded" ? "Refunded" : "Cancelled"} on {formatDateOnly(detail.sale.closed_at)}
+            {detail.sale.closed_reason ? ` - ${detail.sale.closed_reason}` : ""}
+          </p>
+        )}
+      </div>
+
+      {detail.sale.affiliate_id && (
+        <div className="profile-card">
+          <h2 className="admin-card__title">Affiliate Attribution</h2>
+          <div className="profit-box-line">
+            <span>Referred by</span>
+            <span>{detail.affiliateName || "Unknown affiliate"}</span>
+          </div>
+          {detail.commission && (
+            <>
+              <div className="profit-box-line">
+                <span>Commission</span>
+                <span>{formatPriceFromCents(detail.commission.amountCents)}</span>
+              </div>
+              <div className="profit-box-line">
+                <span>Commission status</span>
+                <span>{COMMISSION_STATUS_LABEL[detail.commission.status as keyof typeof COMMISSION_STATUS_LABEL]}</span>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      <div className="profile-card">
+        <h2 className="admin-card__title">Fulfillment</h2>
+        <p className="admin-hint" style={{ marginBottom: 10 }}>
+          When the customer actually receives the puppy - this date, not the sale date or a payment date, starts the
+          affiliate commission hold period.
+        </p>
+        {fulfillmentError && <div className="inquire-error">{fulfillmentError}</div>}
+
+        <div className="puppy-form-row">
+          <div className="admin-field">
+            <label className="admin-field__label">Method</label>
+            <select
+              className="admin-select"
+              value={fulfillMethod}
+              onChange={(e) => setFulfillMethod(e.target.value as FulfillmentMethod | "")}
+            >
+              <option value="">Not set</option>
+              {FULFILLMENT_METHOD_OPTIONS.map((m) => (
+                <option key={m} value={m}>
+                  {m === "pickup" ? "Pickup" : "Delivery"}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="admin-field">
+            <label className="admin-field__label">Status</label>
+            <select
+              className="admin-select"
+              value={fulfillStatus}
+              onChange={(e) => setFulfillStatus(e.target.value as FulfillmentStatus)}
+            >
+              {FULFILLMENT_STATUS_OPTIONS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "pending" ? "Pending" : s === "scheduled" ? "Scheduled" : "Completed"}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="admin-field">
+          <label className="admin-field__label">Scheduled date (optional)</label>
+          <input className="admin-input" type="date" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+        </div>
+
+        {fulfillStatus === "completed" && (
+          <div className="admin-field">
+            <label className="admin-field__label">Date customer actually received the puppy</label>
+            <input className="admin-input" type="date" value={fulfilledAt} onChange={(e) => setFulfilledAt(e.target.value)} />
+          </div>
+        )}
+
+        <div className="admin-field">
+          <label className="admin-field__label">Notes (optional)</label>
+          <input className="admin-input" value={fulfillNotes} onChange={(e) => setFulfillNotes(e.target.value)} />
+        </div>
+
+        <button type="button" className="admin-btn admin-btn--primary" onClick={handleSaveFulfillment} disabled={savingFulfillment}>
+          {savingFulfillment ? "Saving..." : "Save Fulfillment"}
+        </button>
       </div>
 
       <div className="profile-card">
@@ -348,9 +541,56 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
       </div>
 
       {detail.sale.status === "active" && (
-        <button type="button" className="admin-btn admin-btn--danger" onClick={handleCancel}>
-          Cancel this sale
-        </button>
+        <div className="profile-card profile-danger-zone">
+          <h2 className="admin-card__title">Refund or Cancel</h2>
+
+          {!showRefundForm ? (
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <button type="button" className="admin-btn admin-btn--danger" onClick={() => setShowRefundForm(true)}>
+                Refund Sale
+              </button>
+              <button type="button" className="admin-btn" onClick={handleCancel}>
+                Cancel this sale
+              </button>
+            </div>
+          ) : (
+            <div>
+              {refundError && <div className="inquire-error">{refundError}</div>}
+              <div className="admin-field">
+                <label className="admin-field__label">Refund amount ($)</label>
+                <input className="admin-input" type="number" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} />
+              </div>
+              <div className="puppy-form-row">
+                <div className="admin-field">
+                  <label className="admin-field__label">Method</label>
+                  <select className="admin-select" value={refundMethod} onChange={(e) => setRefundMethod(e.target.value as PaymentMethod)}>
+                    {PAYMENT_METHOD_OPTIONS.map((m) => (
+                      <option key={m} value={m}>
+                        {PAYMENT_METHOD_LABEL[m]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="admin-field">
+                  <label className="admin-field__label">Date</label>
+                  <input className="admin-input" type="date" value={refundAt} onChange={(e) => setRefundAt(e.target.value)} />
+                </div>
+              </div>
+              <div className="admin-field">
+                <label className="admin-field__label">Reason (required)</label>
+                <input className="admin-input" value={refundReason} onChange={(e) => setRefundReason(e.target.value)} />
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button type="button" className="admin-btn admin-btn--danger" onClick={handleRefund} disabled={refunding}>
+                  {refunding ? "Refunding..." : "Confirm Refund"}
+                </button>
+                <button type="button" className="admin-btn" onClick={() => setShowRefundForm(false)} disabled={refunding}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { normalizePhone, normalizeEmail } from "../../../lib/normalize";
 import { findOrCreateContact } from "../../../lib/duplicateMatch";
+import { attachClickAttributionToContact, AFFILIATE_CLICK_COOKIE } from "../../../lib/affiliateAttribution";
 import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
 import { sendPushToAdmins, sanitizeForNotification } from "../../../lib/push";
 import type { NotificationEventType } from "../../../lib/pushTypes";
@@ -160,6 +161,14 @@ export async function POST(request: NextRequest) {
     consentToContact,
     source: "website_inquire_form",
   });
+
+  // 1b. Attach affiliate attribution, if this visitor currently carries
+  // a valid click cookie - re-validated live (click not expired, its
+  // affiliate still approved), never just trusted from the cookie alone.
+  const clickId = request.cookies.get(AFFILIATE_CLICK_COOKIE)?.value;
+  if (clickId) {
+    await attachClickAttributionToContact(contact.id, clickId);
+  }
 
   // 2. Build type-specific promoted columns + full form_data snapshot.
   const inquiryColumns: Record<string, unknown> = {

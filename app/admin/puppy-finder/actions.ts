@@ -2,20 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "../../../lib/supabase/admin";
-import { createServerSupabaseClient } from "../../../lib/supabase/server";
+import { requireAdminUser } from "../../../lib/authz";
 import { resizeImageForWeb } from "../../../lib/imageProcessing";
 import type { OptionStatus } from "../../../lib/puppyFinderTypes";
+import { slugify } from "../../../lib/puppyTypes";
+import { startSale } from "../sales/actions";
 
 export type ActionResult = { success: true } | { success: false; error: string };
-
-async function requireAdminUser(): Promise<{ ok: true } | { ok: false; error: string }> {
-  const supabase = createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: "Not authenticated" };
-  return { ok: true };
-}
 
 export type CreateProposalResult = { success: true; proposalId: string } | { success: false; error: string };
 
@@ -278,18 +271,26 @@ export async function removeOptionPhoto(optionId: string, proposalId: string, ur
   return { success: true };
 }
 
+export type ConfirmDepositResult = { success: true; saleId: string } | { success: false; error: string };
+
 /**
- * Manual-only: records that the admin has personally received and
- * confirmed the required deposit off-site. No amount, no payment
- * method, no payments/sales row - this is a timestamped toggle, not a
- * transaction. Only allowed once the customer has actually selected a
- * puppy (status 'selected'); this is deliberately never true until the
- * admin clicks this, so the customer's page can never falsely claim
- * their puppy is secured.
+ * Confirming the deposit is the canonical Puppy Finder -> Puppy -> Sale
+ * conversion point (blueprint section B). The selected option is
+ * promoted into a real puppies row (source_puppy_finder_option_id
+ * remembers where it came from; show_on_website defaults to false -
+ * this was sourced for one specific customer, not public catalog
+ * inventory), and a normal Sale is started through the exact same
+ * startSale() every other sale uses - no parallel sales-creation path.
+ * From this point on the puppy behaves exactly like any catalog puppy:
+ * same payments, fulfillment tracking, and affiliate commission flow.
  */
-export async function confirmDepositReceived(proposalId: string): Promise<ActionResult> {
+export async function confirmDepositReceived(proposalId: string, salePriceCents: number): Promise<ConfirmDepositResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
+
+  if (!salePriceCents || salePriceCents <= 0) {
+    return { success: false, error: "Enter a valid sale price." };
+  }
 
   const admin = createAdminClient();
 
@@ -304,6 +305,47 @@ export async function confirmDepositReceived(proposalId: string): Promise<Action
     return { success: false, error: "The customer hasn't selected a puppy yet." };
   }
 
+  const { data: option } = await admin
+    .from("puppy_finder_options")
+    .select("*")
+    .eq("proposal_id", proposalId)
+    .eq("is_selected", true)
+    .maybeSingle();
+
+  if (!option) return { success: false, error: "No selected puppy option found on this proposal." };
+
+  const puppyName = option.name || "Puppy Finder Puppy";
+  // puppy_finder_options.gender is free text (admin-typed, no
+  // constraint); puppies.gender is a strict 'male'|'female' check
+  // constraint - normalize rather than pass the raw string through.
+  const normalizedGender = (option.gender || "").trim().toLowerCase().startsWith("f") ? "female" : "male";
+  const { data: puppy, error: puppyError } = await admin
+    .from("puppies")
+    .insert({
+      name: puppyName,
+      slug: `${slugify(puppyName, option.breed || "puppy")}-${option.id.slice(0, 8)}`,
+      breed: option.breed || "Unknown",
+      price_cents: option.price_cents || salePriceCents,
+      gender: normalizedGender,
+      color: option.color || null,
+      description: option.description || null,
+      photo_urls: option.photo_urls || [],
+      status: "hold",
+      show_on_website: false,
+      source_puppy_finder_option_id: option.id,
+    })
+    .select("id")
+    .single();
+
+  if (puppyError || !puppy) {
+    return { success: false, error: puppyError?.message || "Could not create the puppy record." };
+  }
+
+  await admin.from("puppy_finder_options").update({ converted_puppy_id: puppy.id }).eq("id", option.id);
+
+  const saleResult = await startSale(puppy.id, proposal.contact_id, salePriceCents);
+  if (!saleResult.success) return { success: false, error: saleResult.error };
+
   const { error } = await admin
     .from("puppy_finder_proposals")
     .update({ status: "deposit_confirmed", deposit_confirmed_at: new Date().toISOString() })
@@ -313,5 +355,5 @@ export async function confirmDepositReceived(proposalId: string): Promise<Action
 
   revalidatePath(`/admin/puppy-finder/${proposalId}`);
   revalidatePath(`/admin/contacts/${proposal.contact_id}`);
-  return { success: true };
+  return { success: true, saleId: saleResult.saleId };
 }

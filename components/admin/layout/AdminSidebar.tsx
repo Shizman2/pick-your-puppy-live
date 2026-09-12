@@ -9,6 +9,9 @@ export type AdminNavKey =
   | "contacts"
   | "puppies"
   | "sales"
+  | "affiliates"
+  | "commissions"
+  | "payouts"
   | "breeders"
   | "breeds"
   | "messages"
@@ -39,6 +42,9 @@ const NAV_ITEMS: NavItem[] = [
   { key: "contacts", label: "Contacts", href: "/admin/contacts", icon: <Icon path="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21c0-4 4-6 8-6s8 2 8 6" /> },
   { key: "puppies", label: "Puppies", href: "/admin/puppies", icon: <Icon path="M12 21c4-3 7-6 7-10a5 5 0 00-9.5-2A5 5 0 005 11c0 4 3 7 7 10z" /> },
   { key: "sales", label: "Sales & Payments", href: "/admin/sales", icon: <Icon path="M12 2v20M17 7a4 4 0 00-4-3H10a3 3 0 000 6h4a3 3 0 010 6h-3a4 4 0 01-4-3" /> },
+  { key: "affiliates", label: "Affiliates", href: "/admin/affiliates", icon: <Icon path="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" /> },
+  { key: "commissions", label: "Commissions", href: "/admin/commissions", icon: <Icon path="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /> },
+  { key: "payouts", label: "Payouts", href: "/admin/payouts", icon: <Icon path="M2 7h20v12a2 2 0 01-2 2H4a2 2 0 01-2-2V7zM2 7l2-4h16l2 4M12 12v4" /> },
   { key: "breeders", label: "Breeders", href: "/admin/breeders", icon: <Icon path="M8 12a3 3 0 100-6 3 3 0 000 6zM16 12a3 3 0 100-6 3 3 0 000 6zM2 20c0-3 3-5 6-5s6 2 6 5M10 20c0-3 3-5 6-5s6 2 6 5" /> },
   { key: "breeds", label: "Breeds", href: "/admin/breeds", icon: <Icon path="M12 21c4-3 7-6 7-10a5 5 0 00-9.5-2A5 5 0 005 11c0 4 3 7 7 10zM9 8h.01M15 8h.01" /> },
   { key: "messages", label: "Messages", href: "/admin/messages", icon: <Icon path="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" /> },

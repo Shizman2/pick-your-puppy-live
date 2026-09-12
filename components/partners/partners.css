@@ -1,0 +1,132 @@
+/* Affiliate portal - public pages (apply/login) and the authenticated
+   /partners/* shell. Mirrors .login-shell/.login-card from globals.css
+   for visual consistency, but kept in its own namespace since this is
+   a distinct public-facing area, not the admin login. */
+
+.partners-shell {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  padding: 24px;
+}
+
+.partners-card {
+  width: 100%;
+  max-width: 480px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+}
+
+.partners-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 24px;
+  color: var(--color-text);
+  margin: 0 0 6px;
+}
+
+.partners-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 0 0 20px;
+}
+
+.partners-success {
+  text-align: center;
+  padding: 24px 0;
+}
+
+.partners-success-icon {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+/* Authenticated portal shell - simpler than adminshell.css (no left
+   nav collapse needed for the handful of affiliate pages), but still
+   mobile-first with a top bar + stacked tabs. */
+.partners-app {
+  min-height: 100dvh;
+  background: #fafafa;
+}
+
+.partners-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.partners-topbar-brand {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.partners-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 10px 20px 0;
+  overflow-x: auto;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.partners-tab {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.partners-tab.active {
+  color: var(--color-accent);
+  border-bottom-color: var(--color-accent);
+}
+
+.partners-main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 20px 64px;
+}
+
+.partners-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.partners-stat-card {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+}
+
+.partners-stat-value {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--color-text);
+}
+
+.partners-stat-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+@media (max-width: 640px) {
+  .partners-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

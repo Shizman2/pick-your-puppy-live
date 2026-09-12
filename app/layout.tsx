@@ -1,4 +1,5 @@
 import "./globals.css";
+import AffiliateClickCapture from "../components/public/AffiliateClickCapture";
 
 export const metadata = {
   title: "Pick Your Puppy Live",
@@ -8,7 +9,10 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AffiliateClickCapture />
+        {children}
+      </body>
     </html>
   );
 }
