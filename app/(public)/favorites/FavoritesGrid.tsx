@@ -62,29 +62,33 @@ export default function FavoritesGrid({ favorites }: { favorites: VisitorFavorit
         const p = f.puppy;
         const badge = STATUS_BADGE[p.status] || STATUS_BADGE.available;
         return (
-          <a key={f.id} className="pcard" href={`/puppies/${p.slug}`}>
-            <div className="pcard-img-wrap">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.photoUrl} alt={p.breed} />
+          <div key={f.id} className="pcard">
+            <a className="pcard-link" href={`/puppies/${p.slug}`}>
+              <div className="pcard-img-wrap">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.photoUrl} alt={p.breed} />
+              </div>
+              <div className="pcard-body">
+                <div className="pcard-top-row">
+                  <span className="pcard-status-badge" style={{ background: badge.color }}>
+                    {badge.label}
+                  </span>
+                </div>
+                <div className="pcard-name">{p.name || p.breed}</div>
+                <div className="pcard-breed">{p.breed}</div>
+                <div className="pcard-meta">
+                  <span>{p.gender === "male" ? "Male" : "Female"}</span>
+                </div>
+                <div className="pcard-footer">
+                  <span className="pcard-price">{formatPriceFromCents(p.salePriceCents ?? p.priceCents)}</span>
+                  <span className="pcard-btn">View ›</span>
+                </div>
+              </div>
+            </a>
+            <div className="pcard-heart-overlay">
+              <RemoveHeart puppyId={p.id} onRemoved={() => handleRemoved(f.id)} />
             </div>
-            <div className="pcard-body">
-              <div className="pcard-top-row">
-                <span className="pcard-status-badge" style={{ background: badge.color }}>
-                  {badge.label}
-                </span>
-                <RemoveHeart puppyId={p.id} onRemoved={() => handleRemoved(f.id)} />
-              </div>
-              <div className="pcard-name">{p.name || p.breed}</div>
-              <div className="pcard-breed">{p.breed}</div>
-              <div className="pcard-meta">
-                <span>{p.gender === "male" ? "Male" : "Female"}</span>
-              </div>
-              <div className="pcard-footer">
-                <span className="pcard-price">{formatPriceFromCents(p.salePriceCents ?? p.priceCents)}</span>
-                <span className="pcard-btn">View ›</span>
-              </div>
-            </div>
-          </a>
+          </div>
         );
       })}
     </div>

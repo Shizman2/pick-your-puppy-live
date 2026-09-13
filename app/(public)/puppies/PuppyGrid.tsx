@@ -99,32 +99,39 @@ export default function PuppyGrid({ puppies }: { puppies: HomepagePuppy[] }) {
         {filtered.map((p) => {
           const badge = STATUS_BADGE[p.status] || STATUS_BADGE.available;
           return (
-            <a key={p.id} className="pcard" href={`/puppies/${p.slug}`}>
-              <div className="pcard-img-wrap">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={p.photoUrl} alt={p.breed} />
-                <Watermark />
+            <div key={p.id} className="pcard">
+              <a className="pcard-link" href={`/puppies/${p.slug}`}>
+                <div className="pcard-img-wrap">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={p.photoUrl} alt={p.breed} />
+                  <Watermark />
+                </div>
+                <div className="pcard-body">
+                  <div className="pcard-top-row">
+                    <span className="pcard-status-badge" style={{ background: badge.color }}>
+                      {badge.label}
+                    </span>
+                  </div>
+                  <div className="pcard-name">{p.name || p.breed}</div>
+                  <div className="pcard-breed">{p.breed}</div>
+                  <div className="pcard-meta">
+                    <span>{p.gender === "male" ? "Male" : "Female"}</span>
+                    <span className="sep">|</span>
+                    <span>{p.ageWeeks ?? "—"} wks</span>
+                  </div>
+                  <div className="pcard-footer">
+                    <PriceBlock puppy={p} />
+                    <span className="pcard-btn">Details ›</span>
+                  </div>
+                </div>
+              </a>
+              {/* Sibling of the <a>, not nested inside it - a <button>
+                  inside an <a> is invalid HTML content model and was
+                  unreliable for click handling across browsers. */}
+              <div className="pcard-heart-overlay">
+                <FavoriteButton puppyId={p.id} initialCount={p.favoritesCount} />
               </div>
-              <div className="pcard-body">
-                <div className="pcard-top-row">
-                  <span className="pcard-status-badge" style={{ background: badge.color }}>
-                    {badge.label}
-                  </span>
-                  <FavoriteButton puppyId={p.id} initialCount={p.favoritesCount} />
-                </div>
-                <div className="pcard-name">{p.name || p.breed}</div>
-                <div className="pcard-breed">{p.breed}</div>
-                <div className="pcard-meta">
-                  <span>{p.gender === "male" ? "Male" : "Female"}</span>
-                  <span className="sep">|</span>
-                  <span>{p.ageWeeks ?? "—"} wks</span>
-                </div>
-                <div className="pcard-footer">
-                  <PriceBlock puppy={p} />
-                  <span className="pcard-btn">Details ›</span>
-                </div>
-              </div>
-            </a>
+            </div>
           );
         })}
         {filtered.length === 0 && (

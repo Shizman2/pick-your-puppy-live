@@ -41,34 +41,41 @@ export default function FeaturedPuppies({ puppies }: { puppies: HomepagePuppy[] 
       {puppies.map((p) => {
         const badge = STATUS_BADGE[p.status] || STATUS_BADGE.available;
         return (
-          <a key={p.id} className="puppy-card" href={`/puppies/${p.slug}`}>
-            <div className="puppy-card-img-wrap">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img className="puppy-card-img" src={p.photoUrl} alt={p.breed} />
-              <Watermark />
-            </div>
-            <div className="puppy-card-body">
-              <div className="pcard-top-row">
-                <span className="pcard-status-badge" style={{ background: badge.color }}>
-                  {badge.label}
-                </span>
-                <FavoriteButton puppyId={p.id} initialCount={p.favoritesCount} />
+          <div key={p.id} className="puppy-card">
+            <a className="puppy-card-link" href={`/puppies/${p.slug}`}>
+              <div className="puppy-card-img-wrap">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img className="puppy-card-img" src={p.photoUrl} alt={p.breed} />
+                <Watermark />
               </div>
+              <div className="puppy-card-body">
+                <div className="pcard-top-row">
+                  <span className="pcard-status-badge" style={{ background: badge.color }}>
+                    {badge.label}
+                  </span>
+                </div>
 
-              <div className="puppy-card-name">{p.name || p.breed}</div>
-              <div className="puppy-card-breed">{p.breed}</div>
-              <div className="puppy-card-meta">
-                <span>{p.gender === "male" ? "Male" : "Female"}</span>
-                <span className="sep">|</span>
-                <span>{p.ageWeeks ?? "—"} wks old</span>
-              </div>
+                <div className="puppy-card-name">{p.name || p.breed}</div>
+                <div className="puppy-card-breed">{p.breed}</div>
+                <div className="puppy-card-meta">
+                  <span>{p.gender === "male" ? "Male" : "Female"}</span>
+                  <span className="sep">|</span>
+                  <span>{p.ageWeeks ?? "—"} wks old</span>
+                </div>
 
-              <div className="pcard-bottom-row">
-                <PriceBlock puppy={p} />
-                <span className="btn-details">See Details ›</span>
+                <div className="pcard-bottom-row">
+                  <PriceBlock puppy={p} />
+                  <span className="btn-details">See Details ›</span>
+                </div>
               </div>
+            </a>
+            {/* Sibling of the <a>, not nested inside it - a <button>
+                inside an <a> is invalid HTML content model and was
+                unreliable for click handling across browsers. */}
+            <div className="puppy-card-heart-overlay">
+              <FavoriteButton puppyId={p.id} initialCount={p.favoritesCount} />
             </div>
-          </a>
+          </div>
         );
       })}
     </div>

@@ -90,13 +90,32 @@
   padding: 0 20px 30px;
 }
 .pcard {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   height: 292px;
   border-radius: var(--pp-radius);
   overflow: hidden;
   box-shadow: var(--pp-shadow);
   background: #fff;
+}
+.pcard-link {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+.pcard-heart-overlay {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+.pcard-heart-overlay .favorite-btn {
+  padding: 6px 8px;
+  margin: 0;
 }
 .pcard-img-wrap {
   position: relative;

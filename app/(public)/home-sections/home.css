@@ -83,13 +83,37 @@
 
 /* Puppy Card */
 .puppy-card {
-  display: flex;
+  position: relative;
   height: 168px;
   border-radius: var(--pp-radius);
   overflow: hidden;
   box-shadow: var(--pp-shadow);
   margin-bottom: 14px;
   background: #fff;
+}
+.puppy-card-link {
+  display: flex;
+  height: 100%;
+  color: inherit;
+  text-decoration: none;
+}
+/* This card's image is a fixed-width strip on the LEFT (not a
+   full-width photo on top like the /puppies grid card), so "top right
+   of the image" would sit right at the text boundary with no gutter -
+   top-left of the thumbnail is the corner that's actually clean to
+   anchor to here without hardcoding the strip's width. */
+.puppy-card-heart-overlay {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 999px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+}
+.puppy-card-heart-overlay .favorite-btn {
+  padding: 6px 8px;
+  margin: 0;
 }
 .puppy-card-img-wrap {
   position: relative;

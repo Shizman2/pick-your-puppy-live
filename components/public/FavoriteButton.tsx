@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toggleFavorite, isPuppyFavorited } from "../../app/(public)/favoriteActions";
 
 function HeartIcon({ filled, size }: { filled: boolean; size: number }) {
@@ -36,10 +36,17 @@ export default function FavoriteButton({
   const [count, setCount] = useState(initialCount);
   const [pending, setPending] = useState(false);
 
+  // The mount-time "is this already favorited" check and a fast click
+  // are two independent requests racing each other - without this
+  // guard, a click made before that check resolves could get silently
+  // overwritten back to the (stale) pre-click state once it finally
+  // does. Once the visitor has clicked, their own action always wins.
+  const hasInteracted = useRef(false);
+
   useEffect(() => {
     let cancelled = false;
     isPuppyFavorited(puppyId).then((favorited) => {
-      if (!cancelled) setIsFavorited(favorited);
+      if (!cancelled && !hasInteracted.current) setIsFavorited(favorited);
     });
     return () => {
       cancelled = true;
@@ -53,6 +60,7 @@ export default function FavoriteButton({
     e.stopPropagation();
     if (pending) return;
 
+    hasInteracted.current = true;
     const optimisticNext = !isFavorited;
     setIsFavorited(optimisticNext);
     setCount((c) => Math.max(0, c + (optimisticNext ? 1 : -1)));
