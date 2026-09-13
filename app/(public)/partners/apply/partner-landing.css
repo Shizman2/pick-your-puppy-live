@@ -1,0 +1,402 @@
+/* Partner Program landing page - page-specific styles, scoped to this
+   route only. Reuses --pp-* tokens from styles/public-tokens.css
+   throughout (loaded by the (public) route group this page now lives
+   in). --partner-red/--partner-red-dark/--partner-cream are the only
+   values this page needs that don't already exist as site tokens - see
+   the implementation report for why (the reference's CTA/logo red and
+   warm cream sections have no existing equivalent anywhere else on the
+   public site, which otherwise leans entirely on --pp-blue).
+
+   Responsive note: this whole site (every public page, not just this
+   one) is built on a single fixed-width app frame - .pp-body caps at
+   --pp-max-width (430px) and centers on every screen size, with no
+   desktop-specific breakpoint anywhere in public-shell.css. That's an
+   existing, deliberate, sitewide decision, not something page-specific
+   CSS should override - so "desktop" here means the same frame
+   centered with more gray margin around it, exactly like every other
+   page on this site already behaves, not a separate wide layout. */
+
+/* Page-wide wrapper (set in page.tsx) - these two values don't exist
+   as site tokens anywhere else, see the file header comment above for
+   why. Declared once here (not nested inside .partner-hero) so every
+   section below - not just the hero - can actually see them; CSS
+   custom properties only cascade to descendants, not sideways to
+   sibling sections. */
+.partner-landing {
+  --partner-red: #e0261f;
+  --partner-red-dark: #b91c1c;
+  --partner-cream: #fdf1e0;
+}
+
+.partner-section {
+  padding: 0 20px 32px;
+}
+
+.partner-section-title {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--pp-text);
+  margin: 0 0 4px;
+}
+
+.partner-section-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  margin: 0 0 16px;
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- */
+/* Hero                                                              */
+/* ---------------------------------------------------------------- */
+.partner-hero {
+  display: flex;
+  align-items: stretch;
+  background: var(--partner-cream);
+  border-radius: 18px;
+  overflow: hidden;
+  margin: 16px 20px 32px;
+  min-height: 300px;
+}
+
+.partner-hero-text {
+  flex: 1.15;
+  min-width: 0;
+  padding: 18px 8px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+}
+
+.partner-hero-eyebrow {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--pp-text);
+}
+
+.partner-hero-title {
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--pp-text);
+  margin: 2px 0 4px;
+}
+
+.partner-hero-title-accent {
+  color: var(--pp-blue);
+}
+
+.partner-hero-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  max-width: 230px;
+}
+
+.partner-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  background: var(--partner-red);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 12px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+}
+
+.partner-hero-login {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--pp-muted);
+  margin-top: 10px;
+}
+
+.partner-hero-login a {
+  color: var(--pp-blue);
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+.partner-hero-photo {
+  flex: 0.85;
+  position: relative;
+  min-width: 108px;
+}
+
+.partner-hero-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+
+.partner-hero-photo--placeholder {
+  background: linear-gradient(160deg, #f6e3c8, #ecc98c);
+}
+
+.partner-hero-decal {
+  position: absolute;
+  top: 12px;
+  right: 10px;
+  font-style: italic;
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--pp-blue-dark);
+  text-align: right;
+  line-height: 1.3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+/* ---------------------------------------------------------------- */
+/* How It Works                                                      */
+/* ---------------------------------------------------------------- */
+.partner-steps-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.partner-step-card {
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  padding: 14px 12px;
+  box-shadow: var(--pp-shadow);
+}
+
+.partner-step-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.partner-step-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pp-text);
+  line-height: 1.3;
+  margin-bottom: 3px;
+}
+
+.partner-step-desc {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.5;
+}
+
+/* ---------------------------------------------------------------- */
+/* Why Partner With Us                                               */
+/* ---------------------------------------------------------------- */
+.partner-whyus {
+  background: var(--pp-blue-light);
+  padding: 28px 20px 32px;
+}
+
+.partner-whyus-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.partner-whyus-card {
+  background: #fff;
+  border-radius: var(--pp-radius);
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.partner-whyus-card--wide {
+  grid-column: 1 / -1;
+}
+
+.partner-whyus-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--pp-blue-light);
+  color: var(--pp-blue);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.partner-whyus-title {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--pp-text);
+  line-height: 1.3;
+  margin-bottom: 2px;
+}
+
+.partner-whyus-desc {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.45;
+}
+
+/* ---------------------------------------------------------------- */
+/* How You Earn                                                      */
+/* ---------------------------------------------------------------- */
+.partner-earn {
+  background: var(--partner-cream);
+  margin: 0 20px 32px;
+  border-radius: 18px;
+  padding: 22px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.partner-earn-title {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--pp-text);
+  margin: 0 0 8px;
+}
+
+.partner-earn-copy {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.partner-earn-decal {
+  flex-shrink: 0;
+  width: 68px;
+  color: var(--partner-red);
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-style: italic;
+  line-height: 1.3;
+  display: none;
+}
+
+@media (min-width: 380px) {
+  .partner-earn-decal {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* FAQ (reuses .faq-item/.faq-q/.faq-icon/.faq-a from ../../faq/faq.css) */
+/* ---------------------------------------------------------------- */
+.partner-faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ---------------------------------------------------------------- */
+/* Application form                                                  */
+/* ---------------------------------------------------------------- */
+.partner-apply-section {
+  padding: 0 20px 40px;
+}
+
+.partner-apply-card {
+  background: #fff;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  padding: 20px 18px;
+}
+
+.partner-apply-card .admin-field {
+  margin-bottom: 14px;
+}
+
+.partner-apply-card .admin-input {
+  min-height: 44px;
+}
+
+.partner-apply-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  background: var(--partner-red);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  border: none;
+  border-radius: 999px;
+  padding: 14px;
+  margin-top: 4px;
+  cursor: pointer;
+}
+
+.partner-apply-submit:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+/* ---------------------------------------------------------------- */
+/* Footer                                                            */
+/* ---------------------------------------------------------------- */
+.partner-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 28px;
+  border-top: 1px solid var(--pp-border);
+}
+
+.partner-footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.partner-footer-brand img {
+  width: 26px;
+  height: 26px;
+}
+
+.partner-footer-name {
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--pp-text);
+}
+
+.partner-footer-tagline {
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--pp-muted);
+}
+
+.partner-footer-motto {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  text-align: right;
+}

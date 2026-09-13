@@ -10,12 +10,16 @@
 */
 
 .affiliate-success-shell {
-  min-height: 100dvh;
+  /* No longer min-height:100dvh - this now renders as one section on
+     the full Partner Program landing page (hero/how-it-works/etc.
+     still above it), not a standalone page with nothing else on it, so
+     forcing a full viewport height here would leave a huge empty gap.
+     The card itself is untouched from the approved design. */
   display: flex;
   align-items: center;
   justify-content: center;
   background: #fafafa;
-  padding: 24px;
+  padding: 40px 20px;
 }
 
 .affiliate-success-card {

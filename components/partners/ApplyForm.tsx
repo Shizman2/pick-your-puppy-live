@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { submitAffiliateApplication } from "../../app/partners/apply/actions";
+import { submitAffiliateApplication } from "../../app/(public)/partners/apply/actions";
 import "../../styles/public-tokens.css";
 import "./applySuccess.css";
 
@@ -44,7 +44,7 @@ export default function ApplyForm() {
 
   if (submitted) {
     return (
-      <div className="affiliate-success-shell">
+      <section id="apply-form" className="affiliate-success-shell">
         <div className="affiliate-success-card">
           <div className="affiliate-success-icon-wrap">
             <span className="affiliate-success-spark affiliate-success-spark--tl" aria-hidden="true" />
@@ -78,19 +78,17 @@ export default function ApplyForm() {
             </svg>
           </Link>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="partners-shell">
-      <div className="partners-card">
-        <form onSubmit={handleSubmit}>
-          <h1 className="partners-title">Become an Affiliate</h1>
-          <p className="partners-subtitle">
-            Already a partner? <Link href="/partners/login">Log in</Link>.
-          </p>
+    <section id="apply-form" className="partner-apply-section">
+      <div className="partner-apply-card">
+        <h2 className="partner-section-title">Become an Affiliate</h2>
+        <p className="partner-section-sub">Fill out the form below and we&apos;ll be in touch soon!</p>
 
+        <form onSubmit={handleSubmit}>
           {error && <div className="inquire-error">{error}</div>}
 
           <div className="puppy-form-row">
@@ -147,16 +145,14 @@ export default function ApplyForm() {
             aria-hidden="true"
           />
 
-          <button
-            type="submit"
-            className="admin-btn admin-btn--primary"
-            style={{ width: "100%", padding: "12px", marginTop: 8 }}
-            disabled={submitting}
-          >
+          <button type="submit" className="partner-apply-submit" disabled={submitting}>
             {submitting ? "Submitting..." : "Submit Application"}
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </button>
         </form>
       </div>
-    </div>
+    </section>
   );
 }

@@ -2,10 +2,10 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { createAdminClient } from "../../../lib/supabase/admin";
-import { normalizeEmail } from "../../../lib/normalize";
-import { generateUniqueReferralCode } from "../../../lib/affiliates";
-import { getAffiliateProgramSettings } from "../../../lib/affiliateSettings";
+import { createAdminClient } from "../../../../lib/supabase/admin";
+import { normalizeEmail } from "../../../../lib/normalize";
+import { generateUniqueReferralCode } from "../../../../lib/affiliates";
+import { getAffiliateProgramSettings } from "../../../../lib/affiliateSettings";
 
 export type ApplyResult = { success: true } | { success: false; error: string };
 
