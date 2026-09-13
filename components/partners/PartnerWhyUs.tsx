@@ -45,11 +45,29 @@ function CoinsIcon() {
 
 // First 3 sit on the top row (2-of-6 columns each = 3 across), last 2
 // on the bottom row (3-of-6 columns each = 2 across) - see the
-// .partner-whyus-card--half comment in partner-landing.css.
+// .partner-whyus-card--half comment in partner-landing.css. The top 3
+// pin their supporting copy to explicit lines (rather than the desc
+// string) so the wrap matches the reference exactly regardless of
+// container width - natural wrap on this page has drifted before.
 const FEATURES = [
-  { title: "Unique Referral Links", desc: "Your own custom tracking links.", icon: <LinkIcon /> },
-  { title: "Promote Specific Puppies", desc: "Share individual puppies or our Puppy Finder.", icon: <PawIcon /> },
-  { title: "Ready-to-Share Creatives", desc: "Get photos, videos and content that converts.", icon: <ImageIcon /> },
+  {
+    title: "Unique Referral Links",
+    desc: "Your own custom tracking links.",
+    lines: ["Your own custom", "tracking links."],
+    icon: <LinkIcon />,
+  },
+  {
+    title: "Promote Specific Puppies",
+    desc: "Share individual puppies or our Puppy Finder.",
+    lines: ["Share individual", "puppies or our", "Puppy Finder."],
+    icon: <PawIcon />,
+  },
+  {
+    title: "Ready-to-Share Creatives",
+    desc: "Get photos, videos and content that converts.",
+    lines: ["Get photos, videos", "and content that", "converts."],
+    icon: <ImageIcon />,
+  },
   { title: "Track Clicks & Sales", desc: "See your performance in real time.", icon: <ChartIcon />, half: true },
   { title: "Earn Commissions", desc: "Get paid on completed puppy sales after the approval period.", icon: <CoinsIcon />, half: true },
 ];
@@ -62,11 +80,23 @@ export default function PartnerWhyUs() {
 
       <div className="partner-whyus-grid">
         {FEATURES.map((f) => (
-          <div key={f.title} className={`partner-whyus-card${f.half ? " partner-whyus-card--half" : ""}`}>
+          <div
+            key={f.title}
+            className={`partner-whyus-card${f.half ? " partner-whyus-card--half" : " partner-whyus-card--top"}`}
+          >
             <div className="partner-whyus-icon">{f.icon}</div>
             <div>
               <div className="partner-whyus-title">{f.title}</div>
-              <div className="partner-whyus-desc">{f.desc}</div>
+              <div className="partner-whyus-desc">
+                {f.lines
+                  ? f.lines.map((line, i) => (
+                      <span key={i}>
+                        {line}
+                        {i < f.lines.length - 1 ? <br /> : null}
+                      </span>
+                    ))
+                  : f.desc}
+              </div>
             </div>
           </div>
         ))}

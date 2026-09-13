@@ -174,6 +174,32 @@
   grid-column: span 3;
 }
 
+/* Top row only (Unique Referral Links / Promote Specific Puppies /
+   Ready-to-Share Creatives) - slightly tighter padding and line-height
+   than the base card so this row reads as compact as the reference.
+   The bottom row (--half cards) isn't touched by any of this. */
+/* Tighter horizontal padding and icon gap than the base card - not a
+   style choice, a space budget one: at the base 8px padding / 6px icon
+   gap, the text column is only ~64px wide, too narrow for any of this
+   row's intended line breaks to fit without wrapping again (measured -
+   e.g. "Get photos, videos" needs ~81px). Reclaiming that space here
+   (rather than from the shared grid gap, which the bottom row also
+   uses) is what makes the exact requested wrap possible. */
+.partner-whyus-card--top {
+  padding: 6px 4px 7px;
+  gap: 2px;
+}
+
+.partner-whyus-card--top .partner-whyus-title {
+  margin-bottom: 1px;
+  line-height: 1.15;
+}
+
+.partner-whyus-card--top .partner-whyus-desc {
+  font-size: 8px;
+  line-height: 1.2;
+}
+
 .partner-whyus-icon {
   flex-shrink: 0;
   width: 26px;
