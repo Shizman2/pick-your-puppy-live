@@ -43,8 +43,8 @@ export default function ApplyForm() {
     return (
       <div className="partners-success">
         <div className="partners-success-icon">🐾</div>
-        <h2 className="admin-card__title">Application received!</h2>
-        <p className="admin-hint">We&apos;ll review it and email you at {email} once it&apos;s been decided.</p>
+        <h2 className="admin-card__title">Application Received</h2>
+        <p className="admin-hint">We review every application and will reach out to you by email.</p>
       </div>
     );
   }

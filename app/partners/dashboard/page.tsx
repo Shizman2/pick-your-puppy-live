@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { requireAffiliateUser } from "../../../lib/authz";
 import { getAffiliateById, getAffiliatePortalStats } from "../../../lib/affiliates";
 import PartnersShell from "../../../components/partners/PartnersShell";
+import ReferralLinkCard from "../../../components/partners/ReferralLinkCard";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/sales/sales.css";
@@ -18,19 +19,10 @@ export default async function PartnersDashboardPage() {
     getAffiliatePortalStats(auth.affiliateId),
   ]);
 
-  const referralLink = affiliate ? `https://thepuppyplugs.com/?ref=${affiliate.referral_code}` : "";
-
   return (
     <PartnersShell>
       <h1 className="contacts-title">Dashboard</h1>
-      {affiliate && (
-        <div className="admin-field" style={{ marginTop: 14, marginBottom: 20 }}>
-          <label className="admin-field__label">Your referral link</label>
-          <div className="aff-referral-link">
-            <input className="admin-input" readOnly value={referralLink} onFocus={(e) => e.target.select()} />
-          </div>
-        </div>
-      )}
+      {affiliate && <ReferralLinkCard referralCode={affiliate.referral_code} />}
 
       <div className="partners-stat-grid">
         <div className="partners-stat-card">

@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { normalizeEmail } from "../../../lib/normalize";
 import { generateUniqueReferralCode } from "../../../lib/affiliates";
@@ -101,7 +102,17 @@ export async function submitAffiliateApplication(fields: AffiliateApplicationFie
       commission_percent_bp: settings.default_commission_type === "percent_bp" ? settings.default_commission_value : null,
     });
 
-    if (!error) return { success: true };
+    if (!error) {
+      // The one thing every other mutating action in this feature does
+      // and this one didn't - without it, /admin/affiliates (rendered
+      // dynamically, but still subject to the Next.js client router
+      // cache from a prior visit) had no signal that a new application
+      // existed, so it kept showing whatever it last rendered until a
+      // hard reload. This was the actual root cause of new/pending
+      // applications not appearing for the admin.
+      revalidatePath("/admin/affiliates");
+      return { success: true };
+    }
 
     const isReferralCodeCollision = error.code === "23505" && error.message.includes("referral_code");
     if (!isReferralCodeCollision) {
