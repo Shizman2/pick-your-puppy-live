@@ -14,7 +14,12 @@
      the full Partner Program landing page (hero/how-it-works/etc.
      still above it), not a standalone page with nothing else on it, so
      forcing a full viewport height here would leave a huge empty gap.
-     The card itself is untouched from the approved design. */
+     The card itself is untouched from the approved design.
+     scroll-margin-top matches .partner-apply-section - this element
+     also carries id="apply-form" once submitted, so a page that was
+     mid-scroll to the form when it succeeded still clears the sticky
+     header instead of hiding the confirmation behind it. */
+  scroll-margin-top: 90px;
   display: flex;
   align-items: center;
   justify-content: center;

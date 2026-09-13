@@ -318,6 +318,13 @@
 /* Application form                                                  */
 /* ---------------------------------------------------------------- */
 .partner-apply-section {
+  /* .pp-header is position:sticky at the top of the viewport (~76px
+     tall: 12px+12px padding plus a 52px logo). Without this, the
+     #apply-form anchor scroll lands the section flush at y=0, which is
+     directly behind the sticky header - the scroll technically works,
+     but the "Become an Affiliate" heading ends up hidden underneath
+     it, which reads as "the button doesn't do anything." */
+  scroll-margin-top: 90px;
   padding: 0 20px 40px;
 }
 
