@@ -4,8 +4,8 @@ export default function PartnerHowYouEarn() {
       <div className="partner-earn-text">
         <h2 className="partner-earn-title">How You Earn</h2>
         <p className="partner-earn-copy">
-          You share your unique link with your audience. Families browse puppies or use our Puppy Finder, and when a
-          puppy is purchased through your link and completes the required approval period, you earn a commission.
+          You share your unique link with your audience. When a puppy is purchased through your link you earn a
+          commission.
         </p>
       </div>
       <div className="partner-earn-decal">
