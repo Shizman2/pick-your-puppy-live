@@ -48,116 +48,43 @@
 }
 
 /* ---------------------------------------------------------------- */
-/* Hero                                                              */
+/* Hero - the approved banner is a single flattened image (headline,  */
+/* button, and "Log in" line are baked into its pixels) - see         */
+/* PartnerHero.tsx's comment for why this overlays invisible link     */
+/* hotspots instead of rebuilding that copy in HTML.                  */
 /* ---------------------------------------------------------------- */
 .partner-hero {
-  display: flex;
-  align-items: stretch;
-  background: var(--partner-cream);
+  position: relative;
+  margin: 16px 20px 32px;
   border-radius: 18px;
   overflow: hidden;
-  margin: 16px 20px 32px;
-  min-height: 300px;
+  line-height: 0; /* removes the few px of inline-image whitespace below the img */
 }
 
-.partner-hero-text {
-  flex: 1.15;
-  min-width: 0;
-  padding: 18px 8px 18px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 6px;
-}
-
-.partner-hero-eyebrow {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--pp-text);
-}
-
-.partner-hero-title {
-  font-size: 25px;
-  font-weight: 900;
-  line-height: 1.15;
-  color: var(--pp-text);
-  margin: 2px 0 4px;
-}
-
-.partner-hero-title-accent {
-  color: var(--pp-blue);
-}
-
-.partner-hero-sub {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--pp-muted);
-  line-height: 1.5;
-  margin: 0 0 10px;
-  max-width: 230px;
-}
-
-.partner-cta-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  align-self: flex-start;
-  background: var(--partner-red);
-  color: #fff;
-  font-size: 14px;
-  font-weight: 800;
-  padding: 12px 18px;
-  border-radius: 999px;
-  text-decoration: none;
-}
-
-.partner-hero-login {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--pp-muted);
-  margin-top: 10px;
-}
-
-.partner-hero-login a {
-  color: var(--pp-blue);
-  font-weight: 800;
-  text-decoration: underline;
-}
-
-.partner-hero-photo {
-  flex: 0.85;
-  position: relative;
-  min-width: 108px;
-}
-
-.partner-hero-photo img {
+.partner-hero-banner-img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: top center;
+  height: auto;
   display: block;
 }
 
-.partner-hero-photo--placeholder {
-  background: linear-gradient(160deg, #f6e3c8, #ecc98c);
+.partner-hero-hotspot {
+  position: absolute;
+  display: block;
 }
 
-.partner-hero-decal {
-  position: absolute;
-  top: 12px;
-  right: 10px;
-  font-style: italic;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--pp-blue-dark);
-  text-align: right;
-  line-height: 1.3;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 3px;
+/* Percentages measured against the banner's actual 1448x1086 pixels. */
+.partner-hero-hotspot--apply {
+  left: 3%;
+  top: 70%;
+  width: 40%;
+  height: 10%;
+}
+
+.partner-hero-hotspot--login {
+  left: 3%;
+  top: 84%;
+  width: 34%;
+  height: 8%;
 }
 
 /* ---------------------------------------------------------------- */
