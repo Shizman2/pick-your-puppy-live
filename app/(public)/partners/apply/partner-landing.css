@@ -248,26 +248,43 @@
   margin: 0;
 }
 
+/* Paw stays red and upright; the note itself is what's tilted, like a
+   handwritten scribble dropped next to it - see .partner-earn-note. */
 .partner-earn-decal {
   flex-shrink: 0;
-  width: 145px;
+  width: 115px;
   display: flex;
   align-items: flex-start;
   gap: 4px;
-  color: var(--partner-red);
   padding-top: 2px;
 }
 
-.partner-earn-decal svg {
+.partner-earn-paw {
   flex-shrink: 0;
-  margin-top: 1px;
+  color: var(--partner-red);
+  margin-top: 4px;
 }
 
-.partner-earn-decal span {
-  font-size: 12px;
+.partner-earn-note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  transform: rotate(-4deg);
+  transform-origin: top left;
+}
+
+.partner-earn-note-text {
+  font-family: var(--pp-font-cursive), cursive;
+  font-size: 21px;
   font-weight: 700;
-  font-style: italic;
-  line-height: 1.3;
+  color: var(--pp-text);
+  line-height: 1.05;
+  text-align: right;
+}
+
+.partner-earn-heart {
+  color: var(--partner-red);
+  margin-top: 2px;
 }
 
 /* ---------------------------------------------------------------- */
