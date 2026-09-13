@@ -211,9 +211,12 @@
 /* ---------------------------------------------------------------- */
 .partner-earn {
   background: var(--partner-cream);
-  margin: 0 20px 20px;
+  /* No horizontal margin - .partner-whyus above has none either, so
+     removing this is what makes the two sections' left/right edges
+     line up instead of this one sitting inset inside extra gutter. */
+  margin: 0 0 20px;
   border-radius: 18px;
-  padding: 14px 16px;
+  padding: 14px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
