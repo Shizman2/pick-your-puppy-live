@@ -20,7 +20,17 @@ export default function PartnerHowYouEarn() {
             navy as the heading (not red like the paw) with a small red
             heart tucked under the last line - see .partner-earn-note. */}
         <div className="partner-earn-note">
-          <span className="partner-earn-note-text">Same Puppies. More Happy Families.</span>
+          {/* Hardcoded breaks, not natural wrap - relying on the
+              container width to produce exactly 3 lines drifted to 4-5
+              lines across viewport/font tweaks, so the line breaks are
+              pinned here instead. */}
+          <span className="partner-earn-note-text">
+            Same Puppies.
+            <br />
+            More Happy
+            <br />
+            Families.
+          </span>
           <svg className="partner-earn-heart" viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true">
             <path d="M12 21s-7.5-4.6-10-9.1C.6 8.7 2 5 5.6 5c2 0 3.4 1.1 4.4 2.6C11 6.1 12.4 5 14.4 5 18 5 19.4 8.7 22 11.9 19.5 16.4 12 21 12 21z" />
           </svg>

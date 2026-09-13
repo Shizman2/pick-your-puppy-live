@@ -213,9 +213,9 @@
   background: var(--partner-cream);
   margin: 0 20px 20px;
   border-radius: 18px;
-  padding: 20px 18px;
+  padding: 14px 16px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 10px;
 }
@@ -234,17 +234,17 @@
 }
 
 .partner-earn-title {
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 900;
   color: var(--pp-text);
-  margin: 0 0 8px;
+  margin: 0 0 5px;
 }
 
 .partner-earn-copy {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--pp-muted);
-  line-height: 1.55;
+  line-height: 1.4;
   margin: 0;
 }
 
@@ -252,9 +252,8 @@
    handwritten scribble dropped next to it - see .partner-earn-note. */
 .partner-earn-decal {
   flex-shrink: 0;
-  width: 115px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 4px;
   padding-top: 2px;
 }
@@ -275,16 +274,17 @@
 
 .partner-earn-note-text {
   font-family: var(--pp-font-cursive), cursive;
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--pp-text);
   line-height: 1.05;
   text-align: right;
+  white-space: nowrap;
 }
 
 .partner-earn-heart {
   color: var(--partner-red);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 /* ---------------------------------------------------------------- */
