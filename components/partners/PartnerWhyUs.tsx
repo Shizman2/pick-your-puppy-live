@@ -43,12 +43,15 @@ function CoinsIcon() {
   );
 }
 
+// First 3 sit on the top row (2-of-6 columns each = 3 across), last 2
+// on the bottom row (3-of-6 columns each = 2 across) - see the
+// .partner-whyus-card--half comment in partner-landing.css.
 const FEATURES = [
   { title: "Unique Referral Links", desc: "Your own custom tracking links.", icon: <LinkIcon /> },
   { title: "Promote Specific Puppies", desc: "Share individual puppies or our Puppy Finder.", icon: <PawIcon /> },
-  { title: "Ready-to-Share Creatives", desc: "Get photos, videos and content that converts.", icon: <ImageIcon />, wide: true },
-  { title: "Track Clicks & Sales", desc: "See your performance in real time.", icon: <ChartIcon /> },
-  { title: "Earn Commissions", desc: "Get paid on completed puppy sales after the approval period.", icon: <CoinsIcon /> },
+  { title: "Ready-to-Share Creatives", desc: "Get photos, videos and content that converts.", icon: <ImageIcon /> },
+  { title: "Track Clicks & Sales", desc: "See your performance in real time.", icon: <ChartIcon />, half: true },
+  { title: "Earn Commissions", desc: "Get paid on completed puppy sales after the approval period.", icon: <CoinsIcon />, half: true },
 ];
 
 export default function PartnerWhyUs() {
@@ -59,7 +62,7 @@ export default function PartnerWhyUs() {
 
       <div className="partner-whyus-grid">
         {FEATURES.map((f) => (
-          <div key={f.title} className={`partner-whyus-card${f.wide ? " partner-whyus-card--wide" : ""}`}>
+          <div key={f.title} className={`partner-whyus-card${f.half ? " partner-whyus-card--half" : ""}`}>
             <div className="partner-whyus-icon">{f.icon}</div>
             <div>
               <div className="partner-whyus-title">{f.title}</div>
