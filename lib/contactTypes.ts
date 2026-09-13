@@ -1,5 +1,6 @@
 import type { ActivityRow } from "./activityTypes";
 import type { PuppyFinderProposalRow } from "./puppyFinderTypes";
+import type { ContactAttributionHistoryItem } from "./affiliateAttribution";
 
 export type ContactStatus =
   | "new"
@@ -106,4 +107,5 @@ export interface ContactProfileData {
   unreadCount: number;
   puppyFinderProposals: PuppyFinderProposalRow[];
   puppyFinderInquiries: PuppyFinderInquiryOption[];
+  affiliateAttribution: ContactAttributionHistoryItem[];
 }

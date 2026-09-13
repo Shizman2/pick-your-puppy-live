@@ -15,6 +15,7 @@ import {
 } from "../../../app/admin/contacts/actions";
 import ContactActivities from "./ContactActivities";
 import PuppyFinderProposalsCard from "./PuppyFinderProposalsCard";
+import AffiliateReferralCard from "./AffiliateReferralCard";
 
 const STATUS_OPTIONS: ContactStatus[] = [
   "new",
@@ -203,6 +204,8 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
           </div>
         )}
       </div>
+
+      <AffiliateReferralCard history={profile.affiliateAttribution} />
 
       {/* Editable status controls */}
       <div className="profile-card">

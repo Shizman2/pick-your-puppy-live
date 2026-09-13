@@ -8,6 +8,7 @@ import "./partners.css";
 
 const TABS = [
   { href: "/partners/dashboard", label: "Dashboard" },
+  { href: "/partners/marketing", label: "Marketing" },
   { href: "/partners/commissions", label: "Commissions" },
   { href: "/partners/payouts", label: "Payouts" },
   { href: "/partners/profile", label: "Profile" },

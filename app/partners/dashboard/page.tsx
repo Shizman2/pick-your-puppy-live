@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requireAffiliateUser } from "../../../lib/authz";
 import { getAffiliateById, getAffiliatePortalStats } from "../../../lib/affiliates";
@@ -23,6 +24,10 @@ export default async function PartnersDashboardPage() {
     <PartnersShell>
       <h1 className="contacts-title">Dashboard</h1>
       {affiliate && <ReferralLinkCard referralCode={affiliate.referral_code} />}
+
+      <Link href="/partners/marketing" className="admin-btn admin-btn--primary" style={{ display: "inline-block", marginBottom: 20 }}>
+        Marketing &amp; Creatives
+      </Link>
 
       <div className="partners-stat-grid">
         <div className="partners-stat-card">

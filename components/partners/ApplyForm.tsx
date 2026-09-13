@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { submitAffiliateApplication } from "../../app/partners/apply/actions";
 
 export default function ApplyForm() {
@@ -42,15 +43,23 @@ export default function ApplyForm() {
   if (submitted) {
     return (
       <div className="partners-success">
-        <div className="partners-success-icon">🐾</div>
-        <h2 className="admin-card__title">Application Received</h2>
-        <p className="admin-hint">We review every application and will reach out to you by email.</p>
+        <div className="partners-success-circle">
+          <span aria-hidden="true">🐾</span>
+        </div>
+        <h1 className="partners-success-title">Application Received</h1>
+        <p className="partners-success-lead">Thanks for your interest in partnering with The Puppy Plugs.</p>
+        <p className="partners-success-sub">We review every application and will reach out to you by email.</p>
+        <Link href="/" className="admin-btn admin-btn--primary partners-success-cta">
+          Back to Homepage →
+        </Link>
       </div>
     );
   }
 
   return (
     <form onSubmit={handleSubmit}>
+      <h1 className="partners-title">Become an Affiliate</h1>
+
       {error && <div className="inquire-error">{error}</div>}
 
       <div className="puppy-form-row">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { generateAffiliateUrl } from "../../lib/affiliateLinks";
 
 /**
  * Deliberately minimal for now - just the link, the code, and a copy
@@ -10,7 +11,7 @@ import { useState } from "react";
 export default function ReferralLinkCard({ referralCode }: { referralCode: string }) {
   const [copyLabel, setCopyLabel] = useState("Copy Link");
 
-  const referralLink = typeof window !== "undefined" ? `${window.location.origin}/?ref=${referralCode}` : `/?ref=${referralCode}`;
+  const referralLink = generateAffiliateUrl("/", referralCode);
 
   function handleCopy() {
     navigator.clipboard.writeText(referralLink).then(() => {

@@ -16,6 +16,7 @@ import {
 import type { AffiliateCommissionListItem } from "../../../lib/affiliates";
 import type { AffiliateRow, AffiliateCommissionType, AffiliatePayoutMethod } from "../../../lib/affiliateTypes";
 import { AFFILIATE_STATUS_LABEL, COMMISSION_STATUS_LABEL, PAYOUT_METHOD_OPTIONS, PAYOUT_METHOD_LABEL, affiliateDisplayName } from "../../../lib/affiliateTypes";
+import { generateAffiliateUrl } from "../../../lib/affiliateLinks";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
 import { formatDateOnly } from "../../../lib/formatDate";
 
@@ -40,8 +41,7 @@ export default function AffiliateDetailClient({
 
   const [notes, setNotes] = useState(affiliate.notes || "");
 
-  const referralLink =
-    typeof window !== "undefined" ? `${window.location.origin}/?ref=${affiliate.referral_code}` : `/?ref=${affiliate.referral_code}`;
+  const referralLink = generateAffiliateUrl("/", affiliate.referral_code);
 
   async function run(fn: () => Promise<{ success: boolean; error?: string }>) {
     setError(null);

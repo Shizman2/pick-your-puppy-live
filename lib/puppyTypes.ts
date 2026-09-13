@@ -29,6 +29,7 @@ export interface PuppyRow {
   breeder_id: string | null;
   cost_cents: number;
   bundle_cost_cents: number;
+  source_puppy_finder_option_id: string | null;
   created_at: string;
   updated_at: string;
 }

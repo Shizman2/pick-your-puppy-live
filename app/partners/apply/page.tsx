@@ -7,7 +7,6 @@ export default function PartnersApplyPage() {
   return (
     <div className="partners-shell">
       <div className="partners-card">
-        <h1 className="partners-title">Become an Affiliate</h1>
         <ApplyForm />
       </div>
     </div>

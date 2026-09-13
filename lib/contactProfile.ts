@@ -5,6 +5,7 @@ import type { ActivityRow } from "./activityTypes";
 import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./contactBadges";
 import type { PuppyFinderProposalRow } from "./puppyFinderTypes";
 import { createPuppyFinderReadClient } from "./puppyFinderAccess";
+import { getContactAttributionHistory } from "./affiliateAttribution";
 
 /**
  * Fetches everything the Contact Profile page shows: the contact
@@ -82,6 +83,8 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
       .order("created_at", { ascending: false }),
   ]);
 
+  const affiliateAttribution = await getContactAttributionHistory(contactId);
+
   if (inquiriesError) throw new Error(inquiriesError.message);
   if (interestsError) throw new Error(interestsError.message);
   if (timelineError) throw new Error(timelineError.message);
@@ -104,5 +107,6 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     unreadCount: (unreadData || []).length,
     puppyFinderProposals: (proposalsData || []) as PuppyFinderProposalRow[],
     puppyFinderInquiries: finderInquiriesData || [],
+    affiliateAttribution,
   };
 }

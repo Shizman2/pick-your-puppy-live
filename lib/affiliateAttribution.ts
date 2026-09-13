@@ -124,3 +124,49 @@ export async function resolveCurrentAttributionForContact(
   }
   return null;
 }
+
+export interface ContactAttributionHistoryItem {
+  id: string;
+  affiliateId: string;
+  affiliateName: string;
+  referralCode: string;
+  source: "click" | "manual_admin";
+  attributedAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+}
+
+/**
+ * Full attribution ledger for one Contact, for the admin Contact
+ * profile's "Affiliate Referral" card - display-only (see blueprint:
+ * no reassignment UI exists yet). "isCurrent" reuses
+ * resolveCurrentAttributionForContact's own result rather than
+ * re-implementing the same expiry/approved-affiliate resolution logic
+ * a second time here.
+ */
+export async function getContactAttributionHistory(contactId: string): Promise<ContactAttributionHistoryItem[]> {
+  const admin = createAdminClient();
+
+  const [{ data: rows }, current] = await Promise.all([
+    admin
+      .from("contact_affiliate_attributions")
+      .select("id, affiliate_id, source, referral_code, attributed_at, expires_at, affiliates(first_name, last_name, display_name)")
+      .eq("contact_id", contactId)
+      .order("attributed_at", { ascending: false }),
+    resolveCurrentAttributionForContact(contactId),
+  ]);
+
+  return (rows || []).map((row: any) => {
+    const affiliate = row.affiliates;
+    return {
+      id: row.id,
+      affiliateId: row.affiliate_id,
+      affiliateName: affiliate?.display_name || `${affiliate?.first_name ?? ""} ${affiliate?.last_name ?? ""}`.trim() || "Unknown",
+      referralCode: row.referral_code,
+      source: row.source,
+      attributedAt: row.attributed_at,
+      expiresAt: row.expires_at,
+      isCurrent: row.id === current?.attributionId,
+    };
+  });
+}
