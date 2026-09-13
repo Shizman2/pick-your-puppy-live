@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
 import type { PuppyRow } from "../puppyTypes";
+import { getFavoriteCounts } from "../favorites";
 
 export interface HomepagePuppy {
   id: string;
@@ -13,6 +14,7 @@ export interface HomepagePuppy {
   ageWeeks: number | null;
   status: PuppyRow["status"];
   photoUrl: string;
+  favoritesCount: number;
 }
 
 /**
@@ -38,6 +40,8 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
 
   if (error || !data) return [];
 
+  const favoritesCounts = await getFavoriteCounts(data.map((row) => row.id));
+
   return data.map((row) => {
     let ageWeeks: number | null = null;
     if (row.date_of_birth) {
@@ -60,6 +64,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
       ageWeeks,
       status: row.status,
       photoUrl: photos[0] || "",
+      favoritesCount: favoritesCounts[row.id] || 0,
     };
   });
 }

@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import type { HomepagePuppy } from "../../../lib/public-data/homepage";
+import FavoriteButton from "../../../components/public/FavoriteButton";
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   available: { label: "Available", color: "#16A34A" },
@@ -25,18 +26,6 @@ const FILTERS: { key: Filter; label: string }[] = [
 function Watermark() {
   // eslint-disable-next-line @next/next/no-img-element
   return <img className="pcard-watermark" src="/watermark-logo.png" alt="" />;
-}
-
-function HeartIcon() {
-  return (
-    <svg className="pcard-heart" width="17" height="17" viewBox="0 0 24 24" fill="none">
-      <path
-        d="M12 21l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
 }
 
 function PriceBlock({ puppy }: { puppy: HomepagePuppy }) {
@@ -121,7 +110,7 @@ export default function PuppyGrid({ puppies }: { puppies: HomepagePuppy[] }) {
                   <span className="pcard-status-badge" style={{ background: badge.color }}>
                     {badge.label}
                   </span>
-                  <HeartIcon />
+                  <FavoriteButton puppyId={p.id} initialCount={p.favoritesCount} />
                 </div>
                 <div className="pcard-name">{p.name || p.breed}</div>
                 <div className="pcard-breed">{p.breed}</div>

@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "../supabase/admin";
 import type { PuppyRow } from "../puppyTypes";
 import type { HomepagePuppy } from "./homepage";
+import { getFavoriteCounts } from "../favorites";
 
 /** Full list for the /puppies grid — same show_on_website filter as the public API. Status (including "sold") only affects the badge, not inclusion. */
 export async function getAllVisiblePuppies(): Promise<PuppyRow[]> {
@@ -20,10 +21,11 @@ export async function getAllVisiblePuppies(): Promise<PuppyRow[]> {
 /** Same list, mapped down to the lighter card shape used by both the grid and homepage. */
 export async function getAllVisiblePuppiesForCards(): Promise<HomepagePuppy[]> {
   const rows = await getAllVisiblePuppies();
-  return rows.map(mapPuppyRowToCard);
+  const favoritesCounts = await getFavoriteCounts(rows.map((r) => r.id));
+  return rows.map((row) => mapPuppyRowToCard(row, favoritesCounts[row.id] || 0));
 }
 
-export function mapPuppyRowToCard(row: PuppyRow): HomepagePuppy {
+export function mapPuppyRowToCard(row: PuppyRow, favoritesCount = 0): HomepagePuppy {
   let ageWeeks: number | null = null;
   if (row.date_of_birth) {
     const dob = new Date(`${row.date_of_birth}T00:00:00`);
@@ -42,6 +44,7 @@ export function mapPuppyRowToCard(row: PuppyRow): HomepagePuppy {
     ageWeeks,
     status: row.status,
     photoUrl: photos[0] || "",
+    favoritesCount,
   };
 }
 

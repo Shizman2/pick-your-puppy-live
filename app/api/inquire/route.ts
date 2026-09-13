@@ -3,6 +3,7 @@ import { createAdminClient } from "../../../lib/supabase/admin";
 import { normalizePhone, normalizeEmail } from "../../../lib/normalize";
 import { findOrCreateContact } from "../../../lib/duplicateMatch";
 import { attachClickAttributionToContact, AFFILIATE_CLICK_COOKIE } from "../../../lib/affiliateAttribution";
+import { linkFavoritesToContact } from "../../../lib/favorites";
 import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
 import { sendPushToAdmins, sanitizeForNotification } from "../../../lib/push";
 import type { NotificationEventType } from "../../../lib/pushTypes";
@@ -169,6 +170,10 @@ export async function POST(request: NextRequest) {
   if (clickId) {
     await attachClickAttributionToContact(contact.id, clickId);
   }
+
+  // Same moment: if this visitor has favorited anything anonymously,
+  // link those rows to the now-identifiable Contact.
+  await linkFavoritesToContact(contact.id);
 
   // 2. Build type-specific promoted columns + full form_data snapshot.
   const inquiryColumns: Record<string, unknown> = {

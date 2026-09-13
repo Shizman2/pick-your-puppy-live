@@ -2,8 +2,10 @@ import { notFound } from "next/navigation";
 import "./detail.css";
 import "../../../../components/public-site/shareButtons.css";
 import { getPuppyBySlug } from "../../../../lib/public-data/puppies";
+import { getFavoriteCount } from "../../../../lib/favorites";
 import { getSellerPhoneNumber } from "../../../../lib/content";
 import { STATUS_DISPLAY_LABEL, formatPriceFromCents } from "../../../../lib/puppyTypes";
+import FavoriteButton from "../../../../components/public/FavoriteButton";
 import PuppyGallery from "./PuppyGallery";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import CallSellerButton from "./CallSellerButton";
@@ -32,6 +34,8 @@ const STATUS_COLOR: Record<string, string> = {
 export default async function PuppyDetailPage({ params }: { params: { slug: string } }) {
   const [puppy, sellerPhone] = await Promise.all([getPuppyBySlug(params.slug), getSellerPhoneNumber()]);
   if (!puppy) notFound();
+
+  const favoritesCount = await getFavoriteCount(puppy.id);
 
   let ageDisplay = "—";
   let dobDisplay = "—";
@@ -75,6 +79,11 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
               formatPriceFromCents(puppy.price_cents)
             )}
           </div>
+        </div>
+
+        <div className="detail-favorite-row">
+          <FavoriteButton puppyId={puppy.id} initialCount={favoritesCount} size="detail" />
+          <span className="detail-favorite-label">favorited this puppy</span>
         </div>
 
         <div className="badge-row">

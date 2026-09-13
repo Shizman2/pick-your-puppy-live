@@ -17,9 +17,10 @@ interface PuppyFormProps {
   existing?: PuppyRow;
   breeders?: { id: string; name: string }[];
   activeSaleId?: string | null;
+  favoritesCount?: number;
 }
 
-export default function PuppyForm({ existing, breeders = [], activeSaleId = null }: PuppyFormProps) {
+export default function PuppyForm({ existing, breeders = [], activeSaleId = null, favoritesCount = 0 }: PuppyFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -156,6 +157,12 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
   return (
     <div className="profile-card" style={{ maxWidth: 560 }}>
       {error && <div className="inquire-error">{error}</div>}
+
+      {existing && (
+        <p className="admin-hint" style={{ marginBottom: 14 }}>
+          ♥ {favoritesCount} total favorite{favoritesCount === 1 ? "" : "s"}
+        </p>
+      )}
 
       {existing && (
         <div className="admin-field">

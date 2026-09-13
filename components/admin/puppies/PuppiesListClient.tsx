@@ -2,7 +2,13 @@ import Link from "next/link";
 import type { PuppyRow } from "../../../lib/puppyTypes";
 import { formatPriceFromCents, STATUS_DISPLAY_LABEL } from "../../../lib/puppyTypes";
 
-export default function PuppiesListClient({ puppies }: { puppies: PuppyRow[] }) {
+export default function PuppiesListClient({
+  puppies,
+  favoritesCounts = {},
+}: {
+  puppies: PuppyRow[];
+  favoritesCounts?: Record<string, number>;
+}) {
   if (puppies.length === 0) {
     return <div className="contacts-empty">No puppies yet. Click &quot;+ Add Puppy&quot; to add one.</div>;
   }
@@ -17,6 +23,11 @@ export default function PuppiesListClient({ puppies }: { puppies: PuppyRow[] }) 
               <img src={p.photo_urls[0]} alt={p.name} />
             ) : (
               "No photo"
+            )}
+            {favoritesCounts[p.id] > 0 && (
+              <span className="puppy-admin-card-favorites" title="Total favorites">
+                ♥ {favoritesCounts[p.id]}
+              </span>
             )}
           </div>
           <div className="puppy-admin-card-body">

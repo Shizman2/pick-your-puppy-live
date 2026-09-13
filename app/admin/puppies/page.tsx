@@ -3,6 +3,7 @@ import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import PuppiesListClient from "../../../components/admin/puppies/PuppiesListClient";
 import OptimizePhotosButton from "../../../components/admin/puppies/OptimizePhotosButton";
 import { getPuppiesListData } from "../../../lib/puppies";
+import { getFavoriteCounts } from "../../../lib/favorites";
 import type { PuppyRow } from "../../../lib/puppyTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
@@ -14,10 +15,12 @@ export const dynamic = "force-dynamic";
 
 export default async function PuppiesPage() {
   let puppies: PuppyRow[] = [];
+  let favoritesCounts: Record<string, number> = {};
   let loadError: string | null = null;
 
   try {
     puppies = await getPuppiesListData();
+    favoritesCounts = await getFavoriteCounts(puppies.map((p) => p.id));
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Unknown error loading puppies.";
   }
@@ -51,7 +54,7 @@ export default async function PuppiesPage() {
             </p>
           </div>
         ) : (
-          <PuppiesListClient puppies={puppies} />
+          <PuppiesListClient puppies={puppies} favoritesCounts={favoritesCounts} />
         )}
       </div>
     </AdminSidebar>
