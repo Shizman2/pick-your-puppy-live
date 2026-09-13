@@ -1,0 +1,157 @@
+/* Affiliate application success state ONLY - matched closely to an
+   approved reference mockup. Deliberately page-specific and separate
+   from partners.css: this pulls from styles/public-tokens.css (the
+   blue palette already used site-wide on customer-facing pages like
+   /thank-you), not the admin/partners portal's red accent
+   (--color-accent), because the reference is a navy/blue design and
+   that's the existing site palette that actually matches it - not a
+   new color system. Scoped under .affiliate-success-card so nothing
+   here touches the application FORM's own styling or any other page.
+*/
+
+.affiliate-success-shell {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  padding: 24px;
+}
+
+.affiliate-success-card {
+  width: 100%;
+  max-width: 560px;
+  background: var(--pp-white);
+  border: 1px solid var(--pp-border);
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+  padding: 64px 56px 56px;
+  text-align: center;
+}
+
+.affiliate-success-icon-wrap {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 32px;
+}
+
+.affiliate-success-circle {
+  position: absolute;
+  inset: 15px;
+  border-radius: 50%;
+  background: var(--pp-blue-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--pp-text);
+}
+
+.affiliate-success-circle svg {
+  width: 44px;
+  height: 44px;
+}
+
+.affiliate-success-spark {
+  position: absolute;
+  width: 16px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--pp-blue);
+  opacity: 0.55;
+}
+
+.affiliate-success-spark--tl { top: 18px; left: 6px; transform: rotate(45deg); }
+.affiliate-success-spark--tr { top: 18px; right: 6px; transform: rotate(-45deg); }
+.affiliate-success-spark--l { top: 50%; left: -6px; transform: translateY(-50%) rotate(-8deg); width: 20px; }
+.affiliate-success-spark--r { top: 50%; right: -6px; transform: translateY(-50%) rotate(8deg); width: 20px; }
+.affiliate-success-spark--bl { bottom: 22px; left: 14px; transform: rotate(-25deg); width: 12px; }
+
+.affiliate-success-title {
+  font-family: var(--pp-font);
+  font-size: 38px;
+  font-weight: 900;
+  line-height: 1.15;
+  color: var(--pp-text);
+  margin: 0 0 22px;
+}
+
+.affiliate-success-lead {
+  font-family: var(--pp-font);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--pp-muted);
+  max-width: 400px;
+  margin: 0 auto 26px;
+}
+
+.affiliate-success-sub {
+  font-family: var(--pp-font);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
+  color: var(--pp-muted);
+  max-width: 420px;
+  margin: 0 auto 36px;
+}
+
+.affiliate-success-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  height: 58px;
+  background: var(--pp-blue-dark);
+  color: var(--pp-white);
+  font-family: var(--pp-font);
+  font-size: 16px;
+  font-weight: 800;
+  border-radius: var(--pp-radius);
+  text-decoration: none;
+}
+
+.affiliate-success-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 640px) {
+  .affiliate-success-card {
+    padding: 44px 24px 32px;
+    border-radius: 22px;
+  }
+
+  .affiliate-success-icon-wrap {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 24px;
+  }
+
+  .affiliate-success-circle svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .affiliate-success-title {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .affiliate-success-lead {
+    font-size: 16px;
+    margin-bottom: 18px;
+  }
+
+  .affiliate-success-sub {
+    font-size: 14px;
+    margin-bottom: 26px;
+  }
+
+  .affiliate-success-button {
+    height: 52px;
+    font-size: 15px;
+  }
+}
