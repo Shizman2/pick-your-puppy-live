@@ -87,6 +87,9 @@ export default function ApplyForm() {
       <div className="partners-card">
         <form onSubmit={handleSubmit}>
           <h1 className="partners-title">Become an Affiliate</h1>
+          <p className="partners-subtitle">
+            Already a partner? <Link href="/partners/login">Log in</Link>.
+          </p>
 
           {error && <div className="inquire-error">{error}</div>}
 

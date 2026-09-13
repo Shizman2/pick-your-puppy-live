@@ -3,9 +3,11 @@
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Puppies", href: "/puppies" },
+  { label: "Favorites", href: "/favorites" },
   { label: "Puppy Finder", href: "/puppy-finder" },
   { label: "How It Works", href: "/how-it-works" },
   { label: "FAQ", href: "/faq" },
+  { label: "Partners", href: "/partners/apply" },
   { label: "Contact", href: "/contact" },
 ];
 

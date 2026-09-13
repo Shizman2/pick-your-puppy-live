@@ -16,12 +16,7 @@ export default async function PuppiesPage() {
   return (
     <>
       <div className="page-title">Available Puppies 🐾</div>
-      <div className="page-sub">
-        All puppies are vet-checked, vaccinated, and ready for their forever home.{" "}
-        <a href="/favorites" className="favorites-page-link">
-          ♥ My Favorites
-        </a>
-      </div>
+      <div className="page-sub">All puppies are vet-checked, vaccinated, and ready for their forever home.</div>
       <PuppyGrid puppies={puppies} />
       <ShareButtons
         heading="Share This Page"
