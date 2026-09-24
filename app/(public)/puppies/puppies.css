@@ -242,6 +242,18 @@
   border-radius: 50px;
   flex-shrink: 0;
 }
+.finder-banner-link {
+  display: block;
+  margin: 18px 20px 0;
+  border-radius: var(--pp-radius);
+  overflow: hidden;
+  box-shadow: var(--pp-shadow);
+}
+.finder-banner-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
 .no-results {
   text-align: center;
   padding: 40px 20px;
