@@ -5,11 +5,11 @@ import type { TrafficOverviewPoint } from "../../../lib/analytics/queries";
 // deliberately no charting library dependency added for this.
 
 const WIDTH = 700;
-const HEIGHT = 260;
-const PAD_LEFT = 34;
-const PAD_RIGHT = 8;
+const HEIGHT = 320;
+const PAD_LEFT = 38;
+const PAD_RIGHT = 26;
 const PAD_TOP = 16;
-const PAD_BOTTOM = 28;
+const PAD_BOTTOM = 30;
 
 function computeNiceMax(value: number): number {
   if (value <= 5) return 5;
@@ -63,27 +63,27 @@ export default function TrafficOverviewChart({ points }: { points: TrafficOvervi
           {yTicks.map((t) => (
             <g key={t}>
               <line x1={PAD_LEFT} x2={WIDTH - PAD_RIGHT} y1={y(t)} y2={y(t)} stroke="#f1f1f1" strokeWidth="1" />
-              <text x={PAD_LEFT - 8} y={y(t) + 4} textAnchor="end" fontSize="11" fill="#9ca3af">
+              <text x={PAD_LEFT - 10} y={y(t) + 4} textAnchor="end" fontSize="12.5" fill="#9ca3af">
                 {Math.round(t)}
               </text>
             </g>
           ))}
 
           <path d={areaPath("pageViews")} fill="#DBEAFE" opacity="0.6" />
-          <path d={linePath("pageViews")} fill="none" stroke="#93C5FD" strokeWidth="2.5" />
-          <path d={linePath("visitors")} fill="none" stroke="#2563EB" strokeWidth="2.5" />
+          <path d={linePath("pageViews")} fill="none" stroke="#93C5FD" strokeWidth="3" />
+          <path d={linePath("visitors")} fill="none" stroke="#2563EB" strokeWidth="3" />
 
           {points.map((p, i) => (
             <g key={i}>
-              <circle cx={x(i)} cy={y(p.pageViews)} r="3.5" fill="#93C5FD" />
-              <circle cx={x(i)} cy={y(p.visitors)} r="3.5" fill="#2563EB" />
+              <circle cx={x(i)} cy={y(p.pageViews)} r="4.5" fill="#93C5FD" />
+              <circle cx={x(i)} cy={y(p.visitors)} r="4.5" fill="#2563EB" />
             </g>
           ))}
 
           {points.map((p, i) => {
             if (i % showEvery !== 0 && i !== points.length - 1) return null;
             return (
-              <text key={i} x={x(i)} y={HEIGHT - 6} textAnchor="middle" fontSize="11" fill="#9ca3af">
+              <text key={i} x={x(i)} y={HEIGHT - 8} textAnchor="middle" fontSize="12.5" fill="#9ca3af">
                 {p.label}
               </text>
             );

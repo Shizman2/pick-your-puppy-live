@@ -39,7 +39,7 @@ export default function TrafficSourcesDonut({
       ) : (
         <>
           <div className="analytics-donut-svg-wrap">
-            <svg width="160" height="160" viewBox="0 0 100 100">
+            <svg width="210" height="210" viewBox="0 0 100 100">
               <circle cx="50" cy="50" r={radius} fill="none" stroke="#f1f1f1" strokeWidth="14" />
               {breakdown
                 .filter((b) => b.count > 0)
