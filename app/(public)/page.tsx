@@ -6,6 +6,7 @@ import PyplCountdown from "./home-sections/PyplCountdown";
 import BundleSection from "../../components/public-site/BundleSection";
 import PlacementSlot from "../../components/public-site/PlacementSlot";
 import PlacementPreviewOverlay from "../../components/public-site/PlacementPreviewOverlay";
+import TrackedLink from "../../components/public/TrackedLink";
 
 export const revalidate = 60;
 
@@ -80,9 +81,9 @@ export default async function HomePage() {
           <div className="hero-text">
             <h1>{renderHeroHeadline(text.hero_heading_line1)}</h1>
             <div className="hero-btns">
-              <a className="pp-btn-primary" href="/puppies">
+              <TrackedLink className="pp-btn-primary" href="/puppies" ctaKey="see_available_puppies">
                 View Puppies ›
-              </a>
+              </TrackedLink>
               <a className="pp-btn-outline" href="/how-it-works">
                 How It Works
               </a>
@@ -103,9 +104,9 @@ export default async function HomePage() {
       <section className="section" id="featured">
         <div className="section-header">
           <h2 className="section-title">{text.featured_heading}</h2>
-          <a className="view-all" href="/puppies">
+          <TrackedLink className="view-all" href="/puppies" ctaKey="see_available_puppies">
             View All ›
-          </a>
+          </TrackedLink>
         </div>
         <FeaturedPuppies puppies={puppies} />
       </section>
@@ -198,13 +199,13 @@ export default async function HomePage() {
           </div>
         </div>
 
-        <a className="pp-btn-primary finder-cta" href="/puppy-finder">
+        <TrackedLink className="pp-btn-primary finder-cta" href="/puppy-finder" ctaKey="puppy_finder">
           <svg viewBox="0 0 24 24" width="19" height="19" fill="none">
             <path d="M4 4h16v16H4z" stroke="#fff" strokeWidth="1.8" strokeLinejoin="round" />
             <path d="M4 5l8 7 8-7" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
           Request a Puppy ›
-        </a>
+        </TrackedLink>
 
         <div className="finder-note">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="none" style={{ flexShrink: 0 }}>

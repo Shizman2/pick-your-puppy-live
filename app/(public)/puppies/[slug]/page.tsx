@@ -6,6 +6,8 @@ import { getFavoriteCount } from "../../../../lib/favorites";
 import { getSellerPhoneNumber } from "../../../../lib/content";
 import { STATUS_DISPLAY_LABEL, formatPriceFromCents } from "../../../../lib/puppyTypes";
 import FavoriteButton from "../../../../components/public/FavoriteButton";
+import PuppyViewTracker from "../../../../components/public/PuppyViewTracker";
+import PuppyFinderBanner from "../../../../components/public/PuppyFinderBanner";
 import PuppyGallery from "./PuppyGallery";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import CallSellerButton from "./CallSellerButton";
@@ -52,6 +54,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
 
   return (
     <>
+      <PuppyViewTracker puppyId={puppy.id} />
       <PlacementSlot pageType="puppy_detail" slot="global_below_header" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="global_below_header" pageIdentifier={puppy.id} />
 
@@ -126,7 +129,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
 
       <div className="detail-cta">
-        <CallSellerButton phone={sellerPhone} />
+        <CallSellerButton phone={sellerPhone} puppyId={puppy.id} />
 
         <PuppyQuestionForm puppyId={puppy.id} puppyName={puppyName} breed={puppy.breed} slug={puppy.slug} />
 
@@ -156,6 +159,8 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
 
       <BundleSection />
+
+      <PuppyFinderBanner puppyId={puppy.id} />
     </>
   );
 }

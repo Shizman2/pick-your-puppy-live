@@ -296,3 +296,39 @@
    components/public-site/shareButtons.css, shared with every other
    public page that reuses the ShareButtons component - see the import
    at the top of page.tsx. */
+
+/* Puppy Finder closing banner (components/public/PuppyFinderBanner.tsx).
+   Same card treatment as every other closing element on this page
+   (18px/20px margin rhythm, --pp-radius, --pp-shadow - compare
+   shareButtons.css's .share-puppy). The image is never stretched or
+   cropped - it renders at its natural aspect ratio, full width. */
+.puppy-finder-banner {
+  position: relative;
+  margin: 18px 20px 26px;
+  border-radius: var(--pp-radius);
+  overflow: hidden;
+  box-shadow: var(--pp-shadow);
+}
+
+.puppy-finder-banner-img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Invisible, precisely-positioned clickable region over ONLY the yellow
+   "Use Our Puppy Finder Service" button baked into the image (see the
+   CTA_REGION percentages in PuppyFinderBanner.tsx) - deliberately no
+   background/border here, so the button the visitor sees and taps is
+   still just the one already painted into the PNG, never a second
+   HTML button drawn on top of it. */
+.puppy-finder-banner-cta {
+  position: absolute;
+  display: block;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
+}
