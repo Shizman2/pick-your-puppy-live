@@ -43,44 +43,100 @@ export async function markConversationRead(contactId: string): Promise<ActionRes
 }
 
 /**
- * "Delete Conversation" - clears this contact's messages/inquiries, not
- * the contact itself. The contact keeps existing (so it still shows up
- * fine in the Message Center and Contacts list, just with an empty
- * thread) - deleting the contact entirely is a separate, explicit action
- * (see archiveContact/deleteContactCompletely in
- * app/admin/contacts/actions.ts). Deliberately never touches `sales`.
+ * Deletes only `messages` and `conversations` rows for the given
+ * contact ids - shared by deleteConversation/deleteConversations/
+ * deleteAllConversations so all three have exactly the same scope.
+ *
+ * Deliberately does NOT touch `inquiries` or `interests`: those hold
+ * the actual submitted business data (inquiries' own columns are the
+ * submitted Puppy Finder criteria - breed/budget_min/budget_max/
+ * timeframe - plus reservation fields like pickup_or_delivery, and
+ * puppy_interest/general fields), not message-log data. The public
+ * Puppy Finder results page (app/(public)/puppy-finder/results/
+ * [token]/page.tsx) reads inquiries.breed via
+ * puppy_finder_proposals.inquiry_id, so deleting inquiries here would
+ * silently degrade a live customer-facing page. Never touches `sales`,
+ * `contacts`, or anything affiliate/analytics-related either.
+ */
+async function deleteMessageThreadsFor(contactIds: string[]): Promise<ActionResult> {
+  const admin = createAdminClient();
+
+  const { error: messagesError } = await admin.from("messages").delete().in("contact_id", contactIds);
+  if (messagesError) return { success: false, error: messagesError.message };
+
+  const { error: conversationsError } = await admin.from("conversations").delete().in("contact_id", contactIds);
+  if (conversationsError) return { success: false, error: conversationsError.message };
+
+  return { success: true };
+}
+
+/**
+ * "Delete Conversation" - clears this one contact's messages/
+ * conversation thread, not the contact itself. The contact keeps
+ * existing (so it still shows up fine in the Contacts list) - deleting
+ * the contact entirely is a separate, explicit action (see
+ * archiveContact/deleteContactCompletely in app/admin/contacts/actions.ts).
  */
 export async function deleteConversation(contactId: string): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
 
-  const admin = createAdminClient();
-
-  const { error: messagesError } = await admin.from("messages").delete().eq("contact_id", contactId);
-  if (messagesError) return { success: false, error: messagesError.message };
-
-  const { error: conversationsError } = await admin.from("conversations").delete().eq("contact_id", contactId);
-  if (conversationsError) return { success: false, error: conversationsError.message };
-
-  const { error: interestsError } = await admin.from("interests").delete().eq("contact_id", contactId);
-  if (interestsError) return { success: false, error: interestsError.message };
-
-  const { error: inquiriesError } = await admin.from("inquiries").delete().eq("contact_id", contactId);
-  if (inquiriesError) return { success: false, error: inquiriesError.message };
-
-  // Only the timeline entries that are themselves a record of this
-  // conversation - status changes, notes, and sale/puppy-finder events
-  // aren't part of "the conversation" and stay untouched.
-  const { error: timelineError } = await admin
-    .from("timeline_events")
-    .delete()
-    .eq("contact_id", contactId)
-    .eq("event_type", "form_submitted");
-  if (timelineError) return { success: false, error: timelineError.message };
+  const result = await deleteMessageThreadsFor([contactId]);
+  if (!result.success) return result;
 
   revalidatePath("/admin/messages");
   revalidatePath("/admin/contacts");
   revalidatePath(`/admin/contacts/${contactId}`);
+  revalidatePath("/admin/dashboard");
+  return { success: true };
+}
+
+/**
+ * "Delete (N)" - the multi-select bulk-delete action from the Message
+ * Center's selection mode. Same scope/safety as deleteConversation,
+ * just across every selected contact id in one call.
+ */
+export async function deleteConversations(contactIds: string[]): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+  if (contactIds.length === 0) return { success: true };
+
+  const result = await deleteMessageThreadsFor(contactIds);
+  if (!result.success) return result;
+
+  revalidatePath("/admin/messages");
+  revalidatePath("/admin/contacts");
+  for (const contactId of contactIds) revalidatePath(`/admin/contacts/${contactId}`);
+  revalidatePath("/admin/dashboard");
+  return { success: true };
+}
+
+/**
+ * "Delete All Messages" - every conversation/message in the Message
+ * Center, system-wide. There is no filter/search/pagination in this
+ * view to scope against (getMessageCenterData loads every contact
+ * unconditionally in one query - see lib/messageCenter.ts), so "all"
+ * unambiguously means every messages/conversations row that exists.
+ * Same messages+conversations-only scope as the other two - inquiries,
+ * interests, contacts, and sales are never touched.
+ */
+export async function deleteAllConversations(): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+
+  // `.not("id", "is", null)` matches every row - id is never null - so
+  // this is an explicit, deliberate "delete all", not an accidental
+  // unfiltered delete.
+  const { error: messagesError } = await admin.from("messages").delete().not("id", "is", null);
+  if (messagesError) return { success: false, error: messagesError.message };
+
+  const { error: conversationsError } = await admin.from("conversations").delete().not("id", "is", null);
+  if (conversationsError) return { success: false, error: conversationsError.message };
+
+  revalidatePath("/admin/messages");
+  revalidatePath("/admin/contacts");
   revalidatePath("/admin/dashboard");
   return { success: true };
 }

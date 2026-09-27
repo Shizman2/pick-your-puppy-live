@@ -101,6 +101,161 @@
   color: #b45309;
 }
 
+/* Scoped to this page only (contacts.css's .contacts-page-header is
+   shared with the Contacts page, so it isn't touched directly) - lets
+   the header wrap onto a second line instead of overflowing
+   horizontally if "Cancel / Select All / Delete (N)" doesn't fit next
+   to the title on a narrow phone. */
+.msgcenter-page-header {
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+
+/* --- Select / multi-select / delete-all controls --- */
+.msgcenter-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.msgcenter-overflow-wrap {
+  position: relative;
+}
+
+.msgcenter-overflow-btn {
+  padding: 8px 12px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.msgcenter-overflow-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: #fff;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  padding: 6px;
+  z-index: 30;
+  min-width: 190px;
+}
+
+.msgcenter-overflow-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 9px 10px;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--color-text, #16171a);
+}
+
+.msgcenter-overflow-item:hover {
+  background: #f3f4f6;
+}
+
+.msgcenter-overflow-item.danger {
+  color: var(--color-accent, #e0261f);
+}
+
+/* Row layout while in selection mode: a leading checkbox circle, added
+   without changing the row's existing content/typography - the row
+   itself only gains ~30px of width on the left, never taller. Hidden
+   entirely outside selection mode (see the JSX: this element only
+   renders when selectionMode is true), so normal browsing stays exactly
+   as clean as before. */
+.msgcenter-row-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.msgcenter-row-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.msgcenter-row-checkbox {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  flex-shrink: 0;
+  margin-top: 2px;
+  position: relative;
+}
+
+.msgcenter-row-checkbox.checked {
+  background: #2563eb;
+  border-color: #2563eb;
+}
+
+.msgcenter-row-checkbox.checked::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border-right: 2px solid #fff;
+  border-bottom: 2px solid #fff;
+  transform: rotate(45deg);
+}
+
+/* --- Delete confirmation modal --- */
+.msgcenter-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 17, 21, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 100;
+}
+
+.msgcenter-modal-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 22px;
+  width: 100%;
+  max-width: 380px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+}
+
+.msgcenter-modal-title {
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--color-text, #16171a);
+  margin-bottom: 8px;
+}
+
+.msgcenter-modal-body {
+  font-size: 13.5px;
+  color: var(--color-text-muted, #6b7076);
+  line-height: 1.5;
+}
+
+.msgcenter-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+@media (max-width: 480px) {
+  .msgcenter-modal-actions .admin-btn {
+    flex: 1;
+  }
+}
+
 /* --- Detail column --- */
 .msgcenter-detail-col {
   flex: 1;
