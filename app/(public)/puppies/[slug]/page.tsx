@@ -4,10 +4,12 @@ import "../../../../components/public-site/shareButtons.css";
 import { getPuppyBySlug } from "../../../../lib/public-data/puppies";
 import { getFavoriteCount } from "../../../../lib/favorites";
 import { getSellerPhoneNumber } from "../../../../lib/content";
+import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
 import { STATUS_DISPLAY_LABEL, formatPriceFromCents } from "../../../../lib/puppyTypes";
 import FavoriteButton from "../../../../components/public/FavoriteButton";
 import PuppyViewTracker from "../../../../components/public/PuppyViewTracker";
 import PuppyFinderBanner from "../../../../components/public/PuppyFinderBanner";
+import BreedProfileSection from "../../../../components/public/BreedProfileSection";
 import PuppyGallery from "./PuppyGallery";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import CallSellerButton from "./CallSellerButton";
@@ -37,7 +39,10 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   const [puppy, sellerPhone] = await Promise.all([getPuppyBySlug(params.slug), getSellerPhoneNumber()]);
   if (!puppy) notFound();
 
-  const favoritesCount = await getFavoriteCount(puppy.id);
+  const [favoritesCount, breedProfile] = await Promise.all([
+    getFavoriteCount(puppy.id),
+    getBreedForPuppyBreedString(puppy.breed),
+  ]);
 
   let ageDisplay = "—";
   let dobDisplay = "—";
@@ -124,6 +129,8 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
           </>
         )}
       </div>
+
+      <BreedProfileSection breed={breedProfile} />
 
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />

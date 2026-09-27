@@ -172,6 +172,242 @@
   margin-bottom: 4px;
 }
 
+/* Breed Profile ("Is a [Breed] Right for You?") - components/public/
+   BreedProfileSection.tsx. Sits between "About {puppy}" and the CTA
+   cluster: the puppy-specific description comes first, then general
+   breed education, then the action buttons. Outer tint reuses
+   --pp-blue-light, same token as BundleSection's "No Pet Store Runs"
+   note just below on this page, for a consistent "info" treatment. */
+.breed-profile-section {
+  margin: 20px 20px 0;
+  background: var(--pp-blue-light);
+  border-radius: var(--pp-radius);
+  padding: 16px;
+}
+
+.breed-profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.breed-profile-heading {
+  font-size: 19px;
+  font-weight: 900;
+  color: var(--pp-text);
+  line-height: 1.25;
+  flex: 1;
+}
+
+/* Decorative-graphics wrapper: bigger than the puppy crop itself so a
+   pale-blue circle + small bright-blue accent marks have room to sit
+   BEHIND/around the image without overlapping its face/body or the
+   heading. Layering (back to front): ::before circle (z-index 0) ->
+   accent tick marks (z-index 1) -> puppy image (z-index 2). These are
+   plain CSS/SVG shapes, not baked into the uploaded image, so the Breed
+   Profile image stays independently swappable from Admin -> Breeds. */
+.breed-profile-header-img-wrap {
+  position: relative;
+  width: 86px;
+  height: 86px;
+  flex-shrink: 0;
+}
+
+.breed-profile-header-img-wrap::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background: #d7e9fd;
+  z-index: 0;
+}
+
+.breed-profile-header-decor-tick {
+  position: absolute;
+  z-index: 1;
+  background: var(--pp-blue);
+  border-radius: 3px;
+}
+
+.breed-profile-header-decor-tick--1 {
+  width: 4px;
+  height: 15px;
+  top: -2px;
+  left: 6px;
+  transform: rotate(-22deg);
+}
+
+.breed-profile-header-decor-tick--2 {
+  width: 4px;
+  height: 10px;
+  top: -6px;
+  left: 18px;
+  transform: rotate(-8deg);
+}
+
+.breed-profile-header-decor-tick--3 {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  bottom: 2px;
+  right: -3px;
+  background: transparent;
+  border: 2.5px solid var(--pp-blue);
+}
+
+/* Fixed-size wrapper, not a width on the <img> itself - the site-wide
+   ".pp-body img { width: 100% }" reset (public-shell.css) is more
+   specific than a single class on the <img>, so a plain width here
+   would silently lose that fight. Constraining the wrapper and letting
+   the image fill 100% of it (same pattern as .thumb img above) sidesteps
+   that entirely. */
+.breed-profile-header-img {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom;
+}
+
+.breed-profile-subheading {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--pp-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+}
+
+/* Always 3 columns, even at ~390px - see .breed-profile-card for how
+   compactness is achieved (stacked icon/label/value, not side-by-side)
+   rather than by shrinking text below a readable size. */
+.breed-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.breed-profile-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  background: #fff;
+  border-radius: 11px;
+  padding: 9px 7px;
+  min-width: 0;
+}
+
+.breed-profile-card-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+
+.breed-profile-card-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.breed-profile-card-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: var(--pp-muted);
+  line-height: 1.25;
+}
+
+.breed-profile-card-value {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--pp-text);
+  line-height: 1.25;
+}
+
+/* "What [Breed] Life Is Like" - warm tint, distinct from both the
+   section's own pale-blue background and the white snapshot cards.
+   Compact: tight padding/line-height so the approved copy wraps into
+   fewer, wider lines instead of a tall narrow column. */
+.breed-profile-life {
+  background: #fdecc8;
+  border-radius: 12px;
+  padding: 11px 12px;
+  margin-bottom: 10px;
+}
+
+.breed-profile-life-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--pp-text);
+  margin-bottom: 4px;
+}
+
+.breed-profile-life-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.breed-profile-life-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.breed-profile-life-text {
+  font-size: 13px;
+  color: #6b5a33;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+/* "Good to Know" - practical considerations. Pale blue, deliberately a
+   different (slightly deeper) shade than the section's own outer
+   background so it still reads as its own distinct panel rather than
+   disappearing into it, while contrasting with the warm "Life Is Like"
+   panel above. Not a warning/error style - same soft-panel treatment. */
+.breed-profile-know {
+  background: #dcebfb;
+  border-radius: 12px;
+  padding: 11px 12px;
+}
+
+.breed-profile-know-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 800;
+  color: var(--pp-text);
+  margin-bottom: 4px;
+}
+
+.breed-profile-know-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.breed-profile-know-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.breed-profile-know-text {
+  font-size: 13px;
+  color: #3a5a7a;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
 /* CTA cluster: Call the Seller / I'm Interested / Reserve This Puppy */
 .detail-cta {
   padding: 20px 20px 0;
