@@ -1,20 +1,17 @@
 import TrackedLink from "./TrackedLink";
 
 /**
- * Precise bounding box of the yellow "Use Our Puppy Finder Service"
- * button baked into /public/puppyfinderbanner.png (1920x819 source),
- * measured by scanning the PNG's own pixel data for that button's exact
- * color range - not eyeballed from a preview. Expressed as percentages
- * of the image's own box (not fixed px) so the invisible clickable
- * region stays aligned with the visible yellow button as the image
- * scales responsively at any viewport width.
+ * /public/puppyfinderbanner (2).png is 1920x819. Its own yellow "Use Our
+ * Puppy Finder Service" button is baked in starting at row 611 (measured
+ * by scanning the PNG's own pixel data for that button's exact color
+ * range, not eyeballed) - so the artwork-only portion (headline, puppy
+ * photo, supporting text) ends at 606px, just above it. Expressed as an
+ * aspect-ratio so the crop stays exact at any viewport width: the CSS
+ * box is always exactly the top 606/819 of the image, the baked-in
+ * button and the empty margin below it are cropped off by the browser,
+ * never re-rendered or distorted.
  */
-const CTA_REGION = {
-  left: 3.44,
-  top: 75.34,
-  width: 52.81,
-  height: 13.92,
-};
+const ART_ASPECT_RATIO = "1920 / 606";
 
 interface PuppyFinderBannerProps {
   /**
@@ -28,11 +25,14 @@ interface PuppyFinderBannerProps {
 /**
  * Closing "Don't see the puppy you want?" banner rendered at the bottom
  * of every puppy detail page (see app/(public)/puppies/[slug]/page.tsx).
- * The PNG is the only source of the CTA's visible styling - this
- * component adds nothing visible on top of it, only a precisely
- * positioned invisible clickable region over the yellow button itself.
- * The rest of the banner (headline, icons, puppy photo) is intentionally
- * NOT clickable, to avoid accidental taps while scrolling.
+ * Two pieces, deliberately not one clickable image:
+ *   1. The artwork (headline/photo/supporting copy) - cropped to exclude
+ *      the PNG's own baked-in yellow button, never itself a link.
+ *   2. A real HTML button below it, styled to match that baked-in
+ *      button (same yellow/navy/label), which is the only clickable
+ *      part of this section.
+ * This avoids ever showing two competing "Use Our Puppy Finder Service"
+ * buttons, and avoids the entire artwork being an accidental tap target.
  *
  * Reuses TrackedLink (components/public/TrackedLink.tsx) - the same
  * tracking utility already wired to the existing "puppy_finder" CTA key
@@ -42,24 +42,16 @@ interface PuppyFinderBannerProps {
 export default function PuppyFinderBanner({ puppyId }: PuppyFinderBannerProps) {
   return (
     <div className="puppy-finder-banner">
-      <img
-        src="/puppyfinderbanner.png"
-        alt="Don't see the puppy you want? Let us find it for you. Tell us what you're looking for and we'll find 3-5 options from our trusted breeders just for you."
-        className="puppy-finder-banner-img"
-      />
-      <TrackedLink
-        href="/puppy-finder"
-        ctaKey="puppy_finder"
-        puppyId={puppyId}
-        className="puppy-finder-banner-cta"
-        aria-label="Use Our Puppy Finder Service"
-        style={{
-          left: `${CTA_REGION.left}%`,
-          top: `${CTA_REGION.top}%`,
-          width: `${CTA_REGION.width}%`,
-          height: `${CTA_REGION.height}%`,
-        }}
-      />
+      <div className="puppy-finder-banner-art" style={{ aspectRatio: ART_ASPECT_RATIO }}>
+        <img
+          src="/puppyfinderbanner%20(2).png"
+          alt="Don't see the puppy you want? Let us find it for you. Tell us what you're looking for and we'll find 3-5 options from our trusted breeders just for you."
+          className="puppy-finder-banner-img"
+        />
+      </div>
+      <TrackedLink href="/puppy-finder" ctaKey="puppy_finder" puppyId={puppyId} className="puppy-finder-banner-cta">
+        Use Our Puppy Finder Service <span className="puppy-finder-banner-cta-chevron">›</span>
+      </TrackedLink>
     </div>
   );
 }

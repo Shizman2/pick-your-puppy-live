@@ -300,35 +300,59 @@
 /* Puppy Finder closing banner (components/public/PuppyFinderBanner.tsx).
    Same card treatment as every other closing element on this page
    (18px/20px margin rhythm, --pp-radius, --pp-shadow - compare
-   shareButtons.css's .share-puppy). The image is never stretched or
-   cropped - it renders at its natural aspect ratio, full width. */
+   shareButtons.css's .share-puppy). Two pieces: the cropped artwork
+   (.puppy-finder-banner-art/-img) and a real HTML CTA button
+   (.puppy-finder-banner-cta) immediately below it - see the component
+   for why this is two pieces instead of one clickable image. */
 .puppy-finder-banner {
-  position: relative;
   margin: 18px 20px 26px;
   border-radius: var(--pp-radius);
   overflow: hidden;
   box-shadow: var(--pp-shadow);
+  background: #f5f9fc;
+}
+
+/* Crops the source PNG (1920x819) down to its artwork-only portion,
+   excluding the button baked into the bottom of the image - see
+   ART_ASPECT_RATIO in PuppyFinderBanner.tsx for the exact math. Fixed
+   aspect-ratio (not height:auto) keeps the crop exact at any viewport
+   width; object-fit:cover + object-position:top never stretches or
+   distorts the artwork itself, it only ever hides the bottom sliver. */
+.puppy-finder-banner-art {
+  overflow: hidden;
 }
 
 .puppy-finder-banner-img {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
+  object-fit: cover;
+  object-position: top;
 }
 
-/* Invisible, precisely-positioned clickable region over ONLY the yellow
-   "Use Our Puppy Finder Service" button baked into the image (see the
-   CTA_REGION percentages in PuppyFinderBanner.tsx) - deliberately no
-   background/border here, so the button the visitor sees and taps is
-   still just the one already painted into the PNG, never a second
-   HTML button drawn on top of it. */
+/* Real, fully visible CTA button - styled to match the yellow/navy
+   button baked into the source artwork (colors sampled directly from
+   the PNG), reusing this page's existing pill-button convention (same
+   border-radius/padding/weight as .call-seller-btn above it) so the two
+   sections read as one cohesive block. */
 .puppy-finder-banner-cta {
-  position: absolute;
-  display: block;
-  background: transparent;
-  border: none;
-  padding: 0;
-  margin: 0;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 16px 16px;
+  padding: 15px 20px;
+  border-radius: 50px;
+  background: #fece02;
+  color: #03092a;
+  font-size: 15.5px;
+  font-weight: 800;
+  text-decoration: none;
+  text-align: center;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
+}
+
+.puppy-finder-banner-cta-chevron {
+  font-size: 18px;
+  line-height: 1;
 }
