@@ -128,6 +128,14 @@ export async function POST(request: NextRequest) {
   const preferredContactMethod = String(body.preferredContactMethod || "").trim();
   const consentToContact = Boolean(body.consentToContact);
   const notes = String(body.notes || "").trim();
+  // A2P SMS consent - deliberately separate from consentToContact above
+  // and from each other. Each defaults to false when the submitting
+  // form doesn't send it at all (every inquiry type except
+  // puppy_interest today), never inferred from a phone number being
+  // present.
+  const smsInquiryConsent = Boolean(body.smsInquiryConsent);
+  const smsMarketingConsent = Boolean(body.smsMarketingConsent);
+  const consentVersion = typeof body.consentVersion === "string" ? body.consentVersion : null;
 
   if (!firstName || (!phone && !email)) {
     return NextResponse.json(
@@ -176,10 +184,17 @@ export async function POST(request: NextRequest) {
   await linkFavoritesToContact(contact.id);
 
   // 2. Build type-specific promoted columns + full form_data snapshot.
+  // sms_inquiry_consent/sms_marketing_consent/consent_version are
+  // promoted for every inquiry type, not just puppy_interest - the
+  // inquiries row itself (via its own created_at) is what timestamps
+  // the consent decision, so there's no separate column for that.
   const inquiryColumns: Record<string, unknown> = {
     contact_id: contact.id,
     inquiry_type: inquiryType,
     form_data: body,
+    sms_inquiry_consent: smsInquiryConsent,
+    sms_marketing_consent: smsMarketingConsent,
+    consent_version: consentVersion,
   };
 
   let interestLabel = "";

@@ -139,20 +139,6 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         <CallSellerButton phone={sellerPhone} puppyId={puppy.id} />
 
         <PuppyQuestionForm puppyId={puppy.id} puppyName={puppyName} breed={puppy.breed} slug={puppy.slug} />
-
-        {puppy.status === "sold" ? (
-          <button className="pp-btn-primary" disabled style={{ opacity: 0.5, cursor: "default" }}>
-            This Puppy Has Been Sold
-          </button>
-        ) : puppy.status === "hold" ? (
-          <button className="pp-btn-primary" disabled style={{ opacity: 0.5, cursor: "default" }}>
-            Pending Adoption
-          </button>
-        ) : (
-          <a className="pp-btn-primary" href={`/puppies/${puppy.slug}/reserve`}>
-            Reserve This Puppy ›
-          </a>
-        )}
       </div>
 
       <ShareButtons

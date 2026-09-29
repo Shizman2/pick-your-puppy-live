@@ -1,0 +1,108 @@
+/* Shared by /privacy and /terms. Mirrors the existing FAQ page's design
+   language (app/(public)/faq/faq.css) - same tokens, same card/border/
+   chevron treatment - rather than introducing a new visual style. */
+
+.legal-hero {
+  padding: 24px 20px 4px;
+}
+.legal-hero h1 {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 6px;
+}
+.legal-hero .legal-updated {
+  font-size: 12.5px;
+  color: var(--pp-muted);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+.legal-hero .legal-intro {
+  font-size: 13.5px;
+  color: var(--pp-muted);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.legal-sections {
+  padding: 18px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.legal-section {
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow 0.2s;
+}
+.legal-section.pp-open {
+  box-shadow: var(--pp-shadow);
+}
+
+.legal-section-header {
+  width: 100%;
+  background: none;
+  border: none;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--pp-font);
+}
+.legal-section-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--pp-text);
+  line-height: 1.4;
+}
+.legal-section-chevron {
+  flex-shrink: 0;
+  display: flex;
+  transition: transform 0.2s;
+}
+.legal-section.pp-open .legal-section-chevron {
+  transform: rotate(180deg);
+}
+
+.legal-section-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid var(--pp-border);
+  padding-top: 14px;
+  font-size: 13px;
+  color: var(--pp-muted);
+  font-weight: 600;
+  line-height: 1.7;
+}
+.legal-section-body p {
+  margin-bottom: 10px;
+}
+.legal-section-body p:last-child {
+  margin-bottom: 0;
+}
+.legal-section-body ul {
+  margin: 0 0 10px;
+  padding-left: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.legal-section-body h4 {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pp-text);
+  margin-bottom: 4px;
+}
+.legal-section-body a {
+  color: var(--pp-blue);
+  text-decoration: underline;
+}
+
+.legal-page {
+  padding-bottom: 24px;
+}

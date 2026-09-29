@@ -11,23 +11,25 @@ interface Props {
   slug: string;
 }
 
+// Bumped whenever the consent disclosure wording below changes, so a
+// stored inquiry always records exactly what language the customer saw
+// when they checked (or didn't check) each box.
+const CONSENT_VERSION = "a2p_consent_v1";
+
 export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [smsInquiryConsent, setSmsInquiryConsent] = useState(false);
+  const [smsMarketingConsent, setSmsMarketingConsent] = useState(false);
   const [website, setWebsite] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || (!email.trim() && !phone.trim())) {
-      setStatus("error");
-      return;
-    }
-    if (!consent) {
       setStatus("error");
       return;
     }
@@ -43,7 +45,15 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
           email: email.trim(),
           phone: phone.trim(),
           notes: message.trim(),
-          consentToContact: consent,
+          // Submitting this form is itself the customer asking to be
+          // contacted back about their own inquiry - separate from,
+          // and not a substitute for, the two explicit SMS opt-ins
+          // below. Neither SMS checkbox affects this value, and this
+          // value never implies either SMS consent.
+          consentToContact: true,
+          smsInquiryConsent,
+          smsMarketingConsent,
+          consentVersion: CONSENT_VERSION,
           website,
           puppyId,
           puppyName,
@@ -111,23 +121,90 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
         aria-hidden="true"
       />
 
-      <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} required />
-      <input type="email" placeholder="Your email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <PhoneInput placeholder="Your phone" value={phone} onChange={setPhone} />
+      <input
+        type="text"
+        name="name"
+        id="question-form-name"
+        placeholder="Your name"
+        autoComplete="name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        id="question-form-email"
+        placeholder="Your email"
+        autoComplete="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <PhoneInput
+        name="phone"
+        id="question-form-phone"
+        placeholder="Your phone"
+        autoComplete="tel"
+        value={phone}
+        onChange={setPhone}
+      />
       <textarea
+        name="message"
+        id="question-form-message"
         placeholder="Your message or question..."
         value={message}
         onChange={(e) => setMessage(e.target.value)}
       />
 
-      <label className="question-consent">
-        <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
-        I agree to be contacted about this puppy.
-      </label>
+      <div className="question-consent-group">
+        <label className="question-consent-option">
+          <input
+            type="checkbox"
+            name="sms_inquiry_consent"
+            id="sms_inquiry_consent"
+            checked={smsInquiryConsent}
+            onChange={(e) => setSmsInquiryConsent(e.target.checked)}
+          />
+          <span className="question-consent-option-text">
+            <span className="question-consent-label">Puppy Inquiry Texts</span>
+            <span className="question-consent-disclosure">
+              I consent to receive non-marketing text messages from The Puppy Plugs about my puppy inquiry,
+              including responses and service updates. Message frequency may vary. Message &amp; data rates may
+              apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition of purchase.
+            </span>
+          </span>
+        </label>
 
-      {status === "error" && (
-        <p className="question-error">Please add your name, email or phone, and check the box above.</p>
-      )}
+        <label className="question-consent-option">
+          <input
+            type="checkbox"
+            name="sms_marketing_consent"
+            id="sms_marketing_consent"
+            checked={smsMarketingConsent}
+            onChange={(e) => setSmsMarketingConsent(e.target.checked)}
+          />
+          <span className="question-consent-option-text">
+            <span className="question-consent-label">Offers &amp; Puppy Updates</span>
+            <span className="question-consent-disclosure">
+              I consent to receive marketing text messages from The Puppy Plugs about available puppies, special
+              offers, and service updates. Message frequency may vary. Message &amp; data rates may apply. Reply
+              STOP to opt out or HELP for assistance. Consent is not a condition of purchase.
+            </span>
+          </span>
+        </label>
+
+        <div className="question-consent-links">
+          <a href="/privacy" target="_blank" rel="noopener noreferrer">
+            Privacy Policy
+          </a>
+          <span aria-hidden="true"> · </span>
+          <a href="/terms" target="_blank" rel="noopener noreferrer">
+            Terms &amp; Conditions
+          </a>
+        </div>
+      </div>
+
+      {status === "error" && <p className="question-error">Please add your name, and either an email or phone.</p>}
 
       <button type="submit" className="pp-btn-primary" disabled={status === "submitting"}>
         {status === "submitting" ? "Sending..." : "Send Message ›"}

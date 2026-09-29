@@ -497,17 +497,49 @@
   resize: none;
   height: 90px;
 }
-.question-consent {
+/* Two independent SMS opt-in checkboxes (A2P) + Privacy/Terms links,
+   replacing the old single "I agree to be contacted" checkbox. Kept as
+   one .question-form flex child so it picks up the form's existing
+   10px inter-field gap automatically - no new spacing system. */
+.question-consent-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.question-consent-option {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
-  font-size: 12px;
-  color: var(--pp-muted);
-  font-weight: 600;
-  line-height: 1.4;
+  gap: 10px;
+  cursor: pointer;
 }
-.question-consent input {
+.question-consent-option input {
   margin-top: 2px;
+  flex-shrink: 0;
+}
+.question-consent-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.question-consent-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pp-text);
+}
+.question-consent-disclosure {
+  font-size: 11px;
+  color: var(--pp-muted);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.question-consent-links {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pp-muted);
+}
+.question-consent-links a {
+  color: var(--pp-blue);
+  text-decoration: underline;
 }
 .question-error {
   font-size: 12px;

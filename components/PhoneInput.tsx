@@ -9,6 +9,7 @@ interface PhoneInputProps {
   className?: string;
   placeholder?: string;
   id?: string;
+  name?: string;
   required?: boolean;
   autoComplete?: string;
 }
@@ -34,6 +35,7 @@ export default function PhoneInput({
   className,
   placeholder,
   id,
+  name,
   required,
   autoComplete,
 }: PhoneInputProps) {
@@ -82,6 +84,7 @@ export default function PhoneInput({
       value={value}
       onChange={handleChange}
       id={id}
+      name={name}
       required={required}
       autoComplete={autoComplete}
     />
