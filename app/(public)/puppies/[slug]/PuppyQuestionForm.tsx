@@ -123,7 +123,7 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
 
       <input
         type="text"
-        name="name"
+        name="first_name"
         id="question-form-name"
         placeholder="Your name"
         autoComplete="name"
