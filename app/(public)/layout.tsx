@@ -1,6 +1,7 @@
 import "../../styles/public-tokens.css";
 import PublicShell from "../../components/public-site/PublicShell";
 import { Nunito, Caveat } from "next/font/google";
+import Script from "next/script";
 
 const nunito = Nunito({
   subsets: ["latin"],
@@ -25,6 +26,16 @@ export const metadata = {
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className={`${nunito.variable} ${caveat.variable}`}>
+      {/* GHL External Tracking - Pick Your Puppy Live sub-account. Mounted
+          once here (not per-page) so it loads on every public route,
+          including puppy detail pages, without duplicating the script tag.
+          data-debug is temporary for initial GHL-side verification. */}
+      <Script
+        src="https://link.msgsndr.com/js/external-tracking.js"
+        data-tracking-id="tk_f103b6de46a740ba963abcb95e02276d"
+        data-debug="true"
+        strategy="afterInteractive"
+      />
       <PublicShell>{children}</PublicShell>
     </div>
   );
