@@ -1,0 +1,109 @@
+/* Permanent, publicly-accessible SMS opt-in page for A2P 10DLC
+   reviewer verification. Hero mirrors the existing legal-page hero
+   pattern (components/public-site/legal.css); the form/consent block
+   below is a copy of the proven "I'm Interested" consent UI
+   (app/(public)/puppies/[slug]/detail.css's .question-* rules),
+   renamed to .optin-* so this page never depends on - or risks
+   affecting - the puppy detail page's stylesheet. */
+
+.optin-hero {
+  padding: 24px 20px 4px;
+}
+.optin-hero h1 {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1.2;
+  margin-bottom: 10px;
+}
+.optin-hero p {
+  font-size: 13.5px;
+  color: var(--pp-muted);
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+.optin-form-wrap {
+  padding: 20px;
+}
+
+.optin-form {
+  margin: 0;
+  background: #f9fafb;
+  border-radius: var(--pp-radius);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.optin-form input[type="text"],
+.optin-form input[type="email"],
+.optin-form input[type="tel"] {
+  font-family: var(--pp-font);
+  font-size: 14px;
+  font-weight: 600;
+  padding: 13px 16px;
+  border-radius: 12px;
+  border: 1.5px solid var(--pp-border);
+  outline: none;
+  width: 100%;
+}
+
+.optin-consent-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.optin-consent-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+}
+.optin-consent-option input {
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+.optin-consent-option-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.optin-consent-label {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pp-text);
+}
+.optin-consent-disclosure {
+  font-size: 11px;
+  color: var(--pp-muted);
+  font-weight: 500;
+  line-height: 1.5;
+}
+.optin-consent-links {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pp-muted);
+}
+.optin-consent-links a {
+  color: var(--pp-blue);
+  text-decoration: underline;
+}
+
+.optin-error {
+  font-size: 12px;
+  color: #ef4444;
+  font-weight: 700;
+}
+.optin-success {
+  margin: 0;
+  background: #e8fff3;
+  border: 1.5px solid #22c55e;
+  border-radius: var(--pp-radius);
+  padding: 16px 20px;
+  text-align: center;
+}
+.optin-success p {
+  font-size: 14px;
+  font-weight: 700;
+  color: #15803d;
+}
