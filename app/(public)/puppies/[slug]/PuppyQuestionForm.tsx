@@ -161,6 +161,7 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
           <input
             type="checkbox"
             name="contact.puppy_inquiry_texts"
+            value="Yes"
             id="sms_inquiry_consent"
             checked={smsInquiryConsent}
             onChange={(e) => setSmsInquiryConsent(e.target.checked)}
