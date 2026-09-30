@@ -7,6 +7,7 @@ import { linkFavoritesToContact } from "../../../lib/favorites";
 import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
 import { sendPushToAdmins, sanitizeForNotification } from "../../../lib/push";
 import type { NotificationEventType } from "../../../lib/pushTypes";
+import { syncInquiryToGHL } from "../../../lib/ghl";
 
 export const dynamic = "force-dynamic";
 
@@ -346,6 +347,18 @@ export async function POST(request: NextRequest) {
   if (notification) {
     await sendPushToAdmins(notification.eventType, notification.payload);
   }
+
+  // 8. Best-effort GHL sync - see lib/ghl.ts for why this exists
+  // alongside External Tracking (which already handles page/contact
+  // tracking correctly, but can't populate these two checkbox custom
+  // fields). Never blocks or fails this response.
+  await syncInquiryToGHL({
+    firstName,
+    email,
+    phone,
+    smsInquiryConsent,
+    smsMarketingConsent,
+  });
 
   return NextResponse.json({
     success: true,
