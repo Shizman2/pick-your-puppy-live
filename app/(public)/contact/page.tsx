@@ -1,9 +1,5 @@
 import "./contact.css";
-import ContactForm from "./ContactForm";
 import { getContentBlocksForPage } from "../../../lib/content";
-import { getAllVisiblePuppiesForCards } from "../../../lib/public-data/puppies";
-
-const FIXED_BREED_OPTIONS = ["Not sure yet", "Just have a question"];
 
 export const metadata = {
   title: "Contact – ThePuppyPlugs.com",
@@ -31,19 +27,6 @@ export default async function ContactPage() {
     // Keep fallback content if Supabase is unreachable.
   }
 
-  const phoneDigits = text.phone.replace(/[^\d+]/g, "");
-
-  let breedOptions = [...FIXED_BREED_OPTIONS];
-  try {
-    const puppies = await getAllVisiblePuppiesForCards();
-    const uniqueBreeds = Array.from(new Set(puppies.map((p) => p.breed?.trim()).filter(Boolean))).sort((a, b) =>
-      a.localeCompare(b)
-    );
-    breedOptions = [...uniqueBreeds, ...FIXED_BREED_OPTIONS];
-  } catch {
-    // Keep the fixed-only fallback if Supabase is unreachable.
-  }
-
   return (
     <>
       <div className="contact-hero">
@@ -52,32 +35,22 @@ export default async function ContactPage() {
         <p>We typically respond within a few hours. We would love to help you find the perfect puppy!</p>
       </div>
 
-      <div className="contact-methods">
-        <h2>Reach Us Directly</h2>
-        <a className="method-card" href={`tel:${phoneDigits}`}>
-          <div className="method-icon">📞</div>
-          <div>
-            <div className="method-label">Phone / Text</div>
-            <div className="method-value">{text.phone}</div>
-          </div>
-        </a>
-        <a className="method-card" href={`mailto:${text.email}`}>
-          <div className="method-icon">✉️</div>
-          <div>
-            <div className="method-label">Email</div>
-            <div className="method-value">{text.email}</div>
-          </div>
-        </a>
-        <div className="method-card">
-          <div className="method-icon">📸</div>
-          <div>
-            <div className="method-label">Instagram</div>
-            <div className="method-value">{text.instagram}</div>
-          </div>
-        </div>
+      <div className="contact-info-section">
+        <h2>Contact Information</h2>
+        <p className="contact-info-business">The Puppy Plugs</p>
+        <p className="contact-info-operator">Operated by Sean Williams, Sole Proprietor</p>
+        <p className="contact-info-address">
+          6229 Everett St
+          <br />
+          Philadelphia, PA 19149
+        </p>
+        <p className="contact-info-line">
+          Phone: <a href="tel:2677743553">267-774-3553</a>
+        </p>
+        <p className="contact-info-line">
+          Email: <a href="mailto:thepuppyplugsonline@gmail.com">thepuppyplugsonline@gmail.com</a>
+        </p>
       </div>
-
-      <ContactForm breedOptions={breedOptions} />
 
       <div className="hours-section">
         <h2>Response Hours</h2>

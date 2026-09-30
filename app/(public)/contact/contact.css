@@ -141,6 +141,47 @@
   color: #15803d;
 }
 
+.contact-info-section {
+  padding: 24px 20px 0;
+}
+.contact-info-section h2 {
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 14px;
+}
+.contact-info-business {
+  font-size: 15px;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+.contact-info-operator {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  margin-bottom: 10px;
+}
+.contact-info-address {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.contact-info-line {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  line-height: 1.6;
+}
+.contact-info-line a {
+  color: var(--pp-blue);
+  font-weight: 800;
+  text-decoration: none;
+}
+.contact-info-line a:hover {
+  text-decoration: underline;
+}
+
 .hours-section {
   padding: 24px 20px 0;
 }

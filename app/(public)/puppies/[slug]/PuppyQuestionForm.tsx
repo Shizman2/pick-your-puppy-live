@@ -169,9 +169,10 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
           <span className="question-consent-option-text">
             <span className="question-consent-label">Puppy Inquiry Texts</span>
             <span className="question-consent-disclosure">
-              I consent to receive non-marketing text messages from The Puppy Plugs about my puppy inquiry,
-              including responses and service updates. Message frequency may vary. Message &amp; data rates may
-              apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition of purchase.
+              I consent to receive non-marketing text messages from The Puppy Plugs, operated by Sean Williams,
+              about my puppy inquiry, including responses and service updates. Message frequency may vary. Message
+              &amp; data rates may apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition
+              of purchase.
             </span>
           </span>
         </label>
@@ -187,9 +188,10 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
           <span className="question-consent-option-text">
             <span className="question-consent-label">Offers &amp; Puppy Updates</span>
             <span className="question-consent-disclosure">
-              I consent to receive marketing text messages from The Puppy Plugs about available puppies, special
-              offers, and service updates. Message frequency may vary. Message &amp; data rates may apply. Reply
-              STOP to opt out or HELP for assistance. Consent is not a condition of purchase.
+              I consent to receive marketing text messages from The Puppy Plugs, operated by Sean Williams, about
+              available puppies, special offers, and service updates. Message frequency may vary. Message &amp;
+              data rates may apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition of
+              purchase.
             </span>
           </span>
         </label>
