@@ -16,11 +16,8 @@ export default function SmsOptInPage() {
   return (
     <>
       <div className="optin-hero">
-        <h1>SMS Text Message Opt-In</h1>
-        <p>
-          The Puppy Plugs, operated by Sean Williams, offers optional text messaging for puppy inquiries and
-          promotional updates. Choose the types of messages you would like to receive below.
-        </p>
+        <h1>Stay Connected With The Puppy Plugs</h1>
+        <p>Choose which text messages you&rsquo;d like to receive from The Puppy Plugs.</p>
       </div>
 
       <SmsOptInForm />
