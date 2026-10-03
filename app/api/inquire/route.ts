@@ -8,6 +8,8 @@ import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
 import { sendPushToAdmins, sanitizeForNotification } from "../../../lib/push";
 import type { NotificationEventType } from "../../../lib/pushTypes";
 import { syncInquiryToGHL } from "../../../lib/ghl";
+import { recordAnalyticsEvent } from "../../../lib/analytics/ingest";
+import { ANALYTICS_VISITOR_COOKIE, ANALYTICS_SESSION_COOKIE } from "../../../lib/analytics/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -184,6 +186,18 @@ export async function POST(request: NextRequest) {
   // link those rows to the now-identifiable Contact.
   await linkFavoritesToContact(contact.id);
 
+  // 1c. Capture the CURRENT analytics visitor/session (if any), straight
+  // from the httpOnly pp_av/pp_as cookies the browser is already sending
+  // on this request - never trusted from a client-supplied field, since
+  // none is ever exposed in the form. Both are simply null if the
+  // visitor has no analytics cookies yet (e.g. excluded device, blocked
+  // cookies, or an ad-blocker) - the inquiry still saves normally either
+  // way. No foreign key to analytics_visitors/analytics_sessions on
+  // these columns (see supabase/029_inquiry_analytics_attribution.sql
+  // for why), so a stale or absent value can never break this insert.
+  const analyticsVisitorId = request.cookies.get(ANALYTICS_VISITOR_COOKIE)?.value || null;
+  const analyticsSessionId = request.cookies.get(ANALYTICS_SESSION_COOKIE)?.value || null;
+
   // 2. Build type-specific promoted columns + full form_data snapshot.
   // sms_inquiry_consent/sms_marketing_consent/consent_version are
   // promoted for every inquiry type, not just puppy_interest - the
@@ -196,6 +210,8 @@ export async function POST(request: NextRequest) {
     sms_inquiry_consent: smsInquiryConsent,
     sms_marketing_consent: smsMarketingConsent,
     consent_version: consentVersion,
+    analytics_visitor_id: analyticsVisitorId,
+    analytics_session_id: analyticsSessionId,
   };
 
   let interestLabel = "";
@@ -250,11 +266,29 @@ export async function POST(request: NextRequest) {
     interestLabel = `Reservation request: ${body.puppyName || "a puppy"}`;
   }
 
-  const { data: inquiry, error: inquiryError } = await admin
+  let { data: inquiry, error: inquiryError } = await admin
     .from("inquiries")
     .insert(inquiryColumns)
     .select()
     .single();
+
+  // Defensive compatibility: analytics_visitor_id/analytics_session_id
+  // only exist once supabase/029_inquiry_analytics_attribution.sql has
+  // actually been run (deliberately NOT run automatically by this code
+  // - see that migration file). Until then, PostgREST rejects the whole
+  // insert before it ever reaches Postgres, since those two keys aren't
+  // in PostgREST's own cached schema (PGRST204 - confirmed directly
+  // against the live database, not assumed; this is PostgREST's own
+  // error code, not the raw Postgres "undefined column" 42703).
+  // Retrying once without them keeps every inquiry submission working
+  // regardless of whether the migration has been applied yet - saving
+  // the customer's inquiry must never depend on that timing.
+  if (inquiryError?.code === "PGRST204") {
+    const { analytics_visitor_id, analytics_session_id, ...columnsWithoutAnalytics } = inquiryColumns;
+    const retry = await admin.from("inquiries").insert(columnsWithoutAnalytics).select().single();
+    inquiry = retry.data;
+    inquiryError = retry.error;
+  }
 
   if (inquiryError) {
     return NextResponse.json({ error: "Could not save inquiry" }, { status: 500 });
@@ -360,10 +394,70 @@ export async function POST(request: NextRequest) {
     smsMarketingConsent,
   });
 
-  return NextResponse.json({
+  // 9. Successful-submission conversion event - fired exactly once,
+  // here, only after the inquiry row above has actually been saved.
+  // Deliberately separate from the im_interested CTA click (which only
+  // means the form was opened, not submitted - see PuppyQuestionForm.tsx).
+  // Routed through the same recordAnalyticsEvent() used by every other
+  // event type, so it automatically respects the same non-production/
+  // device-exclusion rules. Best-effort: never blocks or fails this
+  // response if analytics is unreachable or misconfigured.
+  let analyticsResult: Awaited<ReturnType<typeof recordAnalyticsEvent>> | null = null;
+  try {
+    let eventPath = "/";
+    if (typeof body.sourceUrl === "string") {
+      try {
+        eventPath = new URL(body.sourceUrl).pathname;
+      } catch {
+        // Keep the "/" fallback if sourceUrl isn't a parseable absolute URL.
+      }
+    }
+    const puppyIdForEvent =
+      (inquiryType === "puppy_interest" || inquiryType === "puppy_reservation") && typeof body.puppyId === "string"
+        ? body.puppyId
+        : null;
+
+    analyticsResult = await recordAnalyticsEvent({
+      eventType: "inquiry_submit",
+      path: eventPath,
+      puppyId: puppyIdForEvent,
+    });
+  } catch (err) {
+    console.error("[inquire] failed to record inquiry_submit analytics event:", err instanceof Error ? err.message : err);
+  }
+
+  const response = NextResponse.json({
     success: true,
     isNewContact: isNew,
     flaggedDuplicate: Boolean(flaggedDuplicate),
     eventSlug,
   });
+
+  // If recordAnalyticsEvent minted a brand-new visitor/session (only
+  // happens when this request carried no prior pp_av/pp_as cookies at
+  // all), the browser needs to actually be told about it via Set-Cookie
+  // here - otherwise this visitor/session would exist in the database
+  // but the browser would never learn its id, and the next page load
+  // would mint yet another one instead of continuing it. Mirrors the
+  // exact cookie-setting logic in app/api/analytics/track/route.ts.
+  if (analyticsResult?.visitorCookie) {
+    response.cookies.set(ANALYTICS_VISITOR_COOKIE, analyticsResult.visitorCookie.value, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: analyticsResult.visitorCookie.maxAge,
+      path: "/",
+    });
+  }
+  if (analyticsResult?.sessionCookie) {
+    response.cookies.set(ANALYTICS_SESSION_COOKIE, analyticsResult.sessionCookie.value, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: analyticsResult.sessionCookie.maxAge,
+      path: "/",
+    });
+  }
+
+  return response;
 }

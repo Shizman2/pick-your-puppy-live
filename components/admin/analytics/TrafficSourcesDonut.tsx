@@ -7,6 +7,7 @@ const SOURCE_LABEL: Record<string, string> = {
   facebook_instagram: "Facebook / Instagram",
   direct: "Direct",
   google: "Google",
+  own_funnel: "Pick Your Puppy Live (Our Funnel)",
   referral_other: "Referral / Other",
 };
 
@@ -14,6 +15,7 @@ const SOURCE_COLOR: Record<string, string> = {
   facebook_instagram: "#3B82F6",
   direct: "#EC4899",
   google: "#10B981",
+  own_funnel: "#0EA5E9",
   referral_other: "#F59E0B",
 };
 

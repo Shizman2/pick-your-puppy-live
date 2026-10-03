@@ -7,7 +7,20 @@ import CtaActivityCard from "../../../components/admin/analytics/CtaActivityCard
 import OnlineNowWidget from "../../../components/admin/analytics/OnlineNowWidget";
 import AnalyticsDateFilter from "../../../components/admin/analytics/AnalyticsDateFilter";
 import AnalyticsDeviceExclusion from "../../../components/admin/analytics/AnalyticsDeviceExclusion";
-import { VisitorsIcon, PageViewsIcon, PuppyViewsIcon, CtaClicksIcon, OnlineNowIcon } from "../../../components/admin/analytics/icons";
+import TopPagesCard from "../../../components/admin/analytics/TopPagesCard";
+import LandingPagesCard from "../../../components/admin/analytics/LandingPagesCard";
+import CampaignsCard from "../../../components/admin/analytics/CampaignsCard";
+import FunnelCard from "../../../components/admin/analytics/FunnelCard";
+import {
+  VisitorsIcon,
+  PageViewsIcon,
+  PuppyViewsIcon,
+  CtaClicksIcon,
+  OnlineNowIcon,
+  SessionsIcon,
+  LeadsIcon,
+  InquiriesIcon,
+} from "../../../components/admin/analytics/icons";
 import {
   getTopMetrics,
   getTrafficOverview,
@@ -15,6 +28,10 @@ import {
   getTrafficSources,
   getCtaActivity,
   getOnlineNow,
+  getTopPages,
+  getLandingPages,
+  getCampaigns,
+  getFunnelData,
   type DateRangeKey,
 } from "../../../lib/analytics/queries";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
@@ -38,17 +55,33 @@ function parseRange(value: string | undefined): DateRangeKey {
 export default async function AnalyticsPage({ searchParams }: { searchParams: { range?: string } }) {
   const range = parseRange(searchParams?.range);
 
-  const [userEmail, unreadMessageCount, metrics, trafficOverview, mostViewedPuppies, trafficSources, ctaActivity, onlineNow] =
-    await Promise.all([
-      getAdminUserEmail(),
-      getUnreadMessageCount(),
-      getTopMetrics(range),
-      getTrafficOverview(range),
-      getMostViewedPuppies(range),
-      getTrafficSources(range),
-      getCtaActivity(range),
-      getOnlineNow(),
-    ]);
+  const [
+    userEmail,
+    unreadMessageCount,
+    metrics,
+    trafficOverview,
+    mostViewedPuppies,
+    trafficSources,
+    ctaActivity,
+    onlineNow,
+    topPages,
+    landingPages,
+    campaigns,
+    funnel,
+  ] = await Promise.all([
+    getAdminUserEmail(),
+    getUnreadMessageCount(),
+    getTopMetrics(range),
+    getTrafficOverview(range),
+    getMostViewedPuppies(range),
+    getTrafficSources(range),
+    getCtaActivity(range),
+    getOnlineNow(),
+    getTopPages(range),
+    getLandingPages(range),
+    getCampaigns(range),
+    getFunnelData(range),
+  ]);
 
   const compareLabel = COMPARE_LABEL[range];
 
@@ -70,6 +103,14 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
             value={metrics.visitors.value}
             label="Visitors"
             changePercent={metrics.visitors.percentChange}
+            compareLabel={compareLabel}
+          />
+          <MetricCard
+            icon={<SessionsIcon />}
+            colorKey="teal"
+            value={metrics.sessions.value}
+            label="Sessions"
+            changePercent={metrics.sessions.percentChange}
             compareLabel={compareLabel}
           />
           <MetricCard
@@ -97,6 +138,22 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
             compareLabel={compareLabel}
           />
           <MetricCard
+            icon={<LeadsIcon />}
+            colorKey="indigo"
+            value={metrics.leads.value}
+            label="Leads"
+            changePercent={metrics.leads.percentChange}
+            compareLabel={compareLabel}
+          />
+          <MetricCard
+            icon={<InquiriesIcon />}
+            colorKey="green"
+            value={metrics.inquiries.value}
+            label="Inquiries"
+            changePercent={metrics.inquiries.percentChange}
+            compareLabel={compareLabel}
+          />
+          <MetricCard
             icon={<OnlineNowIcon />}
             colorKey="red"
             value={onlineNow.count}
@@ -121,6 +178,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
         <div className="analytics-row-even">
           <CtaActivityCard items={ctaActivity} />
           <OnlineNowWidget initial={onlineNow} />
+        </div>
+
+        <div className="analytics-row-even">
+          <TopPagesCard pages={topPages} />
+          <LandingPagesCard pages={landingPages} />
+        </div>
+
+        <div className="analytics-row-even">
+          <CampaignsCard campaigns={campaigns} />
+          <FunnelCard data={funnel} />
         </div>
 
         <AnalyticsDeviceExclusion />

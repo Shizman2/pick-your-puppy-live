@@ -108,34 +108,104 @@ async function countEventsOfType(eventType: string, start: Date, end: Date): Pro
   return count || 0;
 }
 
+async function countSessions(start: Date, end: Date): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("analytics_sessions")
+    .select("id", { count: "exact", head: true })
+    .gte("started_at", start.toISOString())
+    .lt("started_at", end.toISOString());
+  return count || 0;
+}
+
+async function countNewContacts(start: Date, end: Date): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("contacts")
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", start.toISOString())
+    .lt("created_at", end.toISOString());
+  return count || 0;
+}
+
+async function countInquiries(start: Date, end: Date): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("inquiries")
+    .select("id", { count: "exact", head: true })
+    .gte("created_at", start.toISOString())
+    .lt("created_at", end.toISOString());
+  return count || 0;
+}
+
 export interface TopMetrics {
   visitors: MetricComparison;
+  sessions: MetricComparison;
   pageViews: MetricComparison;
   puppyViews: MetricComparison;
   ctaClicks: MetricComparison;
+  leads: MetricComparison;
+  inquiries: MetricComparison;
 }
 
-/** The 4 top metric cards that carry a period-over-period comparison (Online Now is separate and has none - see getOnlineNow). */
+/**
+ * The top metric cards that carry a period-over-period comparison
+ * (Online Now is separate and has none - see getOnlineNow).
+ *
+ * Visitors and Sessions are deliberately different numbers: Visitors =
+ * unique analytics_visitors represented in this period's events;
+ * Sessions = analytics_sessions rows started in this period (one
+ * visitor can have several sessions). Leads and Inquiries are likewise
+ * different: Leads = brand-new contacts (contacts.created_at) - not
+ * page views, not CTA clicks, not every inquiry, and never inflated by
+ * a returning contact submitting again. Inquiries = successful
+ * submissions (inquiries.created_at, the authoritative table - not the
+ * analytics inquiry_submit event, which exists for visitor/session
+ * attribution rather than as the business count of record).
+ */
 export async function getTopMetrics(range: DateRangeKey): Promise<TopMetrics> {
   const { start, end, prevStart, prevEnd } = getDateWindow(range);
 
-  const [visitorsNow, visitorsPrev, pageViewsNow, pageViewsPrev, puppyViewsNow, puppyViewsPrev, ctaNow, ctaPrev] =
-    await Promise.all([
-      countDistinctVisitors(start, end),
-      countDistinctVisitors(prevStart, prevEnd),
-      countEventsOfType("page_view", start, end),
-      countEventsOfType("page_view", prevStart, prevEnd),
-      countEventsOfType("puppy_view", start, end),
-      countEventsOfType("puppy_view", prevStart, prevEnd),
-      countEventsOfType("cta_click", start, end),
-      countEventsOfType("cta_click", prevStart, prevEnd),
-    ]);
+  const [
+    visitorsNow,
+    visitorsPrev,
+    sessionsNow,
+    sessionsPrev,
+    pageViewsNow,
+    pageViewsPrev,
+    puppyViewsNow,
+    puppyViewsPrev,
+    ctaNow,
+    ctaPrev,
+    leadsNow,
+    leadsPrev,
+    inquiriesNow,
+    inquiriesPrev,
+  ] = await Promise.all([
+    countDistinctVisitors(start, end),
+    countDistinctVisitors(prevStart, prevEnd),
+    countSessions(start, end),
+    countSessions(prevStart, prevEnd),
+    countEventsOfType("page_view", start, end),
+    countEventsOfType("page_view", prevStart, prevEnd),
+    countEventsOfType("puppy_view", start, end),
+    countEventsOfType("puppy_view", prevStart, prevEnd),
+    countEventsOfType("cta_click", start, end),
+    countEventsOfType("cta_click", prevStart, prevEnd),
+    countNewContacts(start, end),
+    countNewContacts(prevStart, prevEnd),
+    countInquiries(start, end),
+    countInquiries(prevStart, prevEnd),
+  ]);
 
   return {
     visitors: computeComparison(visitorsNow, visitorsPrev),
+    sessions: computeComparison(sessionsNow, sessionsPrev),
     pageViews: computeComparison(pageViewsNow, pageViewsPrev),
     puppyViews: computeComparison(puppyViewsNow, puppyViewsPrev),
     ctaClicks: computeComparison(ctaNow, ctaPrev),
+    leads: computeComparison(leadsNow, leadsPrev),
+    inquiries: computeComparison(inquiriesNow, inquiriesPrev),
   };
 }
 
@@ -288,13 +358,182 @@ export async function getMostViewedPuppies(range: DateRangeKey, limit = 5): Prom
     .filter((x): x is MostViewedPuppy => x !== null);
 }
 
+export interface TopPageItem {
+  path: string;
+  views: number;
+  visitors: number;
+}
+
+const FRIENDLY_PAGE_LABELS: Record<string, string> = {
+  "/": "Homepage",
+  "/puppies": "Available Puppies",
+  "/puppy-finder": "Puppy Finder",
+  "/favorites": "Favorites",
+  "/how-it-works": "How It Works",
+  "/faq": "FAQ",
+  "/contact": "Contact",
+  "/sms-opt-in": "SMS Opt-In",
+};
+
+export function friendlyPageLabel(path: string): string {
+  return FRIENDLY_PAGE_LABELS[path] || path;
+}
+
+/**
+ * Every page_view row grouped by its exact path - answers "which pages
+ * are actually getting views," including a paid landing page, which was
+ * previously only visible as an undifferentiated part of the Page Views
+ * total. Grouped in JS from raw rows (same approach as
+ * getMostViewedPuppies above) rather than a Postgres-side GROUP BY,
+ * consistent with how every other query in this file already works.
+ */
+export async function getTopPages(range: DateRangeKey, limit = 10): Promise<TopPageItem[]> {
+  const { start, end } = getDateWindow(range);
+  const admin = createAdminClient();
+
+  const { data } = await admin
+    .from("analytics_events")
+    .select("path, visitor_id")
+    .eq("event_type", "page_view")
+    .not("path", "is", null)
+    .gte("occurred_at", start.toISOString())
+    .lt("occurred_at", end.toISOString());
+
+  const byPath = new Map<string, { views: number; visitors: Set<string> }>();
+  for (const row of data || []) {
+    const path = (row as any).path as string;
+    const entry = byPath.get(path) || { views: 0, visitors: new Set<string>() };
+    entry.views += 1;
+    entry.visitors.add((row as any).visitor_id);
+    byPath.set(path, entry);
+  }
+
+  return Array.from(byPath.entries())
+    .map(([path, v]) => ({ path, views: v.views, visitors: v.visitors.size }))
+    .sort((a, b) => b.views - a.views)
+    .slice(0, limit);
+}
+
+export interface LandingPageItem {
+  path: string;
+  sessions: number;
+  visitors: number;
+}
+
+/**
+ * Grouped by analytics_sessions.entry_path - the FIRST page of each
+ * session, not every page view. This is the number that answers "how
+ * many people actually landed on the page my ad sends them to," which
+ * is a materially different (and smaller) question than "how many
+ * total views did that path get" (getTopPages above also counts repeat
+ * views within a session, internal navigation back to it, etc).
+ */
+export async function getLandingPages(range: DateRangeKey, limit = 10): Promise<LandingPageItem[]> {
+  const { start, end } = getDateWindow(range);
+  const admin = createAdminClient();
+
+  const { data } = await admin
+    .from("analytics_sessions")
+    .select("entry_path, visitor_id")
+    .gte("started_at", start.toISOString())
+    .lt("started_at", end.toISOString());
+
+  const byPath = new Map<string, { sessions: number; visitors: Set<string> }>();
+  for (const row of data || []) {
+    const path = ((row as any).entry_path as string) || "(unknown)";
+    const entry = byPath.get(path) || { sessions: 0, visitors: new Set<string>() };
+    entry.sessions += 1;
+    entry.visitors.add((row as any).visitor_id);
+    byPath.set(path, entry);
+  }
+
+  return Array.from(byPath.entries())
+    .map(([path, v]) => ({ path, sessions: v.sessions, visitors: v.visitors.size }))
+    .sort((a, b) => b.sessions - a.sessions)
+    .slice(0, limit);
+}
+
+export interface CampaignItem {
+  campaign: string;
+  source: string | null;
+  medium: string | null;
+  sessions: number;
+  visitors: number;
+}
+
+/**
+ * Grouped by the raw (campaign, source, medium) tuple - only sessions
+ * with a non-blank utm_campaign are included, so an untagged organic
+ * visit never shows up as a meaningless blank "campaign" row. Raw UTM
+ * values are shown as-is (e.g. "meta" vs "facebook" vs "instagram" all
+ * stay distinct) rather than folded into the simplified traffic_source
+ * buckets used elsewhere - see the approved audit's note that this is
+ * where real source detail (that the simplified buckets intentionally
+ * collapse) should remain visible.
+ */
+export async function getCampaigns(range: DateRangeKey, limit = 10): Promise<CampaignItem[]> {
+  const { start, end } = getDateWindow(range);
+  const admin = createAdminClient();
+
+  const { data } = await admin
+    .from("analytics_sessions")
+    .select("utm_campaign, utm_source, utm_medium, visitor_id")
+    .gte("started_at", start.toISOString())
+    .lt("started_at", end.toISOString())
+    .not("utm_campaign", "is", null);
+
+  const byCampaign = new Map<
+    string,
+    { campaign: string; source: string | null; medium: string | null; sessions: number; visitors: Set<string> }
+  >();
+
+  for (const row of data || []) {
+    const campaign = ((row as any).utm_campaign as string | null)?.trim();
+    if (!campaign) continue; // skip blank-string utm_campaign values too, not just null
+    const source = (row as any).utm_source as string | null;
+    const medium = (row as any).utm_medium as string | null;
+    const key = `${campaign} ${source || ""} ${medium || ""}`;
+    const entry = byCampaign.get(key) || { campaign, source, medium, sessions: 0, visitors: new Set<string>() };
+    entry.sessions += 1;
+    entry.visitors.add((row as any).visitor_id);
+    byCampaign.set(key, entry);
+  }
+
+  return Array.from(byCampaign.values())
+    .map((v) => ({ campaign: v.campaign, source: v.source, medium: v.medium, sessions: v.sessions, visitors: v.visitors.size }))
+    .sort((a, b) => b.sessions - a.sessions)
+    .slice(0, limit);
+}
+
+// "own_funnel" is a DISPLAY-only bucket, computed fresh at query time -
+// it is never written to analytics_sessions.traffic_source and the
+// stored TrafficSource/classifyTrafficSource() classification is
+// untouched (see the approved audit: don't attempt to guess Facebook
+// vs Instagram, but DO stop presenting our own known funnel domain as
+// if it were an unrelated third party). The raw referrer stays exactly
+// as captured either way.
+export type DisplayTrafficSource = TrafficSource | "own_funnel";
+
+/** pickyourpuppylive.com is our own GHL evergreen funnel/domain (see the approved audit, Part 6). */
+const OWN_FUNNEL_REFERRER_HOSTNAMES = ["pickyourpuppylive.com"];
+
+function isOwnFunnelReferrer(referrer: string | null): boolean {
+  if (!referrer) return false;
+  try {
+    const host = new URL(referrer).hostname.toLowerCase();
+    return OWN_FUNNEL_REFERRER_HOSTNAMES.some((known) => host === known || host.endsWith(`.${known}`));
+  } catch {
+    return false;
+  }
+}
+
 export interface TrafficSourceBreakdown {
-  source: TrafficSource;
+  source: DisplayTrafficSource;
   count: number;
   percent: number;
 }
 
-const TRAFFIC_SOURCE_ORDER: TrafficSource[] = ["facebook_instagram", "direct", "google", "referral_other"];
+const TRAFFIC_SOURCE_ORDER: DisplayTrafficSource[] = ["facebook_instagram", "direct", "google", "own_funnel", "referral_other"];
 
 /**
  * Attributes each visitor active in the range to the traffic_source of
@@ -302,27 +541,38 @@ const TRAFFIC_SOURCE_ORDER: TrafficSource[] = ["facebook_instagram", "direct", "
  * within-period) - a visitor with multiple sessions in the period is
  * only counted once, so these counts always sum to the period's total
  * Visitors figure, matching the donut's center number.
+ *
+ * One refinement on top of the stored traffic_source: a session whose
+ * stored bucket is 'referral_other' but whose raw referrer is our own
+ * pickyourpuppylive.com funnel gets displayed as 'own_funnel' instead -
+ * computed here, not stored, so it never changes the underlying data.
  */
-export async function getTrafficSources(range: DateRangeKey): Promise<{ total: number; breakdown: TrafficSourceBreakdown[] }> {
+export async function getTrafficSources(
+  range: DateRangeKey
+): Promise<{ total: number; breakdown: TrafficSourceBreakdown[] }> {
   const { start, end } = getDateWindow(range);
   const admin = createAdminClient();
 
   const { data } = await admin
     .from("analytics_sessions")
-    .select("visitor_id, traffic_source, started_at")
+    .select("visitor_id, traffic_source, referrer, started_at")
     .gte("started_at", start.toISOString())
     .lt("started_at", end.toISOString())
     .order("started_at", { ascending: true });
 
-  const firstSourceByVisitor = new Map<string, TrafficSource>();
+  const firstSourceByVisitor = new Map<string, DisplayTrafficSource>();
   for (const row of data || []) {
     const visitorId = (row as any).visitor_id as string;
     if (!firstSourceByVisitor.has(visitorId)) {
-      firstSourceByVisitor.set(visitorId, (row as any).traffic_source as TrafficSource);
+      const storedSource = (row as any).traffic_source as TrafficSource;
+      const referrer = (row as any).referrer as string | null;
+      const displaySource: DisplayTrafficSource =
+        storedSource === "referral_other" && isOwnFunnelReferrer(referrer) ? "own_funnel" : storedSource;
+      firstSourceByVisitor.set(visitorId, displaySource);
     }
   }
 
-  const counts = new Map<TrafficSource, number>();
+  const counts = new Map<DisplayTrafficSource, number>();
   for (const source of firstSourceByVisitor.values()) {
     counts.set(source, (counts.get(source) || 0) + 1);
   }
@@ -423,4 +673,59 @@ export async function getOnlineNow(): Promise<OnlineNowData> {
     .map(([label, pageCount]) => ({ label, count: pageCount }));
 
   return { count, pages };
+}
+
+export interface FunnelData {
+  landingVisitors: number;
+  puppyViewers: number;
+  leads: number;
+  inquiries: number;
+}
+
+/**
+ * A simple OPERATIONAL funnel: each step is counted independently
+ * within the same date range, not a cohort trace of the same people
+ * through every stage. Definitions, per the approved audit:
+ *   - Landing Visitors = unique visitors with a session started in the
+ *     period (analytics_sessions.visitor_id)
+ *   - Puppy Viewers    = unique visitors with >=1 puppy_view event
+ *   - Leads            = new contacts (contacts.created_at) - same
+ *     definition as the Leads metric card, not inquiry volume
+ *   - Inquiries        = successful submissions (inquiries.created_at)
+ *     - the authoritative table, same as the Inquiries metric card
+ *
+ * A true cohort funnel (did THIS SPECIFIC landing visitor become THIS
+ * SPECIFIC lead) is only possible from here downward: inquiries now
+ * carries analytics_visitor_id/analytics_session_id (see
+ * supabase/029_inquiry_analytics_attribution.sql) for inquiries
+ * submitted after this migration runs. Puppy Viewers -> Leads can't
+ * yet be cohort-traced the same way - a puppy_view event has no
+ * contact/inquiry reference - so this funnel stays a simple period
+ * count of each stage rather than overclaiming precision it doesn't
+ * have.
+ */
+export async function getFunnelData(range: DateRangeKey): Promise<FunnelData> {
+  const { start, end } = getDateWindow(range);
+  const admin = createAdminClient();
+
+  const [sessionsResult, puppyViewResult, leads, inquiries] = await Promise.all([
+    admin
+      .from("analytics_sessions")
+      .select("visitor_id")
+      .gte("started_at", start.toISOString())
+      .lt("started_at", end.toISOString()),
+    admin
+      .from("analytics_events")
+      .select("visitor_id")
+      .eq("event_type", "puppy_view")
+      .gte("occurred_at", start.toISOString())
+      .lt("occurred_at", end.toISOString()),
+    countNewContacts(start, end),
+    countInquiries(start, end),
+  ]);
+
+  const landingVisitors = new Set((sessionsResult.data || []).map((r: any) => r.visitor_id)).size;
+  const puppyViewers = new Set((puppyViewResult.data || []).map((r: any) => r.visitor_id)).size;
+
+  return { landingVisitors, puppyViewers, leads, inquiries };
 }

@@ -33,9 +33,12 @@ export default function AnalyticsDeviceExclusion() {
           <div className="analytics-settings-title">Exclude this device from analytics</div>
           {ready && (
             <div className={`analytics-settings-status ${excluded ? "excluded" : "included"}`}>
-              {excluded ? "This device is excluded from analytics." : "This device is included in analytics."}
+              {excluded ? "THIS DEVICE IS EXCLUDED" : "THIS DEVICE IS BEING TRACKED"}
             </div>
           )}
+          <div className="analytics-settings-note">
+            Applies only to this browser, on this device - not to your other devices or browsers.
+          </div>
         </div>
         {ready && (
           <button

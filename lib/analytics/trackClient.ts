@@ -4,6 +4,8 @@
 // call (components/public/AnalyticsTracker.tsx, PuppyViewTracker.tsx,
 // and any CTA component that calls trackCta()).
 
+import { isNonProductionEnvironmentClient } from "./environment";
+
 const EXCLUSION_COOKIE = "analytics_excluded";
 const TRACK_ENDPOINT = "/api/analytics/track";
 
@@ -66,6 +68,7 @@ function utmParamsFromLocation(): Record<string, string | null> {
  */
 export function trackEvent(payload: TrackEventPayload): void {
   if (typeof window === "undefined") return;
+  if (isNonProductionEnvironmentClient()) return;
   if (isDeviceExcluded()) return;
 
   const body = JSON.stringify({

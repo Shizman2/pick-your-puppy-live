@@ -44,7 +44,7 @@ export const PUPPY_VIEW_DEDUP_SECONDS = 60 * 30;
 export const CTA_KEYS = ["call_now", "im_interested", "puppy_finder", "see_available_puppies"] as const;
 export type CtaKey = (typeof CTA_KEYS)[number];
 
-export const EVENT_TYPES = ["page_view", "puppy_view", "cta_click"] as const;
+export const EVENT_TYPES = ["page_view", "puppy_view", "cta_click", "inquiry_submit"] as const;
 export type AnalyticsEventType = (typeof EVENT_TYPES)[number];
 
 export const TRAFFIC_SOURCES = ["facebook_instagram", "google", "direct", "referral_other"] as const;

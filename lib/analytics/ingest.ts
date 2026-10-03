@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { createAdminClient } from "../supabase/admin";
 import { classifyTrafficSource } from "./classifySource";
 import { isLikelyBot } from "./botDetection";
+import { isNonProductionEnvironmentServer } from "./environment";
 import {
   ANALYTICS_VISITOR_COOKIE,
   ANALYTICS_SESSION_COOKIE,
@@ -15,6 +16,14 @@ import {
 } from "./constants";
 
 export interface TrackEventInput {
+  /**
+   * inquiry_submit is deliberately NOT reachable through the public
+   * /api/analytics/track beacon (see app/api/analytics/track/route.ts's
+   * own validEventType check, which still only allows the original
+   * three) - it's only ever fired from a direct server-to-server call
+   * to this function, from inside app/api/inquire/route.ts, right after
+   * an inquiry has actually been saved successfully.
+   */
   eventType: AnalyticsEventType;
   path: string;
   puppyId?: string | null;
@@ -39,6 +48,11 @@ export interface TrackResult {
  * file is server-only and uses the service-role Supabase client).
  *
  * Ordering matters here and is deliberate:
+ *   0. Non-production environment (localhost, Netlify deploy/branch
+ *      preview, etc.) -> stop immediately, before even looking at
+ *      cookies. This is the server-side half of the same check already
+ *      done client-side in lib/analytics/trackClient.ts - defense in
+ *      depth, same principle as device exclusion below.
  *   1. Excluded device -> stop immediately. No visitor row, no session
  *      row, no event row. This is what makes device exclusion prevent
  *      recording at the source rather than merely hiding data later.
@@ -49,6 +63,10 @@ export interface TrackResult {
  *   6. Insert the event row(s).
  */
 export async function recordAnalyticsEvent(input: TrackEventInput): Promise<TrackResult> {
+  if (isNonProductionEnvironmentServer(headers().get("host"))) {
+    return { recorded: false };
+  }
+
   const store = cookies();
 
   if (store.get(ANALYTICS_EXCLUSION_COOKIE)?.value === "true") {
@@ -178,6 +196,21 @@ export async function recordAnalyticsEvent(input: TrackEventInput): Promise<Trac
       path: input.path,
       puppy_id: input.puppyId || null,
       cta_key: input.ctaKey || null,
+      occurred_at: nowIso,
+    });
+  } else if (input.eventType === "inquiry_submit") {
+    // A standalone conversion event, deliberately not also a page_view -
+    // this isn't a navigation, it's the server recording that a form
+    // POST was just accepted. Kept distinct from the im_interested CTA
+    // click (which only means the form was opened) per the approved
+    // analytics audit.
+    rows.push({
+      visitor_id: visitorId,
+      session_id: sessionId,
+      event_type: "inquiry_submit",
+      path: input.path,
+      puppy_id: input.puppyId || null,
+      cta_key: null,
       occurred_at: nowIso,
     });
   } else {

@@ -1,6 +1,6 @@
 export interface MetricCardProps {
   icon: React.ReactNode;
-  colorKey: "blue" | "green" | "amber" | "purple" | "red";
+  colorKey: "blue" | "green" | "amber" | "purple" | "red" | "teal" | "indigo";
   value: number;
   label: string;
   /** Pre-formatted, e.g. "24%" - null means "no meaningful comparison" (previous period had zero activity), and is omitted entirely rather than shown as a misleading number. */
