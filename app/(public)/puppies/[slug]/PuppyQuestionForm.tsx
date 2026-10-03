@@ -11,19 +11,12 @@ interface Props {
   slug: string;
 }
 
-// Bumped whenever the consent disclosure wording below changes, so a
-// stored inquiry always records exactly what language the customer saw
-// when they checked (or didn't check) each box.
-const CONSENT_VERSION = "a2p_consent_v1";
-
 export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [message, setMessage] = useState("");
-  const [smsInquiryConsent, setSmsInquiryConsent] = useState(false);
-  const [smsMarketingConsent, setSmsMarketingConsent] = useState(false);
   const [website, setWebsite] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
 
@@ -46,14 +39,13 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
           phone: phone.trim(),
           notes: message.trim(),
           // Submitting this form is itself the customer asking to be
-          // contacted back about their own inquiry - separate from,
-          // and not a substitute for, the two explicit SMS opt-ins
-          // below. Neither SMS checkbox affects this value, and this
-          // value never implies either SMS consent.
+          // contacted back about their own inquiry - this form no
+          // longer collects SMS-specific consent at all, so both stay
+          // explicitly false and no consent version is sent (there's
+          // no disclosure for a version to refer to).
           consentToContact: true,
-          smsInquiryConsent,
-          smsMarketingConsent,
-          consentVersion: CONSENT_VERSION,
+          smsInquiryConsent: false,
+          smsMarketingConsent: false,
           website,
           puppyId,
           puppyName,
@@ -157,45 +149,6 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
       />
 
       <div className="question-consent-group">
-        <label className="question-consent-option">
-          <input
-            type="checkbox"
-            name="contact.puppy_inquiry_texts"
-            value="yes"
-            id="sms_inquiry_consent"
-            checked={smsInquiryConsent}
-            onChange={(e) => setSmsInquiryConsent(e.target.checked)}
-          />
-          <span className="question-consent-option-text">
-            <span className="question-consent-label">Puppy Inquiry Texts</span>
-            <span className="question-consent-disclosure">
-              I consent to receive non-marketing text messages from The Puppy Plugs, operated by Sean Williams,
-              about my puppy inquiry, including responses and service updates. Message frequency may vary. Message
-              &amp; data rates may apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition
-              of purchase.
-            </span>
-          </span>
-        </label>
-
-        <label className="question-consent-option">
-          <input
-            type="checkbox"
-            name="sms_marketing_consent"
-            id="sms_marketing_consent"
-            checked={smsMarketingConsent}
-            onChange={(e) => setSmsMarketingConsent(e.target.checked)}
-          />
-          <span className="question-consent-option-text">
-            <span className="question-consent-label">Offers &amp; Puppy Updates</span>
-            <span className="question-consent-disclosure">
-              I consent to receive marketing text messages from The Puppy Plugs, operated by Sean Williams, about
-              available puppies, special offers, and service updates. Message frequency may vary. Message &amp;
-              data rates may apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition of
-              purchase.
-            </span>
-          </span>
-        </label>
-
         <div className="question-consent-links">
           <a href="/privacy" target="_blank" rel="noopener noreferrer">
             Privacy Policy
