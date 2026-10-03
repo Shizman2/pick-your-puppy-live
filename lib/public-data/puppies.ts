@@ -45,6 +45,7 @@ export function mapPuppyRowToCard(row: PuppyRow, favoritesCount = 0): HomepagePu
     status: row.status,
     photoUrl: photos[0] || "",
     favoritesCount,
+    location: row.location || null,
   };
 }
 

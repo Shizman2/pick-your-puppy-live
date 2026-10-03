@@ -101,6 +101,14 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <div className="service-area-banner-wrap">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/area.png"
+          alt="Serving families across Delaware, Maryland, Pennsylvania, New Jersey, New York and Connecticut. Pickup and delivery available."
+        />
+      </div>
+
       <section className="section" id="featured">
         <div className="section-header">
           <h2 className="section-title">{text.featured_heading}</h2>

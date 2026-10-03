@@ -15,6 +15,7 @@ export interface HomepagePuppy {
   status: PuppyRow["status"];
   photoUrl: string;
   favoritesCount: number;
+  location: string | null;
 }
 
 /**
@@ -31,7 +32,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
   const { data, error } = await admin
     .from("puppies")
     .select(
-      "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order"
+      "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order, location"
     )
     .eq("show_on_website", true)
     .order("display_order", { ascending: true })
@@ -65,6 +66,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
       status: row.status,
       photoUrl: photos[0] || "",
       favoritesCount: favoritesCounts[row.id] || 0,
+      location: row.location || null,
     };
   });
 }

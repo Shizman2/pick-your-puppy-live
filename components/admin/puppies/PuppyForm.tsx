@@ -11,7 +11,15 @@ import {
   removePuppyPhoto,
   type PuppyFormFields,
 } from "../../../app/admin/puppies/actions";
-import { GENDER_OPTIONS, SIZE_OPTIONS, STATUS_OPTIONS, BADGE_OPTIONS, STATUS_DISPLAY_LABEL, type PuppyRow } from "../../../lib/puppyTypes";
+import {
+  GENDER_OPTIONS,
+  SIZE_OPTIONS,
+  STATUS_OPTIONS,
+  BADGE_OPTIONS,
+  STATUS_DISPLAY_LABEL,
+  PUPPY_LOCATION_OPTIONS,
+  type PuppyRow,
+} from "../../../lib/puppyTypes";
 
 interface PuppyFormProps {
   existing?: PuppyRow;
@@ -49,6 +57,13 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
     existing?.sale_price_cents ? (existing.sale_price_cents / 100).toString() : ""
   );
   const [showOnWebsite, setShowOnWebsite] = useState(existing?.show_on_website ?? true);
+
+  const existingLocation = existing?.location || "";
+  const existingLocationIsKnown = PUPPY_LOCATION_OPTIONS.includes(existingLocation);
+  const [locationChoice, setLocationChoice] = useState(
+    existingLocation === "" ? "" : existingLocationIsKnown ? existingLocation : "Other"
+  );
+  const [customLocation, setCustomLocation] = useState(existingLocationIsKnown ? "" : existingLocation);
 
   const [saving, setSaving] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -90,6 +105,12 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
       bundleCostCents: Math.round((parseFloat(bundleCost) || 0) * 100),
       salePriceCents: salePrice.trim() ? Math.round(parseFloat(salePrice) * 100) : null,
       showOnWebsite,
+      location:
+        locationChoice === ""
+          ? null
+          : locationChoice === "Other"
+          ? customLocation.trim() || null
+          : locationChoice,
     };
 
     const result = existing ? await updatePuppy(existing.id, fields) : await createPuppy(fields);
@@ -297,6 +318,32 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
             ))}
           </select>
         </div>
+      </div>
+
+      <div className="puppy-form-row">
+        <div className="admin-field">
+          <label className="admin-field__label">Location</label>
+          <select className="admin-select" value={locationChoice} onChange={(e) => setLocationChoice(e.target.value)}>
+            <option value="">Not set</option>
+            {PUPPY_LOCATION_OPTIONS.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        {locationChoice === "Other" && (
+          <div className="admin-field">
+            <label className="admin-field__label">Custom location</label>
+            <input
+              className="admin-input"
+              placeholder="e.g. Newark, DE"
+              value={customLocation}
+              onChange={(e) => setCustomLocation(e.target.value)}
+            />
+          </div>
+        )}
       </div>
 
       <div className="admin-field">

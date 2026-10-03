@@ -67,7 +67,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         ← Back to Puppies
       </a>
 
-      <PuppyGallery photos={puppy.photo_urls || []} alt={puppyName} />
+      <PuppyGallery photos={puppy.photo_urls || []} alt={puppyName} location={puppy.location} />
 
       <div className="detail-info">
         <div className="detail-header">

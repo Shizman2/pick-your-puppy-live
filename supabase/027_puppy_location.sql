@@ -1,0 +1,15 @@
+-- Adds a data-driven location field to individual puppies, for the
+-- public location pill shown on puppy cards and the detail page.
+--
+-- Plain nullable text, not a constrained enum: the admin UI offers a
+-- fixed dropdown (Delaware, Maryland, Pennsylvania, New Jersey, New
+-- York, Connecticut) plus "Other" with a free-text value, and this
+-- column just stores whatever string results - no CHECK constraint,
+-- so "Other" values aren't rejected and the option list can change
+-- later without a migration. Null/blank means no location pill is
+-- shown; nothing is ever derived from the business address.
+--
+-- Purely additive and safe to run against the existing (populated)
+-- puppies table - every existing row gets location = null, which
+-- renders as "no pill" (see lib/public-data/puppies.ts).
+alter table puppies add column if not exists location text;

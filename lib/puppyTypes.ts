@@ -30,6 +30,7 @@ export interface PuppyRow {
   cost_cents: number;
   bundle_cost_cents: number;
   source_puppy_finder_option_id: string | null;
+  location: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +39,17 @@ export const GENDER_OPTIONS: PuppyGender[] = ["male", "female"];
 export const SIZE_OPTIONS: PuppySize[] = ["teacup", "toy", "mini", "standard"];
 export const STATUS_OPTIONS: PuppyStatus[] = ["available", "hold", "sold", "on_sale", "discounted"];
 export const BADGE_OPTIONS: PuppyBadgeTag[] = ["available", "new", "popular"];
+// Fixed states shown in the admin Location dropdown - "Other" (handled
+// in the admin form itself, not stored as a literal value) lets a free-
+// text location be saved without needing a matching option here.
+export const PUPPY_LOCATION_OPTIONS: string[] = [
+  "Delaware",
+  "Maryland",
+  "Pennsylvania",
+  "New Jersey",
+  "New York",
+  "Connecticut",
+];
 
 export const STATUS_DISPLAY_LABEL: Record<PuppyStatus, string> = {
   available: "Available",

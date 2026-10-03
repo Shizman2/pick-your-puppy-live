@@ -47,6 +47,15 @@ export default function FeaturedPuppies({ puppies }: { puppies: HomepagePuppy[] 
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="puppy-card-img" src={p.photoUrl} alt={p.breed} />
                 <Watermark />
+                {p.location && (
+                  <span className="puppy-card-location">
+                    <svg viewBox="0 0 24 24" width="9" height="9" fill="none">
+                      <path d="M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z" fill="#1B7BFF" />
+                      <circle cx="12" cy="9" r="2.4" fill="#fff" />
+                    </svg>
+                    {p.location}
+                  </span>
+                )}
               </div>
               <div className="puppy-card-body">
                 <div className="pcard-top-row">
