@@ -1,7 +1,7 @@
 import "server-only";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
 import { createAdminClient } from "../supabase/admin";
-import { ONLINE_NOW_WINDOW_SECONDS, type CtaKey, type TrafficSource } from "./constants";
+import { ONLINE_NOW_WINDOW_SECONDS, LANDING_TEST_ID_PREFIX, type CtaKey, type TrafficSource } from "./constants";
 
 export type DateRangeKey = "today" | "7d" | "30d";
 
@@ -77,7 +77,8 @@ export interface MetricComparison {
   percentChange: number | null;
 }
 
-function computeComparison(current: number, previous: number): MetricComparison {
+/** Exported for reuse by the Business Scorecard, which needs the same current-vs-previous-period comparison shape for its own (non-analytics) metrics like Puppies Sold / Revenue / Profit / Ad Spend. */
+export function computeComparison(current: number, previous: number): MetricComparison {
   let percentChange: number | null;
   if (previous === 0) {
     percentChange = current === 0 ? 0 : null;
@@ -118,7 +119,8 @@ async function countSessions(start: Date, end: Date): Promise<number> {
   return count || 0;
 }
 
-async function countNewContacts(start: Date, end: Date): Promise<number> {
+/** Exported for reuse by the Business Scorecard (lib/businessScorecard.ts), which needs this same "new unique contacts" Leads definition over a custom (goal-period) date range, not just the fixed today/7d/30d presets here. */
+export async function countNewContacts(start: Date, end: Date): Promise<number> {
   const admin = createAdminClient();
   const { count } = await admin
     .from("contacts")
@@ -128,13 +130,50 @@ async function countNewContacts(start: Date, end: Date): Promise<number> {
   return count || 0;
 }
 
-async function countInquiries(start: Date, end: Date): Promise<number> {
+/** Exported for reuse by the Business Scorecard's Marketing Performance funnel/CPL math over the goal's custom date range. */
+export async function countInquiries(start: Date, end: Date): Promise<number> {
   const admin = createAdminClient();
   const { count } = await admin
     .from("inquiries")
     .select("id", { count: "exact", head: true })
     .gte("created_at", start.toISOString())
     .lt("created_at", end.toISOString());
+  return count || 0;
+}
+
+/**
+ * Unique visitors to the GHL /start landing page (pickyourpuppylive.com)
+ * in [start, end) - counted from landing_visitors.first_seen_at, NEVER
+ * from raw landing_page_view events, so a refresh of /start never
+ * inflates this number. Test rows (id prefixed "test_", from
+ * /start?pp_test=1 - see the GHL snippet) are always excluded, so
+ * verifying the live script never pollutes this count.
+ *
+ * Exported for reuse by the Business Scorecard's Marketing Performance
+ * funnel (lib/businessScorecard.ts), which needs this same definition
+ * over the goal-period date range, not just the fixed today/7d/30d
+ * presets here.
+ */
+export async function countLandingVisitors(start: Date, end: Date): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("landing_visitors")
+    .select("id", { count: "exact", head: true })
+    .gte("first_seen_at", start.toISOString())
+    .lt("first_seen_at", end.toISOString())
+    .not("id", "like", `${LANDING_TEST_ID_PREFIX}%`);
+  return count || 0;
+}
+
+/** Raw (non-deduplicated) /start page-view count - see countLandingVisitors for the unique-visitor version. */
+async function countLandingPageViews(start: Date, end: Date): Promise<number> {
+  const admin = createAdminClient();
+  const { count } = await admin
+    .from("landing_page_events")
+    .select("id", { count: "exact", head: true })
+    .gte("occurred_at", start.toISOString())
+    .lt("occurred_at", end.toISOString())
+    .not("landing_visitor_id", "like", `${LANDING_TEST_ID_PREFIX}%`);
   return count || 0;
 }
 
@@ -146,6 +185,8 @@ export interface TopMetrics {
   ctaClicks: MetricComparison;
   leads: MetricComparison;
   inquiries: MetricComparison;
+  landingVisitors: MetricComparison;
+  landingPageViews: MetricComparison;
 }
 
 /**
@@ -181,6 +222,10 @@ export async function getTopMetrics(range: DateRangeKey): Promise<TopMetrics> {
     leadsPrev,
     inquiriesNow,
     inquiriesPrev,
+    landingVisitorsNow,
+    landingVisitorsPrev,
+    landingPageViewsNow,
+    landingPageViewsPrev,
   ] = await Promise.all([
     countDistinctVisitors(start, end),
     countDistinctVisitors(prevStart, prevEnd),
@@ -196,6 +241,10 @@ export async function getTopMetrics(range: DateRangeKey): Promise<TopMetrics> {
     countNewContacts(prevStart, prevEnd),
     countInquiries(start, end),
     countInquiries(prevStart, prevEnd),
+    countLandingVisitors(start, end),
+    countLandingVisitors(prevStart, prevEnd),
+    countLandingPageViews(start, end),
+    countLandingPageViews(prevStart, prevEnd),
   ]);
 
   return {
@@ -206,6 +255,8 @@ export async function getTopMetrics(range: DateRangeKey): Promise<TopMetrics> {
     ctaClicks: computeComparison(ctaNow, ctaPrev),
     leads: computeComparison(leadsNow, leadsPrev),
     inquiries: computeComparison(inquiriesNow, inquiriesPrev),
+    landingVisitors: computeComparison(landingVisitorsNow, landingVisitorsPrev),
+    landingPageViews: computeComparison(landingPageViewsNow, landingPageViewsPrev),
   };
 }
 
@@ -470,17 +521,37 @@ export interface CampaignItem {
  * buckets used elsewhere - see the approved audit's note that this is
  * where real source detail (that the simplified buckets intentionally
  * collapse) should remain visible.
+ *
+ * Also folds in GHL /start landing-page visits carrying a utm_campaign
+ * (landing_visitors - see supabase/031_landing_page_attribution.sql),
+ * so a Meta ad campaign that only ever reaches the GHL landing page
+ * still shows up here instead of silently appearing to have zero
+ * traffic - per the Pre-Launch Tracking Fix. Each landing_visitors row
+ * is already deduplicated at the row level (one per unique landing
+ * visitor id), so it contributes exactly one "session" and one
+ * "visitor" to this rollup, same as a website session contributes one
+ * of each. Test rows (id prefixed "test_") are excluded, same as
+ * everywhere else landing_visitors is read.
  */
 export async function getCampaigns(range: DateRangeKey, limit = 10): Promise<CampaignItem[]> {
   const { start, end } = getDateWindow(range);
   const admin = createAdminClient();
 
-  const { data } = await admin
-    .from("analytics_sessions")
-    .select("utm_campaign, utm_source, utm_medium, visitor_id")
-    .gte("started_at", start.toISOString())
-    .lt("started_at", end.toISOString())
-    .not("utm_campaign", "is", null);
+  const [{ data }, { data: landingData }] = await Promise.all([
+    admin
+      .from("analytics_sessions")
+      .select("utm_campaign, utm_source, utm_medium, visitor_id")
+      .gte("started_at", start.toISOString())
+      .lt("started_at", end.toISOString())
+      .not("utm_campaign", "is", null),
+    admin
+      .from("landing_visitors")
+      .select("id, utm_campaign, utm_source, utm_medium")
+      .gte("first_seen_at", start.toISOString())
+      .lt("first_seen_at", end.toISOString())
+      .not("utm_campaign", "is", null)
+      .not("id", "like", `${LANDING_TEST_ID_PREFIX}%`),
+  ]);
 
   const byCampaign = new Map<
     string,
@@ -492,10 +563,24 @@ export async function getCampaigns(range: DateRangeKey, limit = 10): Promise<Cam
     if (!campaign) continue; // skip blank-string utm_campaign values too, not just null
     const source = (row as any).utm_source as string | null;
     const medium = (row as any).utm_medium as string | null;
-    const key = `${campaign} ${source || ""} ${medium || ""}`;
+    const key = `${campaign} ${source || ""} ${medium || ""}`;
     const entry = byCampaign.get(key) || { campaign, source, medium, sessions: 0, visitors: new Set<string>() };
     entry.sessions += 1;
     entry.visitors.add((row as any).visitor_id);
+    byCampaign.set(key, entry);
+  }
+
+  for (const row of landingData || []) {
+    const campaign = ((row as any).utm_campaign as string | null)?.trim();
+    if (!campaign) continue;
+    const source = (row as any).utm_source as string | null;
+    const medium = (row as any).utm_medium as string | null;
+    const key = `${campaign} ${source || ""} ${medium || ""}`;
+    const entry = byCampaign.get(key) || { campaign, source, medium, sessions: 0, visitors: new Set<string>() };
+    entry.sessions += 1;
+    // Prefixed so a landing visitor id can never collide with a website
+    // visitor uuid in this shared Set - only the Set's SIZE is read below.
+    entry.visitors.add(`landing:${(row as any).id}`);
     byCampaign.set(key, entry);
   }
 
@@ -706,6 +791,11 @@ export interface FunnelData {
  */
 export async function getFunnelData(range: DateRangeKey): Promise<FunnelData> {
   const { start, end } = getDateWindow(range);
+  return getFunnelDataForRange(start, end);
+}
+
+/** Same funnel, for an arbitrary [start, end) - used by the Business Scorecard's Marketing Performance card, which filters by the selected/goal date range rather than one of the fixed today/7d/30d presets above. */
+export async function getFunnelDataForRange(start: Date, end: Date): Promise<FunnelData> {
   const admin = createAdminClient();
 
   const [sessionsResult, puppyViewResult, leads, inquiries] = await Promise.all([

@@ -19,6 +19,8 @@ function saleRowFromQueryRow(row: any): SaleRow {
     paid_in_full_at: row.paid_in_full_at,
     closed_at: row.closed_at,
     closed_reason: row.closed_reason,
+    delivery_cost_cents: row.delivery_cost_cents || 0,
+    other_cost_cents: row.other_cost_cents || 0,
     affiliate_id: row.affiliate_id,
     affiliate_attribution_id: row.affiliate_attribution_id,
     created_at: row.created_at,

@@ -42,6 +42,48 @@ export interface TrackResult {
   sessionCookie?: { value: string; maxAge: number };
 }
 
+export interface VisitorResolution {
+  visitorId: string;
+  visitorCookie?: { value: string; maxAge: number };
+  /** false means the insert/update itself failed (a real DB error) - the caller should treat this as "could not record anything". */
+  ok: boolean;
+}
+
+/**
+ * Resolve the existing pp_av-cookied visitor, or mint a new one. Shared
+ * by recordAnalyticsEvent below AND app/api/analytics/landing-handoff/route.ts
+ * (the cross-domain GHL handoff capture, which needs a website visitor
+ * to attach landing_visitor_id to but isn't itself recording a
+ * page_view/session) - factored out rather than duplicated, per the
+ * same "extend what's already built" principle as the rest of this file.
+ */
+export async function resolveOrCreateVisitor(existingVisitorId: string | null): Promise<VisitorResolution> {
+  const admin = createAdminClient();
+  const nowIso = new Date().toISOString();
+
+  let visitorId = existingVisitorId;
+  let visitorCookie: VisitorResolution["visitorCookie"];
+
+  if (!visitorId) {
+    visitorId = crypto.randomUUID();
+    const { error } = await admin.from("analytics_visitors").insert({
+      id: visitorId,
+      first_seen_at: nowIso,
+      last_seen_at: nowIso,
+    });
+    if (error) {
+      console.error("[analytics] failed to insert analytics_visitors:", error.message, error.details || "");
+      return { visitorId, ok: false };
+    }
+    visitorCookie = { value: visitorId, maxAge: VISITOR_COOKIE_MAX_AGE_SECONDS };
+  } else {
+    const { error } = await admin.from("analytics_visitors").update({ last_seen_at: nowIso }).eq("id", visitorId);
+    if (error) console.error("[analytics] failed to update analytics_visitors.last_seen_at:", error.message);
+  }
+
+  return { visitorId, visitorCookie, ok: true };
+}
+
 /**
  * Core ingestion logic for POST /api/analytics/track. Called only from
  * that route handler (never from a client component directly - this
@@ -83,27 +125,12 @@ export async function recordAnalyticsEvent(input: TrackEventInput): Promise<Trac
   const nowIso = now.toISOString();
 
   // --- Visitor ---
-  let visitorId = store.get(ANALYTICS_VISITOR_COOKIE)?.value || null;
-  let visitorCookie: TrackResult["visitorCookie"];
-
-  if (!visitorId) {
-    visitorId = crypto.randomUUID();
-    const { error } = await admin.from("analytics_visitors").insert({
-      id: visitorId,
-      first_seen_at: nowIso,
-      last_seen_at: nowIso,
-    });
-    if (error) {
-      console.error("[analytics] failed to insert analytics_visitors:", error.message, error.details || "");
-      return { recorded: false };
-    }
-    visitorCookie = { value: visitorId, maxAge: VISITOR_COOKIE_MAX_AGE_SECONDS };
-  } else {
-    // Single-row update by primary key - cheap. Best-effort: a failure
-    // here shouldn't block the rest of the event from being recorded.
-    const { error } = await admin.from("analytics_visitors").update({ last_seen_at: nowIso }).eq("id", visitorId);
-    if (error) console.error("[analytics] failed to update analytics_visitors.last_seen_at:", error.message);
+  const visitorResolution = await resolveOrCreateVisitor(store.get(ANALYTICS_VISITOR_COOKIE)?.value || null);
+  if (!visitorResolution.ok) {
+    return { recorded: false };
   }
+  const visitorId = visitorResolution.visitorId;
+  const visitorCookie = visitorResolution.visitorCookie;
 
   // --- Session ---
   // The session cookie's own sliding maxAge (reset below on every

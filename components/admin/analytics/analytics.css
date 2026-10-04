@@ -678,6 +678,38 @@
   letter-spacing: 0.3px;
 }
 
+.analytics-adspend-edit,
+.analytics-adspend-delete {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analytics-adspend-edit {
+  background: #eff6ff;
+  color: #2563eb;
+  font-size: 12px;
+}
+
+.analytics-adspend-delete {
+  background: #fef2f2;
+  color: #dc2626;
+  font-size: 16px;
+}
+
+.analytics-adspend-delete:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 /* --- Simple operational funnel --- */
 .analytics-funnel {
   display: flex;

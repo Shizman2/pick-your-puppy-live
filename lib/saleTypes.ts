@@ -16,6 +16,9 @@ export interface SaleRow {
   paid_in_full_at: string | null;
   closed_at: string | null;
   closed_reason: string | null;
+  /** Per-sale direct costs feeding the transaction-based Gross Profit formula (lib/businessScorecard.ts) - distinct from puppies.cost_cents/bundle_cost_cents, which are the puppy's own acquisition economics. Both default to 0, never null. */
+  delivery_cost_cents: number;
+  other_cost_cents: number;
   affiliate_id: string | null;
   affiliate_attribution_id: string | null;
   created_at: string;

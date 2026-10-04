@@ -49,3 +49,24 @@ export type AnalyticsEventType = (typeof EVENT_TYPES)[number];
 
 export const TRAFFIC_SOURCES = ["facebook_instagram", "google", "direct", "referral_other"] as const;
 export type TrafficSource = (typeof TRAFFIC_SOURCES)[number];
+
+/**
+ * Pre-Launch Tracking Fix - the GHL /start landing page
+ * (pickyourpuppylive.com) is a separate domain and calls
+ * /api/analytics/landing-track cross-origin, so that endpoint needs a
+ * real CORS allowlist rather than relying on same-origin by default
+ * (every other analytics endpoint on this site is same-origin only).
+ * Deliberately a short, explicit list - never "*".
+ */
+export const LANDING_ALLOWED_ORIGINS = ["https://pickyourpuppylive.com", "https://www.pickyourpuppylive.com"];
+
+export const MAX_LANDING_VISITOR_ID_LENGTH = 128;
+
+/**
+ * The GHL tracking snippet prefixes the landing visitor id with this
+ * when the page is loaded with ?pp_test=1, so a real person verifying
+ * the live script never pollutes production Landing Visitors/Landing
+ * Page Views counts - every query in lib/analytics/queries.ts that
+ * reads landing_visitors/landing_page_events excludes this prefix.
+ */
+export const LANDING_TEST_ID_PREFIX = "test_";

@@ -1,0 +1,177 @@
+<!--
+  Pre-Launch Tracking Fix - GHL /start landing page tracking snippet.
+
+  WHERE TO PASTE THIS:
+  In the GHL funnel/page builder, open the /start page's Settings tab ->
+  Tracking Code section, and paste this whole block into the "Footer
+  Tracking Code" box (the script waits for DOMContentLoaded internally,
+  so the Header box works too if that's the only option available for
+  this funnel step - just make sure it's on the /start page specifically,
+  not a different step).
+
+  WHAT IT DOES:
+  1. Generates/persists a first-party landing-visitor id for this
+     browser on pickyourpuppylive.com (localStorage, NOT a cookie, and
+     NOT the thepuppyplugs.com pp_av cookie - those two domains can
+     never share a cookie).
+  2. Sends one landing_page_view event per page load to the main site's
+     analytics backend (cross-origin, CORS-restricted to this domain -
+     see app/api/analytics/landing-track/route.ts).
+  3. Appends that landing-visitor id to every CTA link pointing at
+     thepuppyplugs.com, so the destination page can associate its own
+     website visitor with this landing visit.
+
+  VERIFYING WITHOUT POLLUTING PRODUCTION DATA:
+  Load the page as https://pickyourpuppylive.com/start?pp_test=1 (any
+  other query params, e.g. utm_source, can be combined with it). Every
+  id this script generates during that visit is prefixed "test_", and
+  every count on the Admin Dashboard/Analytics pages excludes that
+  prefix automatically - so test traffic never shows up as real traffic,
+  with nothing to remember to clean up afterward. (It can still be
+  deleted from the database later if desired - ask Claude.)
+-->
+<script>
+(function () {
+  "use strict";
+
+  var TRACK_ENDPOINT = "https://thepuppyplugs.com/api/analytics/landing-track";
+  var HANDOFF_PARAM = "pp_lv";
+  var VISITOR_STORAGE_KEY = "pp_glv";
+  var SESSION_STORAGE_KEY = "pp_gls";
+  var TEST_PARAM = "pp_test";
+  var TEST_PREFIX = "test_";
+  var DESTINATION_HOST = "thepuppyplugs.com";
+
+  function genId() {
+    try {
+      if (window.crypto && typeof window.crypto.randomUUID === "function") {
+        return window.crypto.randomUUID();
+      }
+    } catch (e) {}
+    // Fallback for older browsers without crypto.randomUUID - not
+    // cryptographically strong, which is fine here: this is an anonymous
+    // analytics identifier, not a security token.
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+      var r = (Math.random() * 16) | 0;
+      var v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  function isTestMode() {
+    try {
+      return new URLSearchParams(window.location.search).get(TEST_PARAM) === "1";
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getOrCreateVisitorId() {
+    try {
+      var existing = window.localStorage.getItem(VISITOR_STORAGE_KEY);
+      if (existing) return existing;
+      var id = (isTestMode() ? TEST_PREFIX : "") + genId();
+      window.localStorage.setItem(VISITOR_STORAGE_KEY, id);
+      return id;
+    } catch (e) {
+      // localStorage unavailable (private browsing, blocked storage,
+      // etc.) - fall back to an id that just won't persist across
+      // reloads. Never let this block the page.
+      return (isTestMode() ? TEST_PREFIX : "") + genId();
+    }
+  }
+
+  function getOrCreateSessionId() {
+    try {
+      var existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+      if (existing) return existing;
+      var id = genId();
+      window.sessionStorage.setItem(SESSION_STORAGE_KEY, id);
+      return id;
+    } catch (e) {
+      return genId();
+    }
+  }
+
+  function utmAndClickParams() {
+    try {
+      var params = new URLSearchParams(window.location.search);
+      return {
+        utmSource: params.get("utm_source"),
+        utmMedium: params.get("utm_medium"),
+        utmCampaign: params.get("utm_campaign"),
+        utmContent: params.get("utm_content"),
+        utmTerm: params.get("utm_term"),
+        fbclid: params.get("fbclid"),
+      };
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function init() {
+    var visitorId = getOrCreateVisitorId();
+    var sessionId = getOrCreateSessionId();
+    var utms = utmAndClickParams();
+
+    if (isTestMode() && window.console && window.console.log) {
+      window.console.log("[pp-landing-tracker] test mode - landingVisitorId:", visitorId);
+    }
+
+    // 1. Fire the landing_page_view event. Best-effort only - a failed
+    // or blocked request never prevents anything else on this page from
+    // working (ad blockers, analytics outages, CORS misconfiguration,
+    // temporary backend issues, etc all fail silently here).
+    try {
+      var payload = JSON.stringify({
+        landingVisitorId: visitorId,
+        landingSessionId: sessionId,
+        path: window.location.pathname || "/start",
+        utmSource: utms.utmSource,
+        utmMedium: utms.utmMedium,
+        utmCampaign: utms.utmCampaign,
+        utmContent: utms.utmContent,
+        utmTerm: utms.utmTerm,
+        fbclid: utms.fbclid,
+      });
+      fetch(TRACK_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+        mode: "cors",
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {
+      // Never let a tracking failure break the page.
+    }
+
+    // 2. Add the handoff identifier to every CTA link that goes to the
+    // main website, so the destination page can associate its own
+    // visitor/session with this landing visitor. Every other link (the
+    // VSL, any pickyourpuppylive.com/registration links, etc.) is left
+    // completely untouched - the destination and all other query params
+    // on each link are preserved exactly as they were.
+    try {
+      var links = document.querySelectorAll('a[href*="' + DESTINATION_HOST + '"]');
+      for (var i = 0; i < links.length; i++) {
+        var a = links[i];
+        try {
+          var url = new URL(a.href, window.location.href);
+          if (url.hostname.indexOf(DESTINATION_HOST) === -1) continue;
+          url.searchParams.set(HANDOFF_PARAM, visitorId);
+          a.href = url.toString();
+        } catch (e) {
+          // Leave this particular link untouched rather than risk
+          // breaking it on a malformed href.
+        }
+      }
+    } catch (e) {}
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>

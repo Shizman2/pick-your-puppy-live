@@ -2,40 +2,94 @@ import Link from "next/link";
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import GoalWidget from "../../../components/admin/dashboard/GoalWidget";
 import PuppyStatusDonut from "../../../components/admin/dashboard/PuppyStatusDonut";
+import DashboardDateFilter from "../../../components/admin/dashboard/DashboardDateFilter";
+import MarketingPerformanceCard from "../../../components/admin/dashboard/MarketingPerformanceCard";
+import AdSpendCard from "../../../components/admin/analytics/AdSpendCard";
 import { getDashboardData, getPuppyStatusBreakdown, getTodayActivities } from "../../../lib/dashboard";
 import type { DashboardData, PuppyStatusBreakdown, TodayActivityItem } from "../../../lib/dashboard";
-import { getDashboardSalesSummary, getSalesListData } from "../../../lib/sales";
-import type { DashboardSalesSummary, SaleListItem } from "../../../lib/sales";
+import { getSalesListData } from "../../../lib/sales";
+import type { SaleListItem } from "../../../lib/sales";
 import { getActiveGoal, getGoalProgress } from "../../../lib/goals";
 import type { GoalProgress } from "../../../lib/goalTypes";
+import {
+  getPeriodFinancials,
+  getScorecardMetrics,
+  getMarketingPerformance,
+  resolveDashboardPeriod,
+  type PeriodFinancials,
+  type ScorecardMetrics,
+  type MarketingPerformance as MarketingPerformanceData,
+  type DashboardPeriodKey,
+} from "../../../lib/businessScorecard";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getRecentAdSpendEntries } from "../../../lib/adSpend";
 import { formatRelativeTime } from "../../../lib/formatRelative";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
 import { SALE_PROGRESS_LABEL } from "../../../lib/saleTypes";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
+import "../../../components/admin/analytics/analytics.css";
 import "../../../components/admin/dashboard/dashboard.css";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+function parsePeriod(value: string | undefined): DashboardPeriodKey {
+  if (value === "goal" || value === "7d" || value === "30d" || value === "90d") return value;
+  return "goal";
+}
+
+/** Gross profit/ad-spend change can run either direction - formatPriceFromCents alone renders a negative as "$-500" instead of "-$500". */
+function formatSignedPriceFromCents(cents: number): string {
+  return cents < 0 ? `-${formatPriceFromCents(-cents)}` : formatPriceFromCents(cents);
+}
+
+function ComparisonLine({ percentChange }: { percentChange: number | null }) {
+  if (percentChange === null) {
+    return <div className="dash2-stat-compare flat">No prior-period data</div>;
+  }
+  if (percentChange === 0) {
+    return <div className="dash2-stat-compare flat">No change vs previous period</div>;
+  }
+  const up = percentChange > 0;
+  return (
+    <div className={`dash2-stat-compare ${up ? "up" : "down"}`}>
+      {up ? "↑" : "↓"} {Math.abs(Math.round(percentChange))}% vs previous period
+    </div>
+  );
+}
+
+export default async function DashboardPage({ searchParams }: { searchParams: { period?: string } }) {
+  const periodKey = parsePeriod(searchParams?.period);
+
   let data: DashboardData | null = null;
-  let salesSummary: DashboardSalesSummary | null = null;
   let activeSales: SaleListItem[] = [];
   let puppyStatus: PuppyStatusBreakdown | null = null;
   let todayActivities: TodayActivityItem[] = [];
   let goalProgress: GoalProgress | null = null;
+  let scorecard: ScorecardMetrics | null = null;
+  let marketing: MarketingPerformanceData | null = null;
+  let periodFinancials: PeriodFinancials | null = null;
+  let adSpendEntries: Awaited<ReturnType<typeof getRecentAdSpendEntries>> = [];
+  let periodLabel = "";
   let loadError: string | null = null;
 
   try {
     data = await getDashboardData();
-    salesSummary = await getDashboardSalesSummary();
     activeSales = await getSalesListData();
     puppyStatus = await getPuppyStatusBreakdown();
     todayActivities = await getTodayActivities();
     const goal = await getActiveGoal();
     goalProgress = goal ? await getGoalProgress(goal) : null;
+
+    const period = resolveDashboardPeriod(periodKey, goal);
+    periodLabel = period.label;
+    [scorecard, marketing, periodFinancials, adSpendEntries] = await Promise.all([
+      getScorecardMetrics(period.start, period.end),
+      getMarketingPerformance(period.start, period.end),
+      getPeriodFinancials(period.start, period.end),
+      getRecentAdSpendEntries(),
+    ]);
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Unknown error loading the dashboard.";
   }
@@ -45,13 +99,10 @@ export default async function DashboardPage() {
   const firstName = userEmail ? userEmail.split("@")[0].split(".")[0] : "there";
   const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
-  const soldCount = puppyStatus?.sold || 0;
-  const totalCount = puppyStatus?.total || 0;
-
   return (
     <AdminSidebar active="dashboard" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>
       <div className="contacts-page">
-        {loadError || !data || !salesSummary || !puppyStatus ? (
+        {loadError || !data || !puppyStatus || !scorecard || !marketing || !periodFinancials ? (
           <div className="contacts-empty" style={{ textAlign: "left" }}>
             <strong>Couldn&apos;t load the dashboard.</strong>
             <p style={{ marginTop: 8 }}>
@@ -60,43 +111,62 @@ export default async function DashboardPage() {
           </div>
         ) : (
           <>
-            <div className="dash2-greeting">Good morning, {displayName} 👋</div>
-            <div className="dash2-subgreeting">Here&apos;s what&apos;s happening with your business today.</div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                flexWrap: "wrap",
+                gap: 12,
+                marginBottom: 8,
+              }}
+            >
+              <div>
+                <div className="dash2-greeting">Good morning, {displayName} 👋</div>
+                <div className="dash2-subgreeting">Here&apos;s what&apos;s happening with your business today.</div>
+              </div>
+              <DashboardDateFilter current={periodKey} periodLabel={periodLabel} />
+            </div>
+
+            <div className="dash2-stat-row">
+              <div className="dash2-stat-card">
+                <div className="dash2-stat-label">🐾 Puppies Sold</div>
+                <div className="dash2-stat-value">{scorecard.puppiesSold.value}</div>
+                <div className="dash2-stat-sub">This period</div>
+                <ComparisonLine percentChange={scorecard.puppiesSold.percentChange} />
+              </div>
+              <div className="dash2-stat-card">
+                <div className="dash2-stat-label">💰 Total Revenue</div>
+                <div className="dash2-stat-value">{formatPriceFromCents(scorecard.revenueCents.value)}</div>
+                <div className="dash2-stat-sub">This period</div>
+                <ComparisonLine percentChange={scorecard.revenueCents.percentChange} />
+              </div>
+              <div className="dash2-stat-card">
+                <div className="dash2-stat-label">📊 Gross Profit</div>
+                <div className="dash2-stat-value">{formatSignedPriceFromCents(scorecard.grossProfitCents.value)}</div>
+                <div className="dash2-stat-sub">This period</div>
+                <ComparisonLine percentChange={scorecard.grossProfitCents.percentChange} />
+              </div>
+              <div className="dash2-stat-card">
+                <div className="dash2-stat-label">🧲 Leads</div>
+                <div className="dash2-stat-value">{scorecard.leads.value}</div>
+                <div className="dash2-stat-sub">This period</div>
+                <ComparisonLine percentChange={scorecard.leads.percentChange} />
+              </div>
+              <div className="dash2-stat-card">
+                <div className="dash2-stat-label">📣 Ad Spend</div>
+                <div className="dash2-stat-value">{formatPriceFromCents(scorecard.adSpendCents.value)}</div>
+                <div className="dash2-stat-sub">This period</div>
+                <ComparisonLine percentChange={scorecard.adSpendCents.percentChange} />
+              </div>
+            </div>
+
+            <MarketingPerformanceCard data={marketing} />
+
+            <AdSpendCard entries={adSpendEntries} />
 
             <div className="dash2-grid">
               <div>
-                <div className="dash2-stat-row">
-                  <div className="dash2-stat-card">
-                    <div className="dash2-stat-label">🐾 Puppies Sold</div>
-                    <div className="dash2-stat-value">
-                      {soldCount} <span style={{ fontSize: 13, fontWeight: 500, color: "#9ca3af" }}>/ {totalCount}</span>
-                    </div>
-                    <div className="dash2-stat-bar">
-                      <div
-                        className="dash2-stat-bar-fill"
-                        style={{ width: `${totalCount > 0 ? (soldCount / totalCount) * 100 : 0}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="dash2-stat-card">
-                    <div className="dash2-stat-label">📈 Sold This Week</div>
-                    <div className="dash2-stat-value">{goalProgress?.soldThisWeek ?? 0}</div>
-                    <div className="dash2-stat-sub">
-                      {goalProgress ? `Goal: ${goalProgress.weeklyPaceNeeded}/wk` : "No active goal"}
-                    </div>
-                  </div>
-                  <div className="dash2-stat-card">
-                    <div className="dash2-stat-label">🛍 Available</div>
-                    <div className="dash2-stat-value">{puppyStatus.available}</div>
-                    <div className="dash2-stat-sub">Ready to sell</div>
-                  </div>
-                  <div className="dash2-stat-card">
-                    <div className="dash2-stat-label">💲 Revenue Today</div>
-                    <div className="dash2-stat-value">{formatPriceFromCents(salesSummary.todayRevenueCents)}</div>
-                    <div className="dash2-stat-sub">Deposits + payments</div>
-                  </div>
-                </div>
-
                 <div className="dash2-section">
                   <div className="dash2-section-header">
                     <div className="dash2-section-title">Active Puppy Sales</div>
@@ -157,13 +227,13 @@ export default async function DashboardPage() {
                       <div className="dash2-section-title">Revenue Overview</div>
                     </div>
                     <div className="dash2-revenue-line">
-                      <span className="admin-hint">Collected today</span>
+                      <span className="admin-hint">Collected this period</span>
                     </div>
-                    <div className="dash2-revenue-amount">{formatPriceFromCents(salesSummary.todayRevenueCents)}</div>
+                    <div className="dash2-revenue-amount">{formatPriceFromCents(periodFinancials.revenueCents)}</div>
                     <div className="admin-hint" style={{ marginTop: 10 }}>
-                      Deposits today: {formatPriceFromCents(salesSummary.todayDepositsCents)}
+                      Deposits: {formatPriceFromCents(periodFinancials.depositsCents)}
                       <br />
-                      Other payments today: {formatPriceFromCents(salesSummary.todayPaymentsCents)}
+                      Other payments: {formatPriceFromCents(periodFinancials.otherPaymentsCents)}
                     </div>
                   </div>
                 </div>

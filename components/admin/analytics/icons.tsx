@@ -165,6 +165,16 @@ export function CalendarIcon() {
   );
 }
 
+/** Used for the two GHL /start landing-page metric cards (Landing Visitors, Landing Page Views) - a flag, distinct from the other visitor/page-view icons so the two pairs don't look identical at a glance. */
+export function LandingPageIcon() {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+      <path d="M5 3v18" stroke="#fff" strokeWidth="1.8" strokeLinecap="round" />
+      <path d="M5 4h12l-3 4 3 4H5" stroke="#fff" strokeWidth="1.8" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 export function ChevronDownIcon() {
   return (
     <svg viewBox="0 0 24 24" width="14" height="14" fill="none">

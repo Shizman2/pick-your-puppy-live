@@ -10,6 +10,7 @@ import {
   cancelSale,
   refundSale,
   updateFulfillment,
+  updateSaleCosts,
 } from "../../../app/admin/sales/actions";
 import {
   generateBillOfSale,
@@ -68,6 +69,11 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
   const [fulfillNotes, setFulfillNotes] = useState(detail.sale.fulfillment_notes || "");
   const [savingFulfillment, setSavingFulfillment] = useState(false);
   const [fulfillmentError, setFulfillmentError] = useState<string | null>(null);
+
+  const [deliveryCost, setDeliveryCost] = useState(String((detail.sale.delivery_cost_cents || 0) / 100));
+  const [otherCost, setOtherCost] = useState(String((detail.sale.other_cost_cents || 0) / 100));
+  const [savingCosts, setSavingCosts] = useState(false);
+  const [costsError, setCostsError] = useState<string | null>(null);
 
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundAmount, setRefundAmount] = useState("");
@@ -178,6 +184,24 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
     setSavingFulfillment(false);
     if (!result.success) {
       setFulfillmentError(result.error);
+      return;
+    }
+    router.refresh();
+  }
+
+  async function handleSaveCosts() {
+    setCostsError(null);
+    const deliveryNum = parseFloat(deliveryCost) || 0;
+    const otherNum = parseFloat(otherCost) || 0;
+    if (deliveryNum < 0 || otherNum < 0) {
+      setCostsError("Costs can't be negative.");
+      return;
+    }
+    setSavingCosts(true);
+    const result = await updateSaleCosts(detail.sale.id, deliveryNum, otherNum);
+    setSavingCosts(false);
+    if (!result.success) {
+      setCostsError(result.error);
       return;
     }
     router.refresh();
@@ -386,6 +410,42 @@ export default function SaleDetailClient({ detail, documents }: SaleDetailClient
 
         <button type="button" className="admin-btn admin-btn--primary" onClick={handleSaveFulfillment} disabled={savingFulfillment}>
           {savingFulfillment ? "Saving..." : "Save Fulfillment"}
+        </button>
+      </div>
+
+      <div className="profile-card">
+        <h2 className="admin-card__title">Sale Costs</h2>
+        <p className="admin-hint" style={{ marginBottom: 10 }}>
+          Delivery and other direct costs for this specific sale - puppy acquisition/bundle cost is set on the puppy
+          itself. Both feed directly into Gross Profit.
+        </p>
+        {costsError && <div className="inquire-error">{costsError}</div>}
+
+        <div className="puppy-form-row">
+          <div className="admin-field">
+            <label className="admin-field__label">Delivery Cost ($, optional)</label>
+            <input
+              className="admin-input"
+              type="number"
+              value={deliveryCost}
+              onChange={(e) => setDeliveryCost(e.target.value)}
+              placeholder="0.00"
+            />
+          </div>
+          <div className="admin-field">
+            <label className="admin-field__label">Other Direct Costs ($, optional)</label>
+            <input
+              className="admin-input"
+              type="number"
+              value={otherCost}
+              onChange={(e) => setOtherCost(e.target.value)}
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <button type="button" className="admin-btn admin-btn--primary" onClick={handleSaveCosts} disabled={savingCosts}>
+          {savingCosts ? "Saving..." : "Save Costs"}
         </button>
       </div>
 

@@ -1,39 +1,10 @@
 import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import MetricCard from "../../../components/admin/analytics/MetricCard";
-import TrafficOverviewChart from "../../../components/admin/analytics/TrafficOverviewChart";
 import MostViewedPuppiesCard from "../../../components/admin/analytics/MostViewedPuppiesCard";
-import TrafficSourcesDonut from "../../../components/admin/analytics/TrafficSourcesDonut";
-import CtaActivityCard from "../../../components/admin/analytics/CtaActivityCard";
-import OnlineNowWidget from "../../../components/admin/analytics/OnlineNowWidget";
 import AnalyticsDateFilter from "../../../components/admin/analytics/AnalyticsDateFilter";
 import AnalyticsDeviceExclusion from "../../../components/admin/analytics/AnalyticsDeviceExclusion";
-import TopPagesCard from "../../../components/admin/analytics/TopPagesCard";
-import LandingPagesCard from "../../../components/admin/analytics/LandingPagesCard";
-import CampaignsCard from "../../../components/admin/analytics/CampaignsCard";
-import FunnelCard from "../../../components/admin/analytics/FunnelCard";
-import {
-  VisitorsIcon,
-  PageViewsIcon,
-  PuppyViewsIcon,
-  CtaClicksIcon,
-  OnlineNowIcon,
-  SessionsIcon,
-  LeadsIcon,
-  InquiriesIcon,
-} from "../../../components/admin/analytics/icons";
-import {
-  getTopMetrics,
-  getTrafficOverview,
-  getMostViewedPuppies,
-  getTrafficSources,
-  getCtaActivity,
-  getOnlineNow,
-  getTopPages,
-  getLandingPages,
-  getCampaigns,
-  getFunnelData,
-  type DateRangeKey,
-} from "../../../lib/analytics/queries";
+import { VisitorsIcon, OnlineNowIcon, LandingPageIcon } from "../../../components/admin/analytics/icons";
+import { getTopMetrics, getMostViewedPuppies, getOnlineNow, type DateRangeKey } from "../../../lib/analytics/queries";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
 import { getUnreadMessageCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
@@ -52,35 +23,34 @@ function parseRange(value: string | undefined): DateRangeKey {
   return "7d"; // default, per the approved spec
 }
 
+/**
+ * Deliberately pared down to exactly 4 things, per the approved
+ * simplification: Funnel Page Visitors (real GHL /start visitors - see
+ * the Pre-Launch Tracking Fix), Website Visitors (real
+ * thepuppyplugs.com visitors), Online Now (real, live
+ * analytics_sessions.last_activity_at activity - never estimated, never
+ * session-substituted), and Puppy Views ranked by puppy. Every other
+ * card previously on this page (Sessions/Page Views/CTA Clicks/Leads/
+ * Inquiries/Landing Page Views, Traffic Overview, Traffic Sources, CTA
+ * Activity, the live Online Now list, Top Pages, Landing Pages,
+ * Campaigns, Funnel, Ad Spend, Device Exclusion) was intentionally
+ * removed from this page's UI - none of their underlying query
+ * functions or components were deleted, so nothing here is lost if a
+ * future task wants any of it back. Ad Spend management still lives on
+ * the Business Dashboard (see app/admin/dashboard/page.tsx) - it was
+ * never only here. Device Exclusion is the one exception restored at
+ * the bottom below - it's a privacy control, not a metric, so it isn't
+ * part of the "ONLY 4 things" count.
+ */
 export default async function AnalyticsPage({ searchParams }: { searchParams: { range?: string } }) {
   const range = parseRange(searchParams?.range);
 
-  const [
-    userEmail,
-    unreadMessageCount,
-    metrics,
-    trafficOverview,
-    mostViewedPuppies,
-    trafficSources,
-    ctaActivity,
-    onlineNow,
-    topPages,
-    landingPages,
-    campaigns,
-    funnel,
-  ] = await Promise.all([
+  const [userEmail, unreadMessageCount, metrics, mostViewedPuppies, onlineNow] = await Promise.all([
     getAdminUserEmail(),
     getUnreadMessageCount(),
     getTopMetrics(range),
-    getTrafficOverview(range),
     getMostViewedPuppies(range),
-    getTrafficSources(range),
-    getCtaActivity(range),
     getOnlineNow(),
-    getTopPages(range),
-    getLandingPages(range),
-    getCampaigns(range),
-    getFunnelData(range),
   ]);
 
   const compareLabel = COMPARE_LABEL[range];
@@ -98,59 +68,19 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
 
         <div className="analytics-metric-row">
           <MetricCard
-            icon={<VisitorsIcon />}
+            icon={<LandingPageIcon />}
             colorKey="blue"
-            value={metrics.visitors.value}
-            label="Visitors"
-            changePercent={metrics.visitors.percentChange}
+            value={metrics.landingVisitors.value}
+            label="Funnel Page Visitors"
+            changePercent={metrics.landingVisitors.percentChange}
             compareLabel={compareLabel}
           />
           <MetricCard
-            icon={<SessionsIcon />}
+            icon={<VisitorsIcon />}
             colorKey="teal"
-            value={metrics.sessions.value}
-            label="Sessions"
-            changePercent={metrics.sessions.percentChange}
-            compareLabel={compareLabel}
-          />
-          <MetricCard
-            icon={<PageViewsIcon />}
-            colorKey="green"
-            value={metrics.pageViews.value}
-            label="Page Views"
-            changePercent={metrics.pageViews.percentChange}
-            compareLabel={compareLabel}
-          />
-          <MetricCard
-            icon={<PuppyViewsIcon />}
-            colorKey="amber"
-            value={metrics.puppyViews.value}
-            label="Puppy Views"
-            changePercent={metrics.puppyViews.percentChange}
-            compareLabel={compareLabel}
-          />
-          <MetricCard
-            icon={<CtaClicksIcon />}
-            colorKey="purple"
-            value={metrics.ctaClicks.value}
-            label="CTA Clicks"
-            changePercent={metrics.ctaClicks.percentChange}
-            compareLabel={compareLabel}
-          />
-          <MetricCard
-            icon={<LeadsIcon />}
-            colorKey="indigo"
-            value={metrics.leads.value}
-            label="Leads"
-            changePercent={metrics.leads.percentChange}
-            compareLabel={compareLabel}
-          />
-          <MetricCard
-            icon={<InquiriesIcon />}
-            colorKey="green"
-            value={metrics.inquiries.value}
-            label="Inquiries"
-            changePercent={metrics.inquiries.percentChange}
+            value={metrics.visitors.value}
+            label="Website Visitors"
+            changePercent={metrics.visitors.percentChange}
             compareLabel={compareLabel}
           />
           <MetricCard
@@ -163,32 +93,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
           />
         </div>
 
-        <div className="analytics-card">
-          <div className="analytics-card-header">
-            <div className="analytics-card-title">Traffic Overview</div>
-          </div>
-          <TrafficOverviewChart points={trafficOverview} />
-        </div>
-
-        <div className="analytics-row-uneven">
-          <MostViewedPuppiesCard puppies={mostViewedPuppies} />
-          <TrafficSourcesDonut total={trafficSources.total} breakdown={trafficSources.breakdown} />
-        </div>
-
-        <div className="analytics-row-even">
-          <CtaActivityCard items={ctaActivity} />
-          <OnlineNowWidget initial={onlineNow} />
-        </div>
-
-        <div className="analytics-row-even">
-          <TopPagesCard pages={topPages} />
-          <LandingPagesCard pages={landingPages} />
-        </div>
-
-        <div className="analytics-row-even">
-          <CampaignsCard campaigns={campaigns} />
-          <FunnelCard data={funnel} />
-        </div>
+        <MostViewedPuppiesCard puppies={mostViewedPuppies} />
 
         <AnalyticsDeviceExclusion />
       </div>

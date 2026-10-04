@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import SiteHeader from "./SiteHeader";
 import BottomNav from "./BottomNav";
 import AnalyticsTracker from "../public/AnalyticsTracker";
+import LandingHandoffCapture from "../public/LandingHandoffCapture";
 import "./public-shell.css";
 
 export default function PublicShell({ children }: { children: React.ReactNode }) {
@@ -23,6 +24,7 @@ export default function PublicShell({ children }: { children: React.ReactNode })
   return (
     <div ref={shellRef} className="pp-html-reset pp-body">
       <AnalyticsTracker />
+      <LandingHandoffCapture />
       <SiteHeader
         open={navOpen}
         onToggle={() => setNavOpen((v) => !v)}

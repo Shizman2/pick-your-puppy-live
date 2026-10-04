@@ -181,6 +181,43 @@ export async function logPayment(saleId: string, fields: LogPaymentFields): Prom
   return { success: true };
 }
 
+/**
+ * Delivery/other direct costs for THIS sale - feeds directly into the
+ * transaction-based Gross Profit formula (lib/businessScorecard.ts).
+ * Distinct from puppies.cost_cents/bundle_cost_cents (set on the puppy
+ * itself, via app/admin/puppies/actions.ts) since delivery/other costs
+ * vary by the specific transaction, not the puppy.
+ */
+export async function updateSaleCosts(
+  saleId: string,
+  deliveryCostDollars: number,
+  otherCostDollars: number
+): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  if (deliveryCostDollars < 0 || otherCostDollars < 0) {
+    return { success: false, error: "Costs can't be negative." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("sales")
+    .update({
+      delivery_cost_cents: Math.round(deliveryCostDollars * 100),
+      other_cost_cents: Math.round(otherCostDollars * 100),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", saleId);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/admin/sales");
+  revalidatePath(`/admin/sales/${saleId}`);
+  revalidatePath("/admin/dashboard");
+  return { success: true };
+}
+
 export type UpdatePaymentFields = LogPaymentFields;
 
 /**
