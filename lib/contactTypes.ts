@@ -35,6 +35,8 @@ export interface ContactRow {
   next_follow_up_at: string | null;
   needs_duplicate_review: boolean;
   is_archived: boolean;
+  /** Set when a staff member deletes this contact's thread from Message Center (see deleteMessageThreadsFor in app/admin/messages/actions.ts) - lets getMessageCenterData (lib/messageCenter.ts) tell "old, already-dismissed inquiries" apart from "a genuinely new inquiry since the clear", without ever deleting the inquiries themselves. */
+  messages_cleared_at: string | null;
   created_at: string;
   updated_at: string;
 }

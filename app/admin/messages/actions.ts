@@ -43,9 +43,10 @@ export async function markConversationRead(contactId: string): Promise<ActionRes
 }
 
 /**
- * Deletes only `messages` and `conversations` rows for the given
- * contact ids - shared by deleteConversation/deleteConversations/
- * deleteAllConversations so all three have exactly the same scope.
+ * Deletes `messages` and `conversations` rows for the given contact ids,
+ * and tombstones each contact's clear time - shared by
+ * deleteConversation/deleteConversations/deleteAllConversations so all
+ * three have exactly the same scope and the same fix.
  *
  * Deliberately does NOT touch `inquiries` or `interests`: those hold
  * the actual submitted business data (inquiries' own columns are the
@@ -56,16 +57,44 @@ export async function markConversationRead(contactId: string): Promise<ActionRes
  * [token]/page.tsx) reads inquiries.breed via
  * puppy_finder_proposals.inquiry_id, so deleting inquiries here would
  * silently degrade a live customer-facing page. Never touches `sales`,
- * `contacts`, or anything affiliate/analytics-related either.
+ * `contacts` themselves, or anything affiliate/analytics-related either.
+ *
+ * contacts.messages_cleared_at (supabase/033_message_center_clear_tombstone.sql)
+ * is the actual bug fix: without it, getMessageCenterData
+ * (lib/messageCenter.ts) has no way to tell "this contact's thread was
+ * intentionally cleared" apart from "this contact just has old inquiries
+ * and was never touched" - since inquiries are never deleted, the old
+ * behavior resurrected every deleted conversation the moment the page
+ * next fully reloaded. A genuinely NEW inquiry submitted after this
+ * timestamp still correctly reopens the conversation (see that file).
  */
 async function deleteMessageThreadsFor(contactIds: string[]): Promise<ActionResult> {
   const admin = createAdminClient();
+  const nowIso = new Date().toISOString();
 
   const { error: messagesError } = await admin.from("messages").delete().in("contact_id", contactIds);
   if (messagesError) return { success: false, error: messagesError.message };
 
   const { error: conversationsError } = await admin.from("conversations").delete().in("contact_id", contactIds);
   if (conversationsError) return { success: false, error: conversationsError.message };
+
+  // Defensive compatibility: messages_cleared_at only exists once
+  // supabase/033_message_center_clear_tombstone.sql has actually been
+  // run (deliberately not run automatically). Until then, PostgREST
+  // rejects the update (PGRST204 for the payload key, or 42703 if it
+  // reaches Postgres directly - both confirmed as real PostgREST
+  // behaviors earlier in this project, see lib/businessScorecard.ts).
+  // Messages/conversations are already deleted by this point regardless
+  // - swallowing this specific error here keeps delete from regressing
+  // to a hard failure pre-migration; the resurrection bug just isn't
+  // fixed yet until the migration runs, same as before this change.
+  const { error: tombstoneError } = await admin
+    .from("contacts")
+    .update({ messages_cleared_at: nowIso })
+    .in("id", contactIds);
+  if (tombstoneError && tombstoneError.code !== "PGRST204" && tombstoneError.code !== "42703") {
+    return { success: false, error: tombstoneError.message };
+  }
 
   return { success: true };
 }
@@ -118,13 +147,17 @@ export async function deleteConversations(contactIds: string[]): Promise<ActionR
  * unconditionally in one query - see lib/messageCenter.ts), so "all"
  * unambiguously means every messages/conversations row that exists.
  * Same messages+conversations-only scope as the other two - inquiries,
- * interests, contacts, and sales are never touched.
+ * interests, contacts, and sales are never touched. Also tombstones
+ * every contact's messages_cleared_at (see deleteMessageThreadsFor's own
+ * comment for why that's required) so this doesn't fall into the same
+ * resurrection bug the single/bulk delete actions had.
  */
 export async function deleteAllConversations(): Promise<ActionResult> {
   const auth = await requireAdminUser();
   if (!auth.ok) return { success: false, error: auth.error };
 
   const admin = createAdminClient();
+  const nowIso = new Date().toISOString();
 
   // `.not("id", "is", null)` matches every row - id is never null - so
   // this is an explicit, deliberate "delete all", not an accidental
@@ -134,6 +167,12 @@ export async function deleteAllConversations(): Promise<ActionResult> {
 
   const { error: conversationsError } = await admin.from("conversations").delete().not("id", "is", null);
   if (conversationsError) return { success: false, error: conversationsError.message };
+
+  // Same defensive pre-migration compatibility as deleteMessageThreadsFor above.
+  const { error: tombstoneError } = await admin.from("contacts").update({ messages_cleared_at: nowIso }).not("id", "is", null);
+  if (tombstoneError && tombstoneError.code !== "PGRST204" && tombstoneError.code !== "42703") {
+    return { success: false, error: tombstoneError.message };
+  }
 
   revalidatePath("/admin/messages");
   revalidatePath("/admin/contacts");

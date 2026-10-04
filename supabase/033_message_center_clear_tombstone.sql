@@ -1,0 +1,26 @@
+-- Message Center delete bug fix.
+--
+-- Root cause: deleteConversation/deleteConversations/deleteAllConversations
+-- (app/admin/messages/actions.ts) deliberately delete ONLY messages and
+-- conversations rows, intentionally preserving inquiries (real submitted
+-- business data - see that file's own comment on why). But
+-- getMessageCenterData (lib/messageCenter.ts) decided whether a contact
+-- belongs in the Message Center LIST using
+--   contactInquiries.length > 0 || contactMessages.length > 0
+-- so a contact with any inquiry history (i.e. nearly every contact, since
+-- every website inquiry submission creates both an inquiry AND a message
+-- together - see app/api/inquire/route.ts) reappeared the moment the page
+-- next fully reloaded, even though their messages/conversations really
+-- were deleted. The client's optimistic UI removal made it look like the
+-- delete "worked" at first, until a refresh/relogin re-ran the query.
+--
+-- Fix: a simple tombstone timestamp on contacts, set at the moment a
+-- staff member clears that contact's thread. getMessageCenterData then
+-- only trusts a contact's OLD inquiries as a reason to show them if none
+-- of those inquiries are newer than this timestamp - a genuinely NEW
+-- inquiry after the clear still has a created_at AFTER it (and also
+-- creates its own new message, via the same insert path), so it correctly
+-- reopens the conversation. No messages/conversations/inquiries rows
+-- change shape; nothing here touches contacts/sales/payments/affiliates/
+-- business data - this is purely a "when was this last cleared" marker.
+alter table contacts add column if not exists messages_cleared_at timestamptz;

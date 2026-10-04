@@ -18,6 +18,8 @@ export interface AdminNotificationPreferencesRow {
   notify_contact_messages: boolean;
   notify_puppy_inquiries: boolean;
   notify_puppy_finder_selections: boolean;
+  /** Controls ONLY the new-unique-GHL-funnel-visitor push (see app/api/analytics/landing-track/route.ts) - independent of every other preference here. */
+  notify_funnel_visitors: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -27,7 +29,8 @@ export type NotificationEventType =
   | "puppy_finder_request"
   | "contact_message"
   | "puppy_inquiry"
-  | "puppy_finder_selection";
+  | "puppy_finder_selection"
+  | "funnel_visitor";
 
 export const NOTIFICATION_PREFERENCE_KEY: Record<
   NotificationEventType,
@@ -38,6 +41,7 @@ export const NOTIFICATION_PREFERENCE_KEY: Record<
     | "notify_contact_messages"
     | "notify_puppy_inquiries"
     | "notify_puppy_finder_selections"
+    | "notify_funnel_visitors"
   >
 > = {
   reservation_request: "notify_reservation_requests",
@@ -45,6 +49,7 @@ export const NOTIFICATION_PREFERENCE_KEY: Record<
   contact_message: "notify_contact_messages",
   puppy_inquiry: "notify_puppy_inquiries",
   puppy_finder_selection: "notify_puppy_finder_selections",
+  funnel_visitor: "notify_funnel_visitors",
 };
 
 export interface PushNotificationPayload {

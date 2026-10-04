@@ -62,6 +62,7 @@ const PREFERENCE_TOGGLES: {
     | "notify_contact_messages"
     | "notify_puppy_inquiries"
     | "notify_puppy_finder_selections"
+    | "notify_funnel_visitors"
   >;
   label: string;
 }[] = [
@@ -70,6 +71,7 @@ const PREFERENCE_TOGGLES: {
   { key: "notify_contact_messages", label: "Contact Messages" },
   { key: "notify_puppy_inquiries", label: "Puppy Inquiries" },
   { key: "notify_puppy_finder_selections", label: "Puppy Finder Selections" },
+  { key: "notify_funnel_visitors", label: "Funnel Visitor Notifications" },
 ];
 
 const DEFAULT_PREFS = {
@@ -78,6 +80,7 @@ const DEFAULT_PREFS = {
   notify_contact_messages: true,
   notify_puppy_inquiries: true,
   notify_puppy_finder_selections: true,
+  notify_funnel_visitors: true,
 };
 
 export default function NotificationSettingsClient({

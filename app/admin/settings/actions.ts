@@ -74,6 +74,7 @@ export async function updateNotificationPreferences(
       | "notify_contact_messages"
       | "notify_puppy_inquiries"
       | "notify_puppy_finder_selections"
+      | "notify_funnel_visitors"
     >
   >
 ): Promise<ActionResult> {

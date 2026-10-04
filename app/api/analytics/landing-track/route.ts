@@ -2,9 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "../../../../lib/supabase/admin";
 import { isNonProductionEnvironmentServer } from "../../../../lib/analytics/environment";
 import { isLikelyBot } from "../../../../lib/analytics/botDetection";
-import { LANDING_ALLOWED_ORIGINS, MAX_LANDING_VISITOR_ID_LENGTH } from "../../../../lib/analytics/constants";
+import { LANDING_ALLOWED_ORIGINS, LANDING_TEST_ID_PREFIX, MAX_LANDING_VISITOR_ID_LENGTH } from "../../../../lib/analytics/constants";
+import { sendPushToAdmins } from "../../../../lib/push";
+import type { PushNotificationPayload } from "../../../../lib/pushTypes";
 
 export const dynamic = "force-dynamic";
+
+/** Only included when the data actually exists - never shown as "Unknown"/blank. */
+function buildFunnelVisitorNotification(utmSource: string | null, utmCampaign: string | null): PushNotificationPayload {
+  const lines = ["Someone just visited your Puppy Plugs funnel."];
+  if (utmSource) lines.push(`Source: ${utmSource}`);
+  if (utmCampaign) lines.push(`Campaign: ${utmCampaign}`);
+  return {
+    title: "New Funnel Visitor",
+    body: lines.join("\n"),
+    url: "/admin/analytics",
+    tag: "funnel_visitor",
+  };
+}
 
 /**
  * Cross-origin receiver for the GHL /start landing page
@@ -77,31 +92,43 @@ export async function POST(request: NextRequest) {
   const admin = createAdminClient();
   const nowIso = new Date().toISOString();
 
-  // Hand-rolled upsert (select, then insert-or-update), not a single
-  // .upsert() call: utm_*/fbclid are first-touch-only and must never be
-  // overwritten by a later visit from the same landing visitor id - see
-  // the schema comment in supabase/031_landing_page_attribution.sql.
-  const { data: existing } = await admin.from("landing_visitors").select("id").eq("id", landingVisitorId).maybeSingle();
+  // Insert-first, not select-then-insert: two near-simultaneous requests
+  // for the SAME brand-new landing visitor id (e.g. the tracking beacon
+  // firing twice, or a retry) must never both decide "this is new" - the
+  // unique constraint on landing_visitors.id is what actually serializes
+  // that decision. Whichever request's insert succeeds is the one true
+  // "new visitor" (and the only one that may trigger a push below); the
+  // other gets a 23505 (unique_violation) and falls back to a normal
+  // last_seen_at update, exactly like any other returning visitor. A
+  // select-then-insert here would have a race window where both requests
+  // see "no existing row" and both insert - impossible with this
+  // ordering. utm_*/fbclid stay first-touch-only either way: they're
+  // only ever written in the insert branch, never the update branch -
+  // see the schema comment in supabase/031_landing_page_attribution.sql.
+  const { error: insertError } = await admin.from("landing_visitors").insert({
+    id: landingVisitorId,
+    first_seen_at: nowIso,
+    last_seen_at: nowIso,
+    utm_source: utmSource,
+    utm_medium: utmMedium,
+    utm_campaign: utmCampaign,
+    utm_content: utmContent,
+    utm_term: utmTerm,
+    fbclid,
+  });
 
-  if (!existing) {
-    const { error } = await admin.from("landing_visitors").insert({
-      id: landingVisitorId,
-      first_seen_at: nowIso,
-      last_seen_at: nowIso,
-      utm_source: utmSource,
-      utm_medium: utmMedium,
-      utm_campaign: utmCampaign,
-      utm_content: utmContent,
-      utm_term: utmTerm,
-      fbclid,
-    });
-    if (error) {
-      console.error("[analytics] failed to insert landing_visitors:", error.message, error.details || "");
-      return new NextResponse(null, { status: 204, headers });
-    }
+  let isNewUniqueVisitor = false;
+
+  if (!insertError) {
+    isNewUniqueVisitor = true;
+  } else if (insertError.code === "23505") {
+    // Already exists - a genuine returning visit, or the losing side of
+    // the race above. Either way, never a reason to notify again.
+    const { error: updateError } = await admin.from("landing_visitors").update({ last_seen_at: nowIso }).eq("id", landingVisitorId);
+    if (updateError) console.error("[analytics] failed to update landing_visitors.last_seen_at:", updateError.message);
   } else {
-    const { error } = await admin.from("landing_visitors").update({ last_seen_at: nowIso }).eq("id", landingVisitorId);
-    if (error) console.error("[analytics] failed to update landing_visitors.last_seen_at:", error.message);
+    console.error("[analytics] failed to insert landing_visitors:", insertError.message, insertError.details || "");
+    return new NextResponse(null, { status: 204, headers });
   }
 
   const { error: eventError } = await admin.from("landing_page_events").insert({
@@ -112,6 +139,23 @@ export async function POST(request: NextRequest) {
   });
   if (eventError) {
     console.error("[analytics] failed to insert landing_page_events:", eventError.message, eventError.details || "");
+  }
+
+  // Admin push notification - fires at most once per unique landing
+  // visitor (only on the branch that just inserted a brand-new row
+  // above), never on a repeat page view, refresh, or losing race. Never
+  // allowed to affect this response either way - tracking has already
+  // fully succeeded by this point regardless of whether the push does.
+  // Skipped for ?pp_test=1 verification visits (id prefixed "test_" -
+  // see the GHL snippet) for the same reason those are excluded from
+  // every Funnel Page Visitors count: verifying the live script should
+  // never alert a real admin.
+  if (isNewUniqueVisitor && !landingVisitorId.startsWith(LANDING_TEST_ID_PREFIX)) {
+    try {
+      await sendPushToAdmins("funnel_visitor", buildFunnelVisitorNotification(utmSource, utmCampaign));
+    } catch (err) {
+      console.error("[analytics] funnel visitor push failed:", err);
+    }
   }
 
   return new NextResponse(null, { status: 204, headers });

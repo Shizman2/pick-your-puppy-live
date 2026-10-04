@@ -163,7 +163,25 @@ export async function getMessageCenterData(): Promise<MessageCenterData> {
     // below is still built for every contact regardless, so a direct
     // link (e.g. from the Contact Profile's "Open in Message Center")
     // still resolves correctly even with an empty thread.
-    if (contactInquiries.length > 0 || contactMessages.length > 0) {
+    //
+    // Inquiries alone only count as a reason to show this contact if
+    // none of them predate a Message Center clear (contact.messages_cleared_at
+    // - see supabase/033_message_center_clear_tombstone.sql). Inquiries
+    // are deliberately NEVER deleted (real submitted business data), so
+    // without this check, deleting a conversation here would only ever
+    // look successful until the next full page load - every contact
+    // with any inquiry history (nearly all of them) would silently
+    // reappear, because they'd still satisfy "has inquiries". A
+    // genuinely NEW inquiry submitted after the clear timestamp still
+    // correctly reopens the conversation (it's also always accompanied
+    // by a brand-new message row - see app/api/inquire/route.ts - so
+    // contactMessages.length > 0 alone would catch it too).
+    const clearedAt = contact.messages_cleared_at;
+    const newestInquiryAt = contactInquiries.length > 0 ? contactInquiries[contactInquiries.length - 1].created_at : null;
+    const hasInquiriesSinceClear =
+      contactInquiries.length > 0 && (!clearedAt || (newestInquiryAt !== null && newestInquiryAt > clearedAt));
+
+    if (contactMessages.length > 0 || hasInquiriesSinceClear) {
       list.push({
         contactId: contact.id,
         contactName: contact.display_name || `${contact.first_name} ${contact.last_name || ""}`.trim(),
