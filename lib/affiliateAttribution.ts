@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "./supabase/admin";
 import { getAffiliateProgramSettings } from "./affiliateSettings";
+import { normalizePhone } from "./normalize";
 
 export const AFFILIATE_CLICK_COOKIE = "ppl_aff";
 
@@ -56,6 +57,11 @@ export async function recordAffiliateClick(
  * at click time) - a since-suspended affiliate never gains new
  * attribution, even from an old still-valid-looking click.
  *
+ * Also blocks self-referral: if the affiliate's own normalized email or
+ * phone matches this contact's, no attribution row is written at all
+ * (not written-then-voided) - there is nothing here for a later
+ * commission to accidentally key off of.
+ *
  * Idempotent: the same contact + click can only ever produce one ledger
  * row (unique index), so repeat form submissions on the same cookie are
  * free no-ops, never row bloat.
@@ -65,15 +71,29 @@ export async function attachClickAttributionToContact(contactId: string, clickId
 
   const { data: click } = await admin
     .from("affiliate_clicks")
-    .select("id, affiliate_id, referral_code, expires_at, affiliates(status)")
+    .select("id, affiliate_id, referral_code, expires_at, affiliates(status, email_normalized, phone)")
     .eq("id", clickId)
     .maybeSingle();
 
   if (!click) return;
   if (new Date(click.expires_at) < new Date()) return;
 
-  const affiliateStatus = (click as unknown as { affiliates: { status: string } | null }).affiliates?.status;
-  if (affiliateStatus !== "approved") return;
+  const affiliate = (click as unknown as {
+    affiliates: { status: string; email_normalized: string | null; phone: string | null } | null;
+  }).affiliates;
+  if (affiliate?.status !== "approved") return;
+
+  const { data: contact } = await admin
+    .from("contacts")
+    .select("email_normalized, phone_normalized")
+    .eq("id", contactId)
+    .maybeSingle();
+
+  const affiliatePhoneNormalized = normalizePhone(affiliate.phone);
+  const isSelfReferral =
+    (!!affiliate.email_normalized && !!contact?.email_normalized && affiliate.email_normalized === contact.email_normalized) ||
+    (!!affiliatePhoneNormalized && !!contact?.phone_normalized && affiliatePhoneNormalized === contact.phone_normalized);
+  if (isSelfReferral) return;
 
   await admin
     .from("contact_affiliate_attributions")
