@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { normalizePhone, normalizeEmail } from "../../../lib/normalize";
-import { findOrCreateContact } from "../../../lib/duplicateMatch";
+import { saveInquiryCore } from "../../../lib/inquiryCoreWrite";
 import { attachClickAttributionToContact, AFFILIATE_CLICK_COOKIE } from "../../../lib/affiliateAttribution";
 import { linkFavoritesToContact } from "../../../lib/favorites";
 import { calculateScoreBump, clampScore } from "../../../lib/leadScore";
@@ -12,6 +12,9 @@ import { recordAnalyticsEvent } from "../../../lib/analytics/ingest";
 import { ANALYTICS_VISITOR_COOKIE, ANALYTICS_SESSION_COOKIE } from "../../../lib/analytics/constants";
 
 export const dynamic = "force-dynamic";
+
+/** Shown to the customer whenever their submission was NOT saved - never a database/internal error. */
+const INQUIRY_FAILED_MESSAGE = "We couldn't send your message. Please try again.";
 
 const VALID_TYPES = ["puppy_interest", "puppy_finder", "pypl", "general", "puppy_reservation"];
 
@@ -159,34 +162,7 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
 
-  // 1. Find or create the contact.
-  const { contact, isNew, flaggedDuplicate } = await findOrCreateContact({
-    firstName,
-    lastName,
-    phone,
-    phoneNormalized,
-    email,
-    emailNormalized,
-    city,
-    state,
-    preferredContactMethod,
-    consentToContact,
-    source: "website_inquire_form",
-  });
-
-  // 1b. Attach affiliate attribution, if this visitor currently carries
-  // a valid click cookie - re-validated live (click not expired, its
-  // affiliate still approved), never just trusted from the cookie alone.
-  const clickId = request.cookies.get(AFFILIATE_CLICK_COOKIE)?.value;
-  if (clickId) {
-    await attachClickAttributionToContact(contact.id, clickId);
-  }
-
-  // Same moment: if this visitor has favorited anything anonymously,
-  // link those rows to the now-identifiable Contact.
-  await linkFavoritesToContact(contact.id);
-
-  // 1c. Capture the CURRENT analytics visitor/session (if any), straight
+  // Capture the CURRENT analytics visitor/session (if any), straight
   // from the httpOnly pp_av/pp_as cookies the browser is already sending
   // on this request - never trusted from a client-supplied field, since
   // none is ever exposed in the form. Both are simply null if the
@@ -198,13 +174,12 @@ export async function POST(request: NextRequest) {
   const analyticsVisitorId = request.cookies.get(ANALYTICS_VISITOR_COOKIE)?.value || null;
   const analyticsSessionId = request.cookies.get(ANALYTICS_SESSION_COOKIE)?.value || null;
 
-  // 2. Build type-specific promoted columns + full form_data snapshot.
+  // 1. Build type-specific promoted columns + full form_data snapshot.
   // sms_inquiry_consent/sms_marketing_consent/consent_version are
   // promoted for every inquiry type, not just puppy_interest - the
   // inquiries row itself (via its own created_at) is what timestamps
   // the consent decision, so there's no separate column for that.
   const inquiryColumns: Record<string, unknown> = {
-    contact_id: contact.id,
     inquiry_type: inquiryType,
     form_data: body,
     sms_inquiry_consent: smsInquiryConsent,
@@ -266,96 +241,88 @@ export async function POST(request: NextRequest) {
     interestLabel = `Reservation request: ${body.puppyName || "a puppy"}`;
   }
 
-  let { data: inquiry, error: inquiryError } = await admin
-    .from("inquiries")
-    .insert(inquiryColumns)
-    .select()
-    .single();
-
-  // Defensive compatibility: analytics_visitor_id/analytics_session_id
-  // only exist once supabase/029_inquiry_analytics_attribution.sql has
-  // actually been run (deliberately NOT run automatically by this code
-  // - see that migration file). Until then, PostgREST rejects the whole
-  // insert before it ever reaches Postgres, since those two keys aren't
-  // in PostgREST's own cached schema (PGRST204 - confirmed directly
-  // against the live database, not assumed; this is PostgREST's own
-  // error code, not the raw Postgres "undefined column" 42703).
-  // Retrying once without them keeps every inquiry submission working
-  // regardless of whether the migration has been applied yet - saving
-  // the customer's inquiry must never depend on that timing.
-  if (inquiryError?.code === "PGRST204") {
-    const { analytics_visitor_id, analytics_session_id, ...columnsWithoutAnalytics } = inquiryColumns;
-    const retry = await admin.from("inquiries").insert(columnsWithoutAnalytics).select().single();
-    inquiry = retry.data;
-    inquiryError = retry.error;
-  }
-
-  if (inquiryError) {
-    return NextResponse.json({ error: "Could not save inquiry" }, { status: 500 });
-  }
-
-  // 3. Record the interest.
-  await admin.from("interests").insert({
-    contact_id: contact.id,
-    inquiry_id: inquiry.id,
-    interest_type:
-      inquiryType === "puppy_interest"
-        ? "puppy"
-        : inquiryType === "puppy_reservation"
-        ? "reservation"
-        : inquiryType === "puppy_finder"
-        ? "breed"
-        : inquiryType === "pypl"
-        ? "pypl"
-        : "general",
-    label: interestLabel,
-  });
-
-  // 4. Find or create this contact's general conversation, then log
-  // the submission as the first inbound message.
-  let { data: conversation } = await admin
-    .from("conversations")
-    .select("*")
-    .eq("contact_id", contact.id)
-    .eq("conversation_type", "general")
-    .limit(1)
-    .maybeSingle();
-
-  if (!conversation) {
-    const { data: newConversation } = await admin
-      .from("conversations")
-      .insert({ contact_id: contact.id, conversation_type: "general" })
-      .select()
-      .single();
-    conversation = newConversation;
-  }
+  const interestType =
+    inquiryType === "puppy_interest"
+      ? "puppy"
+      : inquiryType === "puppy_reservation"
+      ? "reservation"
+      : inquiryType === "puppy_finder"
+      ? "breed"
+      : inquiryType === "pypl"
+      ? "pypl"
+      : "general";
 
   const messageBody =
     notes || interestLabel || `New ${inquiryType.replace("_", " ")} inquiry submitted.`;
 
-  await admin.from("messages").insert({
-    conversation_id: conversation!.id,
-    contact_id: contact.id,
-    direction: "inbound",
-    sent_by: "customer",
-    channel: "website_form",
-    body: messageBody,
-    status: "logged",
-    is_read: false,
+  // 2. The core write - contact (matched, created, or restored from
+  // archived), inquiry, interest, conversation, inbound message and
+  // needs_reply - as ONE transaction (see lib/inquiryCoreWrite.ts). If
+  // it fails, nothing was saved: tell the customer plainly so they can
+  // resend, and keep the real error in the server log only.
+  const core = await saveInquiryCore({
+    firstName,
+    lastName,
+    phone,
+    phoneNormalized,
+    email,
+    emailNormalized,
+    city,
+    state,
+    preferredContactMethod,
+    consentToContact,
+    source: "website_inquire_form",
+    inquiryColumns,
+    interestType,
+    interestLabel,
+    messageBody,
   });
 
-  await admin
-    .from("conversations")
-    .update({ status: "needs_reply", last_message_at: new Date().toISOString() })
-    .eq("id", conversation!.id);
+  if (!core.ok) {
+    const err = core.error as { message?: string; code?: string } | null;
+    console.error(
+      `[inquire] core write failed at "${core.step}"${core.contactId ? ` for contact ${core.contactId}` : ""}:`,
+      err instanceof Error ? err.message : err?.message ?? err,
+      err?.code ? `(code ${err.code})` : ""
+    );
+    return NextResponse.json({ error: INQUIRY_FAILED_MESSAGE }, { status: 500 });
+  }
+
+  const { contact, isNew, flaggedDuplicate, inquiryId } = core;
+
+  // Everything below is best-effort. The customer's inquiry is already
+  // saved, so none of it may turn this into a failure response - a
+  // problem here is logged, never shown to the customer.
+  const bestEffort = async (label: string, work: () => Promise<unknown>) => {
+    try {
+      await work();
+    } catch (err) {
+      console.error(`[inquire] ${label} failed for contact ${contact.id}:`, err instanceof Error ? err.message : err);
+    }
+  };
+
+  // 3. Attach affiliate attribution, if this visitor currently carries
+  // a valid click cookie - re-validated live (click not expired, its
+  // affiliate still approved), never just trusted from the cookie alone.
+  const clickId = request.cookies.get(AFFILIATE_CLICK_COOKIE)?.value;
+  if (clickId) {
+    await bestEffort("affiliate attribution", () => attachClickAttributionToContact(contact.id, clickId));
+  }
+
+  // 4. Same moment: if this visitor has favorited anything anonymously,
+  // link those rows to the now-identifiable Contact.
+  await bestEffort("favorites linking", () => linkFavoritesToContact(contact.id));
 
   // 5. Timeline entry.
-  await admin.from("timeline_events").insert({
+  const { error: timelineError } = await admin.from("timeline_events").insert({
     contact_id: contact.id,
     event_type: "form_submitted",
-    metadata: { inquiry_type: inquiryType, inquiry_id: inquiry.id },
+    metadata: { inquiry_type: inquiryType, inquiry_id: inquiryId },
     description: `Submitted ${inquiryType.replace("_", " ")} form`,
   });
+  if (timelineError) {
+    console.error(`[inquire] timeline insert failed for contact ${contact.id}:`, timelineError.message);
+  }
 
   // 6. Lead score bump + contact activity timestamps.
   const scoreBump = calculateScoreBump({
@@ -364,7 +331,7 @@ export async function POST(request: NextRequest) {
   });
 
   const now = new Date().toISOString();
-  await admin
+  const { error: activityUpdateError } = await admin
     .from("contacts")
     .update({
       lead_score: clampScore((contact.lead_score || 0) + scoreBump),
@@ -372,6 +339,9 @@ export async function POST(request: NextRequest) {
       updated_at: now,
     })
     .eq("id", contact.id);
+  if (activityUpdateError) {
+    console.error(`[inquire] lead score/activity update failed for contact ${contact.id}:`, activityUpdateError.message);
+  }
 
   // 7. Admin push notification - alert layer only, never blocks or fails
   // this response. Every form funnels through this single route, so
@@ -379,7 +349,7 @@ export async function POST(request: NextRequest) {
   // same submission firing more than one push).
   const notification = buildAdminNotification(inquiryType, body, firstName, contact.id);
   if (notification) {
-    await sendPushToAdmins(notification.eventType, notification.payload);
+    await bestEffort("admin push", () => sendPushToAdmins(notification.eventType, notification.payload));
   }
 
   // 8. Best-effort GHL sync - see lib/ghl.ts for why this exists

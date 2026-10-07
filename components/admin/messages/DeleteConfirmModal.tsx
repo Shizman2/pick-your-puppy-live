@@ -9,6 +9,10 @@ interface DeleteConfirmModalProps {
   /** When set, Delete/Delete All stays disabled until the admin types this exact phrase - the extra safety gate for "Delete All Messages", matching the existing "type DELETE to confirm" pattern already used for Contact Profile's "Delete Everything Related" (components/admin/contacts/ContactProfileClient.tsx). */
   requireTypedPhrase?: string;
   busy: boolean;
+  /** Button text while busy - defaults to "Deleting…" (Message Center). */
+  busyLabel?: string;
+  /** "danger" (default, red) for destructive deletes; "primary" for reversible actions like Archive/Restore. */
+  tone?: "danger" | "primary";
   error: string | null;
   onCancel: () => void;
   onConfirm: () => void;
@@ -30,6 +34,8 @@ export default function DeleteConfirmModal({
   confirmLabel,
   requireTypedPhrase,
   busy,
+  busyLabel = "Deleting…",
+  tone = "danger",
   error,
   onCancel,
   onConfirm,
@@ -69,8 +75,13 @@ export default function DeleteConfirmModal({
           <button type="button" className="admin-btn" onClick={onCancel} disabled={busy}>
             Cancel
           </button>
-          <button type="button" className="admin-btn admin-btn--danger" onClick={onConfirm} disabled={confirmDisabled}>
-            {busy ? "Deleting…" : confirmLabel}
+          <button
+            type="button"
+            className={`admin-btn ${tone === "danger" ? "admin-btn--danger" : "admin-btn--primary"}`}
+            onClick={onConfirm}
+            disabled={confirmDisabled}
+          >
+            {busy ? busyLabel : confirmLabel}
           </button>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import SignOutButton from "../SignOutButton";
+import AdminRefreshButton from "./AdminRefreshButton";
 
 export type AdminNavKey =
   | "dashboard"
@@ -137,7 +138,12 @@ export default function AdminSidebar({ active, unreadMessageCount = 0, userEmail
         </div>
       </aside>
 
-      <main className="adminshell-main">{children}</main>
+      <main className="adminshell-main">
+        <div className="adminshell-topbar">
+          <AdminRefreshButton />
+        </div>
+        {children}
+      </main>
     </div>
   );
 }

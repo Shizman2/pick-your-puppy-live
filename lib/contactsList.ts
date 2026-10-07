@@ -2,11 +2,14 @@ import "server-only";
 import { createAdminClient } from "./supabase/admin";
 import type { ContactListItem, ContactRow } from "./contactTypes";
 import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./contactBadges";
+import { getUnreadContactIds } from "./unreadCount";
 
 /**
- * Fetches every contact plus enough of their inquiries/interests/
- * messages to build list-page badges, breed search terms, and unread
- * counts. Deliberately does this in a small handful of plain queries
+ * Fetches every contact - active AND archived, so the list page can
+ * offer an Archived view to restore from - plus enough of their
+ * inquiries/interests to build list-page badges and breed search terms,
+ * and the shared unread flag (lib/unread.ts; always false for archived
+ * contacts). Deliberately does this in a small handful of plain queries
  * rather than a single complex join or a Postgres view/RPC - Phase 1A
  * scale is a single small business's contact list, not a dataset that
  * needs that kind of optimization yet.
@@ -17,7 +20,6 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
   const { data: contactsData, error: contactsError } = await admin
     .from("contacts")
     .select("*")
-    .eq("is_archived", false)
     .order("created_at", { ascending: false });
 
   if (contactsError) throw new Error(contactsError.message);
@@ -29,24 +31,18 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
     return [];
   }
 
-  const [{ data: inquiriesData, error: inquiriesError }, { data: interestsData, error: interestsError }, { data: unreadData, error: unreadError }] =
+  const [{ data: inquiriesData, error: inquiriesError }, { data: interestsData, error: interestsError }, unreadContactIds] =
     await Promise.all([
       admin
         .from("inquiries")
         .select("id, contact_id, inquiry_type, puppy_name, breed, subject, created_at")
         .in("contact_id", contactIds),
       admin.from("interests").select("inquiry_id, is_active").in("contact_id", contactIds),
-      admin
-        .from("messages")
-        .select("contact_id")
-        .in("contact_id", contactIds)
-        .eq("direction", "inbound")
-        .eq("is_read", false),
+      getUnreadContactIds(),
     ]);
 
   if (inquiriesError) throw new Error(inquiriesError.message);
   if (interestsError) throw new Error(interestsError.message);
-  if (unreadError) throw new Error(unreadError.message);
 
   const inquiries = (inquiriesData || []) as InquiryForBadges[];
   const interestRows = (interestsData || []) as { inquiry_id: string | null; is_active: boolean }[];
@@ -56,11 +52,6 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
     const list = inquiriesByContact.get(inquiry.contact_id) || [];
     list.push(inquiry);
     inquiriesByContact.set(inquiry.contact_id, list);
-  }
-
-  const unreadCountByContact = new Map<string, number>();
-  for (const row of (unreadData || []) as { contact_id: string }[]) {
-    unreadCountByContact.set(row.contact_id, (unreadCountByContact.get(row.contact_id) || 0) + 1);
   }
 
   return contacts.map((contact) => {
@@ -86,7 +77,7 @@ export async function getContactsListData(): Promise<ContactListItem[]> {
       badges: badgesForContact(contactInquiries, activeInquiryIds),
       breeds,
       inquiryTypes,
-      unreadCount: unreadCountByContact.get(contact.id) || 0,
+      hasUnread: unreadContactIds.has(contact.id),
     };
   });
 }

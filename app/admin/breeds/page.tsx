@@ -4,7 +4,7 @@ import BreedsListClient from "../../../components/admin/breeds/BreedsListClient"
 import { getBreedsListData } from "../../../lib/breeds";
 import type { BreedRow } from "../../../lib/breedTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/breeds/breeds.css";
@@ -22,7 +22,7 @@ export default async function BreedsPage() {
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="breeds" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

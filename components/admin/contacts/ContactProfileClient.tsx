@@ -10,6 +10,7 @@ import {
   updateContactStatus,
   addContactNote,
   archiveContact,
+  restoreContacts,
   deleteContactCompletely,
   updateContactAddress,
 } from "../../../app/admin/contacts/actions";
@@ -71,6 +72,8 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
   const [noteError, setNoteError] = useState<string | null>(null);
 
   const [isArchiving, setIsArchiving] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
   const [showDeleteAllPanel, setShowDeleteAllPanel] = useState(false);
   const [deleteAllConfirmText, setDeleteAllConfirmText] = useState("");
   const [isDeletingAll, setIsDeletingAll] = useState(false);
@@ -138,6 +141,18 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
     router.push("/admin/contacts");
   }
 
+  async function handleRestoreContact() {
+    setRestoreError(null);
+    setIsRestoring(true);
+    const result = await restoreContacts([contact.id]);
+    setIsRestoring(false);
+    if (!result.success) {
+      setRestoreError(result.error);
+      return;
+    }
+    router.refresh();
+  }
+
   async function handleDeleteEverything() {
     if (deleteAllConfirmText !== "DELETE") return;
     setDangerError(null);
@@ -193,6 +208,19 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
             <span className="profile-info-value">{contact.lead_score}/100</span>
           </div>
         </div>
+
+        {contact.is_archived && (
+          <div className="profile-archived-banner">
+            <span>
+              <strong>Archived.</strong> Hidden from active Contacts, the Message Center and unread counts. All
+              history is preserved.
+            </span>
+            <button type="button" className="admin-btn" onClick={handleRestoreContact} disabled={isRestoring}>
+              {isRestoring ? "Restoring…" : "Restore"}
+            </button>
+            {restoreError && <span className="admin-hint" style={{ color: "var(--color-accent)" }}>{restoreError}</span>}
+          </div>
+        )}
 
         {profile.badges.length > 0 && (
           <div className="contacts-cell--badges" style={{ marginTop: 14 }}>
@@ -324,9 +352,11 @@ export default function ContactProfileClient({ profile }: { profile: ContactProf
       <div className="profile-card">
         <h2 className="admin-card__title">Messages</h2>
         <p className="admin-hint" style={{ marginBottom: 8 }}>
-          {profile.unreadCount > 0
-            ? `${profile.unreadCount} unread message${profile.unreadCount === 1 ? "" : "s"}.`
-            : "No unread messages."}
+          {contact.is_archived
+            ? "Archived - not shown in the Message Center or counted as unread."
+            : profile.hasUnread
+              ? "Unread customer message waiting."
+              : "No unread messages."}
         </p>
         <a href={`/admin/messages/${contact.id}`} className="admin-btn">
           Open in Message Center →

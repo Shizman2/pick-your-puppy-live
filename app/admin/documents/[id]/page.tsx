@@ -3,7 +3,7 @@ import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import GeneratedDocumentClient from "../../../../components/admin/documents/GeneratedDocumentClient";
 import { getGeneratedDocumentById, getTemplateVersionById, getTemplateById } from "../../../../lib/documents";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/documents/billOfSale.css";
@@ -37,7 +37,7 @@ export default async function GeneratedDocumentPage({ params }: { params: { id: 
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="sales" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

@@ -26,23 +26,28 @@ export async function findOrCreateContact(input: FindOrCreateInput) {
   let phoneMatch = null;
   let emailMatch = null;
 
+  // A failed lookup must stop here rather than read as "no match" -
+  // otherwise a transient database error would silently create a
+  // duplicate contact for someone who already exists.
   if (input.phoneNormalized) {
-    const { data } = await admin
+    const { data, error } = await admin
       .from("contacts")
       .select("*")
       .eq("phone_normalized", input.phoneNormalized)
       .limit(1)
       .maybeSingle();
+    if (error) throw new Error(error.message);
     phoneMatch = data;
   }
 
   if (input.emailNormalized) {
-    const { data } = await admin
+    const { data, error } = await admin
       .from("contacts")
       .select("*")
       .eq("email_normalized", input.emailNormalized)
       .limit(1)
       .maybeSingle();
+    if (error) throw new Error(error.message);
     emailMatch = data;
   }
 

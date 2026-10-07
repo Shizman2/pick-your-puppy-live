@@ -65,7 +65,8 @@ export interface ContactListItem extends ContactRow {
   badges: ContactBadge[];
   breeds: string[];
   inquiryTypes: InquiryType[];
-  unreadCount: number;
+  /** Shared unread definition (lib/unread.ts) - always false when archived. */
+  hasUnread: boolean;
 }
 
 export interface TimelineEventRow {
@@ -106,7 +107,8 @@ export interface ContactProfileData {
   timelineEvents: TimelineEventRow[];
   notes: NoteRow[];
   activities: ActivityRow[];
-  unreadCount: number;
+  /** Shared unread definition (lib/unread.ts) - always false when archived. */
+  hasUnread: boolean;
   puppyFinderProposals: PuppyFinderProposalRow[];
   puppyFinderInquiries: PuppyFinderInquiryOption[];
   affiliateAttribution: ContactAttributionHistoryItem[];

@@ -3,6 +3,7 @@ import { createAdminClient } from "./supabase/admin";
 import type { ContactBadge, ContactRow, InquiryType, NoteRow, TimelineEventRow } from "./contactTypes";
 import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./contactBadges";
 import { SOURCE_LABEL } from "./messageSource";
+import { isUnreadInbound } from "./unread";
 
 export interface MessageRow {
   id: string;
@@ -65,9 +66,14 @@ export interface MessageCenterData {
 export async function getMessageCenterData(): Promise<MessageCenterData> {
   const admin = createAdminClient();
 
+  // Archived contacts are left out entirely - no list row, no detail
+  // bundle, no unread contribution (see lib/unread.ts). A new website
+  // inquiry from an archived contact un-archives them first (see
+  // app/api/inquire/route.ts), so a returning lead still shows up here.
   const { data: contactsData, error: contactsError } = await admin
     .from("contacts")
     .select("*")
+    .eq("is_archived", false)
     .order("last_activity_at", { ascending: false, nullsFirst: false });
 
   if (contactsError) throw new Error(contactsError.message);
@@ -152,7 +158,7 @@ export async function getMessageCenterData(): Promise<MessageCenterData> {
         ? Array.from(new Set(contactInquiries.map((i) => SOURCE_LABEL[i.inquiry_type])))
         : ["Manually added"];
 
-    const unreadCount = contactMessages.filter((m) => m.direction === "inbound" && !m.is_read).length;
+    const unreadCount = contactMessages.filter(isUnreadInbound).length;
 
     // A contact with no inquiries and no messages has nothing to show in
     // an inbox - most commonly a contact whose conversation was just

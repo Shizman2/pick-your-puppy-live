@@ -19,10 +19,14 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
   const [message, setMessage] = useState("");
   const [website, setWebsite] = useState(""); // honeypot
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  // Validation hint, or - if the server couldn't save the submission - a
+  // plain "not sent" message. The form stays filled in either way.
+  const [errorMsg, setErrorMsg] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim() || (!email.trim() && !phone.trim())) {
+      setErrorMsg("Please add your name, and either an email or phone.");
       setStatus("error");
       return;
     }
@@ -59,9 +63,11 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
       if (data.success) {
         setStatus("success");
       } else {
+        setErrorMsg(data.error || "We couldn't send your message. Please try again.");
         setStatus("error");
       }
     } catch {
+      setErrorMsg("We couldn't send your message. Please try again.");
       setStatus("error");
     }
   }
@@ -160,7 +166,7 @@ export default function PuppyQuestionForm({ puppyId, puppyName, breed, slug }: P
         </div>
       </div>
 
-      {status === "error" && <p className="question-error">Please add your name, and either an email or phone.</p>}
+      {status === "error" && <p className="question-error">{errorMsg}</p>}
 
       <button type="submit" className="pp-btn-primary" disabled={status === "submitting"}>
         {status === "submitting" ? "Sending..." : "Send Message ›"}

@@ -22,7 +22,7 @@ import {
   type DashboardPeriodKey,
 } from "../../../lib/businessScorecard";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import { getRecentAdSpendEntries } from "../../../lib/adSpend";
 import { formatRelativeTime } from "../../../lib/formatRelative";
 import { formatPriceFromCents } from "../../../lib/puppyTypes";
@@ -95,7 +95,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: { 
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
   const firstName = userEmail ? userEmail.split("@")[0].split(".")[0] : "there";
   const displayName = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 

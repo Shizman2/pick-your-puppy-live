@@ -3,7 +3,7 @@ import TasksListClient from "../../../components/admin/tasks/TasksListClient";
 import { getTasksPageData } from "../../../lib/activities";
 import type { TasksPageData } from "../../../lib/activities";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/tasks/tasks.css";
@@ -21,7 +21,7 @@ export default async function TasksPage() {
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="tasks" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

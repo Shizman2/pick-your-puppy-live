@@ -2,7 +2,7 @@ import Link from "next/link";
 import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import AddContactForm from "../../../../components/admin/contacts/AddContactForm";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 
@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewContactPage() {
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="contacts" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

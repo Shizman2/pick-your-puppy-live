@@ -5,7 +5,7 @@ import AffiliateProgramSettingsClient from "../../../components/admin/settings/A
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import { getSellerPhoneNumber, getSellerSignatureName } from "../../../lib/content";
 import { getAffiliateProgramSettings } from "../../../lib/affiliateSettings";
 import type { AdminNotificationPreferencesRow, PushSubscriptionRow } from "../../../lib/pushTypes";
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
   const sellerPhone = await getSellerPhoneNumber();
   const sellerSignatureName = await getSellerSignatureName();
   const affiliateSettings = await getAffiliateProgramSettings();

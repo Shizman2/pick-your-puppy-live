@@ -102,11 +102,11 @@ export default function FinderForm() {
       if (data.success) {
         setSuccess(true);
       } else {
-        setError(data.error || "Something went wrong. Please try again.");
+        setError(data.error || "We couldn't send your message. Please try again.");
         setSubmitting(false);
       }
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("We couldn't send your message. Please try again.");
       setSubmitting(false);
     }
   }

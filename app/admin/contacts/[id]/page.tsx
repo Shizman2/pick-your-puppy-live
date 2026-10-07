@@ -3,7 +3,7 @@ import ContactProfileClient from "../../../../components/admin/contacts/ContactP
 import { getContactProfileData } from "../../../../lib/contactProfile";
 import type { ContactProfileData } from "../../../../lib/contactTypes";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/tasks/tasks.css";
@@ -21,7 +21,7 @@ export default async function ContactProfilePage({ params }: { params: { id: str
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="contacts" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

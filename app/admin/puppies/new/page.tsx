@@ -2,7 +2,7 @@ import Link from "next/link";
 import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import PuppyForm from "../../../../components/admin/puppies/PuppyForm";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import { getAllBreedersForSelect } from "../../../../lib/breeders";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewPuppyPage() {
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
   const breeders = await getAllBreedersForSelect();
 
   return (

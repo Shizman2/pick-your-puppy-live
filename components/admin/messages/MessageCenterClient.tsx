@@ -14,6 +14,7 @@ import {
 } from "../../../app/admin/messages/actions";
 import { formatPhoneDisplay, phoneTelHref } from "../../../lib/phone";
 import { formValueLabel } from "../../../lib/formValueLabels";
+import { countUnreadConversations } from "../../../lib/unread";
 import DeleteConfirmModal from "./DeleteConfirmModal";
 
 /** Desktop split-pane still auto-shows the most recent conversation for
@@ -95,19 +96,61 @@ export default function MessageCenterClient({ list, detailsByContactId, initialS
     return () => document.removeEventListener("click", handleClick);
   }, []);
 
+  // Contacts whose mark-read write is still in flight - kept at 0 unread
+  // while reconciling with refreshed server data, so a refresh that
+  // lands mid-write can't briefly flash them back to unread.
+  const pendingReadIdsRef = useRef<Set<string>>(new Set());
+
+  // router.refresh() (Refresh button, returning to the tab, or after an
+  // action) hands this component a NEW `list` prop - take it as the
+  // source of truth, so new conversations appear and archived/deleted
+  // ones disappear, instead of keeping the first-load copy forever.
+  useEffect(() => {
+    const pending = pendingReadIdsRef.current;
+    setLocalList(
+      pending.size === 0
+        ? list
+        : list.map((i) => (pending.has(i.contactId) ? { ...i, unreadCount: 0 } : i))
+    );
+  }, [list]);
+
+  async function markRead(contactId: string) {
+    pendingReadIdsRef.current.add(contactId);
+    setLocalList((prev) => prev.map((i) => (i.contactId === contactId ? { ...i, unreadCount: 0 } : i)));
+    try {
+      await markConversationRead(contactId);
+    } finally {
+      pendingReadIdsRef.current.delete(contactId);
+    }
+    // Re-render the server side too, so the sidebar badge (and this
+    // list) reflect the write rather than the pre-read snapshot.
+    router.refresh();
+  }
+
+  // Opening a conversation = /admin/messages/[contactId], however the
+  // admin got there: clicking a row (handleSelect pushes this URL), a
+  // direct link, Contact Profile's "Open in Message Center", or a
+  // dashboard link. That's the one place it gets marked read. Checked
+  // against the server's `list` (not the optimistic localList) and only
+  // when the opened conversation changes - a later refresh while it's
+  // already open never re-marks anything. The desktop auto-preview
+  // below only sets selectedId on the plain /admin/messages route, so
+  // it never marks anything read.
+  useEffect(() => {
+    if (!initialSelectedId) return;
+    const serverItem = list.find((i) => i.contactId === initialSelectedId);
+    if (serverItem && serverItem.unreadCount > 0) {
+      void markRead(initialSelectedId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialSelectedId]);
+
   function handleSelect(contactId: string) {
     setSelectedId(contactId);
+    // Instant visual feedback; the actual write happens on the opened
+    // conversation's page (see the effect above).
+    setLocalList((prev) => prev.map((i) => (i.contactId === contactId ? { ...i, unreadCount: 0 } : i)));
     router.push(`/admin/messages/${contactId}`);
-
-    const item = localList.find((i) => i.contactId === contactId);
-    if (item && item.unreadCount > 0) {
-      // Optimistically clear the unread badge immediately, then
-      // persist it - no need to block the UI on the round trip.
-      setLocalList((prev) =>
-        prev.map((i) => (i.contactId === contactId ? { ...i, unreadCount: 0 } : i))
-      );
-      markConversationRead(contactId);
-    }
   }
 
   function handleBack() {
@@ -234,7 +277,10 @@ export default function MessageCenterClient({ list, detailsByContactId, initialS
         <div>
           <h1 className="contacts-title">Messages</h1>
           <p className="contacts-subtitle">
-            {localList.reduce((sum, i) => sum + i.unreadCount, 0)} unread
+            {(() => {
+              const unreadConversations = countUnreadConversations(localList);
+              return `${unreadConversations} unread conversation${unreadConversations === 1 ? "" : "s"}`;
+            })()}
           </p>
         </div>
 
@@ -341,7 +387,11 @@ export default function MessageCenterClient({ list, detailsByContactId, initialS
 
         <div className={`msgcenter-detail-col${!selectedId ? " msgcenter-hide-mobile" : ""}`}>
           {!selectedDetail ? (
-            <div className="msgcenter-empty-state">Select a conversation to view it.</div>
+            <div className="msgcenter-empty-state">
+              {selectedId
+                ? "This conversation isn't available - the contact may be archived, or the conversation was deleted."
+                : "Select a conversation to view it."}
+            </div>
           ) : (
             <>
               <div className="msgcenter-thread-col">

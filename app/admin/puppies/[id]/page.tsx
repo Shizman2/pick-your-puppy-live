@@ -3,7 +3,7 @@ import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import PuppyForm from "../../../../components/admin/puppies/PuppyForm";
 import { getPuppyById } from "../../../../lib/puppies";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import { getAllBreedersForSelect } from "../../../../lib/breeders";
 import { getActiveSaleForPuppy } from "../../../../lib/sales";
 import { getFavoriteCount } from "../../../../lib/favorites";
@@ -25,7 +25,7 @@ export default async function EditPuppyPage({ params }: { params: { id: string }
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
   const breeders = await getAllBreedersForSelect();
   const activeSale = puppy ? await getActiveSaleForPuppy(puppy.id) : null;
   const favoritesCount = puppy ? await getFavoriteCount(puppy.id) : 0;

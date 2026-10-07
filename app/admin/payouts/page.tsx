@@ -3,7 +3,7 @@ import AdminSidebar from "../../../components/admin/layout/AdminSidebar";
 import PayoutsListClient from "../../../components/admin/affiliates/PayoutsListClient";
 import { getPayoutsListData, type AffiliatePayoutListItem } from "../../../lib/affiliates";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/affiliates/affiliates.css";
@@ -21,7 +21,7 @@ export default async function PayoutsPage() {
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="payouts" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

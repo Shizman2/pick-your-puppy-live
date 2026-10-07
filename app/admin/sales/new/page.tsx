@@ -4,7 +4,7 @@ import StartSaleForm from "../../../../components/admin/sales/StartSaleForm";
 import { getPuppyById } from "../../../../lib/puppies";
 import { getContactsListData } from "../../../../lib/contactsList";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/sales/sales.css";
@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 
 export default async function NewSalePage({ searchParams }: { searchParams: { puppyId?: string } }) {
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   if (!searchParams.puppyId) {
     return (

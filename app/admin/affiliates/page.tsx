@@ -3,7 +3,7 @@ import AffiliatesListClient from "../../../components/admin/affiliates/Affiliate
 import { getAffiliatesListData } from "../../../lib/affiliates";
 import type { AffiliateRow } from "../../../lib/affiliateTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/affiliates/affiliates.css";
@@ -21,7 +21,7 @@ export default async function AffiliatesPage() {
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="affiliates" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

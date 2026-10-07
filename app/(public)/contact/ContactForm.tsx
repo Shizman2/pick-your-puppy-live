@@ -56,11 +56,11 @@ export default function ContactForm({ breedOptions }: Props) {
       if (data.success) {
         setStatus("success");
       } else {
-        setErrorMsg(data.error || "Something went wrong. Please try again.");
+        setErrorMsg(data.error || "We couldn't send your message. Please try again.");
         setStatus("error");
       }
     } catch {
-      setErrorMsg("Something went wrong. Please try again.");
+      setErrorMsg("We couldn't send your message. Please try again.");
       setStatus("error");
     }
   }

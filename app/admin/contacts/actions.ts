@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createAdminClient } from "../../../lib/supabase/admin";
 import { createServerSupabaseClient } from "../../../lib/supabase/server";
 import type { ContactStatus, InterestLevel } from "../../../lib/contactTypes";
+import { setContactsArchived } from "../../../lib/contactArchive";
 
 /**
  * Next.js redacts thrown-error messages from Server Actions before
@@ -263,6 +264,43 @@ export async function archiveContact(contactId: string): Promise<ActionResult> {
   revalidatePath("/admin/messages");
   revalidatePath("/admin/dashboard");
   return { success: true };
+}
+
+export type BulkArchiveResult = { success: true; count: number } | { success: false; error: string };
+
+/**
+ * Contacts list "Archive Selected" / "Archive All" - soft archive only,
+ * never a delete (see setContactsArchived for exactly what is and isn't
+ * touched). "Archive All" passes the ids of the contacts in the list's
+ * current filtered view, not every contact in the database.
+ */
+export async function archiveContacts(contactIds: string[]): Promise<BulkArchiveResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  try {
+    const count = await setContactsArchived(contactIds, true);
+    // Archiving changes the Contacts list, Message Center, dashboard,
+    // profiles and every page's sidebar unread badge.
+    revalidatePath("/admin", "layout");
+    return { success: true, count };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Could not archive contacts." };
+  }
+}
+
+/** Contacts list "Restore Selected" (Archived view) and the profile's "Restore" button. */
+export async function restoreContacts(contactIds: string[]): Promise<BulkArchiveResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  try {
+    const count = await setContactsArchived(contactIds, false);
+    revalidatePath("/admin", "layout");
+    return { success: true, count };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Could not restore contacts." };
+  }
 }
 
 /**

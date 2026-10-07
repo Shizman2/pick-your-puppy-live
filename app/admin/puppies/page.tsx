@@ -6,7 +6,7 @@ import { getPuppiesListData } from "../../../lib/puppies";
 import { getFavoriteCounts } from "../../../lib/favorites";
 import type { PuppyRow } from "../../../lib/puppyTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
 import "../../../components/admin/puppies/puppies.css";
@@ -26,7 +26,7 @@ export default async function PuppiesPage() {
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="puppies" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

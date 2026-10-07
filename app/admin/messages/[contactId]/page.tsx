@@ -3,6 +3,7 @@ import MessageCenterClient from "../../../../components/admin/messages/MessageCe
 import { getMessageCenterData } from "../../../../lib/messageCenter";
 import type { MessageCenterData } from "../../../../lib/messageCenter";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/messages/messageCenter.css";
@@ -26,7 +27,7 @@ export default async function MessageThreadPage({ params }: { params: { contactI
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = data.list.reduce((sum, i) => sum + i.unreadCount, 0);
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="messages" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

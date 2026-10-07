@@ -3,7 +3,7 @@ import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import PayoutDetailClient from "../../../../components/admin/affiliates/PayoutDetailClient";
 import { getPayoutById } from "../../../../lib/affiliates";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/sales/sales.css";
@@ -22,7 +22,7 @@ export default async function PayoutDetailPage({ params }: { params: { id: strin
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="payouts" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

@@ -3,9 +3,10 @@ import ContactsListClient from "../../../components/admin/contacts/ContactsListC
 import { getContactsListData } from "../../../lib/contactsList";
 import type { ContactListItem } from "../../../lib/contactTypes";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/contacts/contacts.css";
+import "../../../components/admin/messages/messageCenter.css";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function ContactsPage() {
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="contacts" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

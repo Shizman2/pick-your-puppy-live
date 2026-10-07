@@ -6,7 +6,7 @@ import AnalyticsDeviceExclusion from "../../../components/admin/analytics/Analyt
 import { VisitorsIcon, OnlineNowIcon, LandingPageIcon } from "../../../components/admin/analytics/icons";
 import { getTopMetrics, getMostViewedPuppies, getOnlineNow, type DateRangeKey } from "../../../lib/analytics/queries";
 import { getAdminUserEmail } from "../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../lib/unreadCount";
 import "../../../components/admin/layout/adminShell.css";
 import "../../../components/admin/analytics/analytics.css";
 
@@ -47,7 +47,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: { 
 
   const [userEmail, unreadMessageCount, metrics, mostViewedPuppies, onlineNow] = await Promise.all([
     getAdminUserEmail(),
-    getUnreadMessageCount(),
+    getUnreadConversationCount(),
     getTopMetrics(range),
     getMostViewedPuppies(range),
     getOnlineNow(),

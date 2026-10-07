@@ -4,7 +4,7 @@ import BreederForm from "../../../../components/admin/breeders/BreederForm";
 import { getBreederById, getPuppiesForBreeder } from "../../../../lib/breeders";
 import type { PuppyRow } from "../../../../lib/puppyTypes";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import "../../../../components/admin/layout/adminShell.css";
 import "../../../../components/admin/contacts/contacts.css";
 import "../../../../components/admin/breeders/breeders.css";
@@ -26,7 +26,7 @@ export default async function EditBreederPage({ params }: { params: { id: string
   }
 
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="breeders" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

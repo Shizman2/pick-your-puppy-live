@@ -6,14 +6,15 @@ import { activeInquiryIdsFor, badgesForContact, type InquiryForBadges } from "./
 import type { PuppyFinderProposalRow } from "./puppyFinderTypes";
 import { createPuppyFinderReadClient } from "./puppyFinderAccess";
 import { getContactAttributionHistory } from "./affiliateAttribution";
+import { getUnreadContactIds } from "./unreadCount";
 
 /**
  * Fetches everything the Contact Profile page shows: the contact
  * itself, badges (same logic as the list page), the timeline feed,
  * and notes. Deliberately does NOT fetch the message thread - that's
  * the Message Center's job (next checkpoint), not the profile's. The
- * unreadCount here is only used for the "Messages" placeholder card's
- * summary line, e.g. "3 unread messages".
+ * hasUnread flag here (shared definition, lib/unread.ts) is only used
+ * for the "Messages" card's summary line.
  */
 export async function getContactProfileData(contactId: string): Promise<ContactProfileData | null> {
   const admin = createAdminClient();
@@ -34,7 +35,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     { data: interestsData, error: interestsError },
     { data: timelineData, error: timelineError },
     { data: notesData, error: notesError },
-    { data: unreadData, error: unreadError },
+    unreadContactIds,
     { data: activitiesData, error: activitiesError },
     { data: proposalsData, error: proposalsError },
     { data: finderInquiriesData, error: finderInquiriesError },
@@ -54,12 +55,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
       .select("*")
       .eq("contact_id", contactId)
       .order("created_at", { ascending: false }),
-    admin
-      .from("messages")
-      .select("id")
-      .eq("contact_id", contactId)
-      .eq("direction", "inbound")
-      .eq("is_read", false),
+    getUnreadContactIds([contactId]),
     admin
       .from("activities")
       .select("*")
@@ -89,7 +85,6 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
   if (interestsError) throw new Error(interestsError.message);
   if (timelineError) throw new Error(timelineError.message);
   if (notesError) throw new Error(notesError.message);
-  if (unreadError) throw new Error(unreadError.message);
   if (activitiesError) throw new Error(activitiesError.message);
   if (proposalsError) throw new Error(proposalsError.message);
   if (finderInquiriesError) throw new Error(finderInquiriesError.message);
@@ -104,7 +99,7 @@ export async function getContactProfileData(contactId: string): Promise<ContactP
     timelineEvents: (timelineData || []) as TimelineEventRow[],
     notes: (notesData || []) as NoteRow[],
     activities: (activitiesData || []) as ActivityRow[],
-    unreadCount: (unreadData || []).length,
+    hasUnread: unreadContactIds.has(contactId),
     puppyFinderProposals: (proposalsData || []) as PuppyFinderProposalRow[],
     puppyFinderInquiries: finderInquiriesData || [],
     affiliateAttribution,

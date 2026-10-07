@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "./supabase/admin";
 import type { ContactStatus } from "./contactTypes";
+import { getUnreadContactIds } from "./unreadCount";
 
 const STATUS_ORDER: ContactStatus[] = [
   "new",
@@ -26,7 +27,8 @@ interface MiniContact {
 
 export interface DashboardData {
   newContactsThisWeek: number;
-  unreadMessages: number;
+  /** Customer conversations waiting on a reply - shared definition, lib/unread.ts. */
+  unreadConversations: number;
   activitiesDueTodayOrOverdue: number;
   highInterestCount: number;
   pipeline: { status: ContactStatus; count: number }[];
@@ -83,7 +85,7 @@ export async function getDashboardData(): Promise<DashboardData> {
   const threeDaysAgo = new Date(now - 3 * 86400000).toISOString();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [{ data: contactsData, error: contactsError }, { data: activitiesData, error: activitiesError }, { data: messagesData, error: messagesError }, { data: timelineData, error: timelineError }] =
+  const [{ data: contactsData, error: contactsError }, { data: activitiesData, error: activitiesError }, { data: messagesData, error: messagesError }, { data: timelineData, error: timelineError }, unreadContactIds] =
     await Promise.all([
       admin
         .from("contacts")
@@ -103,6 +105,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         .select("id, contact_id, description, event_type, metadata, created_at")
         .order("created_at", { ascending: false })
         .limit(15),
+      getUnreadContactIds(),
     ]);
 
   if (contactsError) throw new Error(contactsError.message);
@@ -139,11 +142,13 @@ export async function getDashboardData(): Promise<DashboardData> {
     }));
 
   const inboundMessages = messagesData || [];
-  const unreadMessages = inboundMessages.filter((m) => !m.is_read).length;
+  const unreadConversations = unreadContactIds.size;
 
+  // Only contacts that count as unread under the shared definition
+  // (so archived contacts never show up here either).
   const staleUnreadByContact = new Map<string, string>();
   for (const m of inboundMessages) {
-    if (!m.is_read && m.created_at < oneDayAgo) {
+    if (!m.is_read && unreadContactIds.has(m.contact_id) && m.created_at < oneDayAgo) {
       const existing = staleUnreadByContact.get(m.contact_id);
       if (!existing || m.created_at < existing) {
         staleUnreadByContact.set(m.contact_id, m.created_at);
@@ -189,7 +194,7 @@ export async function getDashboardData(): Promise<DashboardData> {
 
   return {
     newContactsThisWeek,
-    unreadMessages,
+    unreadConversations,
     activitiesDueTodayOrOverdue,
     highInterestCount,
     pipeline,

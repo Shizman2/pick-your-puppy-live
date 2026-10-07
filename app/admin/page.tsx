@@ -2,7 +2,7 @@ import AdminSidebar from "../../components/admin/layout/AdminSidebar";
 import AdminDashboardForm from "../../components/admin/AdminDashboardForm";
 import { getEvent } from "./actions";
 import { getAdminUserEmail } from "../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../lib/unreadCount";
 import "../../components/admin/layout/adminShell.css";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +18,7 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const event = await getEvent();
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   return (
     <AdminSidebar active="pypl" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>

@@ -1,7 +1,7 @@
 import AdminSidebar from "../../../../components/admin/layout/AdminSidebar";
 import ProposalEditor from "../../../../components/admin/puppy-finder/ProposalEditor";
 import { getAdminUserEmail } from "../../../../lib/getAdminUser";
-import { getUnreadMessageCount } from "../../../../lib/unreadCount";
+import { getUnreadConversationCount } from "../../../../lib/unreadCount";
 import { createPuppyFinderReadClient } from "../../../../lib/puppyFinderAccess";
 import type { PuppyFinderOptionRow, PuppyFinderProposalRow } from "../../../../lib/puppyFinderTypes";
 import "../../../../components/admin/layout/adminShell.css";
@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function ProposalEditorPage({ params }: { params: { proposalId: string } }) {
   const admin = createPuppyFinderReadClient();
   const userEmail = await getAdminUserEmail();
-  const unreadMessageCount = await getUnreadMessageCount();
+  const unreadMessageCount = await getUnreadConversationCount();
 
   const { data: proposal } = await admin
     .from("puppy_finder_proposals")
