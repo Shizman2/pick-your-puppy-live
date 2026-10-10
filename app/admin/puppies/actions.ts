@@ -81,6 +81,9 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
       date_of_birth: fields.dateOfBirth || null,
       size: fields.size,
       status: fields.status,
+      // Same rule as updatePuppy: a puppy created already "sold" became
+      // sold now; any other status leaves sold_at null.
+      sold_at: fields.status === "sold" ? new Date().toISOString() : null,
       badge_tag: fields.badgeTag,
       description: fields.description.trim() || null,
       color: fields.color.trim() || null,

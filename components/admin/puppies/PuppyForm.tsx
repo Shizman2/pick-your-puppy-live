@@ -21,44 +21,84 @@ import {
   type PuppyRow,
 } from "../../../lib/puppyTypes";
 
+// Reusable listing fields copied into the New Puppy form when duplicating.
+// Name, status, photos, slug, sold_at, microchip and every id/timestamp are
+// deliberately absent - the duplicate always starts fresh on those.
+export type PuppyDuplicateValues = Pick<
+  PuppyRow,
+  | "breed"
+  | "price_cents"
+  | "sale_price_cents"
+  | "show_on_website"
+  | "gender"
+  | "date_of_birth"
+  | "size"
+  | "badge_tag"
+  | "description"
+  | "color"
+  | "registration"
+  | "vet_checked"
+  | "vaccinated"
+  | "delivery_available"
+  | "is_featured"
+  | "display_order"
+  | "breeder_id"
+  | "cost_cents"
+  | "bundle_cost_cents"
+  | "location"
+>;
+
 interface PuppyFormProps {
   existing?: PuppyRow;
+  // Prefill for a brand-new puppy. Ignored when `existing` is set; never
+  // causes an update - saving still goes through createPuppy.
+  duplicateValues?: PuppyDuplicateValues;
+  cancelHref?: string;
   breeders?: { id: string; name: string }[];
   activeSaleId?: string | null;
   favoritesCount?: number;
 }
 
-export default function PuppyForm({ existing, breeders = [], activeSaleId = null, favoritesCount = 0 }: PuppyFormProps) {
+export default function PuppyForm({
+  existing,
+  duplicateValues,
+  cancelHref,
+  breeders = [],
+  activeSaleId = null,
+  favoritesCount = 0,
+}: PuppyFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const isDuplicate = !existing && !!duplicateValues;
+  const seed: PuppyDuplicateValues | undefined = existing ?? duplicateValues;
 
   const [name, setName] = useState(existing?.name || "");
-  const [breed, setBreed] = useState(existing?.breed || "");
-  const [price, setPrice] = useState(existing ? (existing.price_cents / 100).toString() : "");
-  const [gender, setGender] = useState<PuppyRow["gender"]>(existing?.gender || "male");
-  const [dob, setDob] = useState(existing?.date_of_birth || "");
-  const [size, setSize] = useState<PuppyRow["size"]>(existing?.size || "toy");
+  const [breed, setBreed] = useState(seed?.breed || "");
+  const [price, setPrice] = useState(seed ? (seed.price_cents / 100).toString() : "");
+  const [gender, setGender] = useState<PuppyRow["gender"]>(seed?.gender || "male");
+  const [dob, setDob] = useState(seed?.date_of_birth || "");
+  const [size, setSize] = useState<PuppyRow["size"]>(seed?.size || "toy");
   const [status, setStatus] = useState<PuppyRow["status"]>(existing?.status || "available");
-  const [badgeTag, setBadgeTag] = useState<PuppyRow["badge_tag"]>(existing?.badge_tag || null);
-  const [description, setDescription] = useState(existing?.description || "");
-  const [color, setColor] = useState(existing?.color || "");
-  const [registration, setRegistration] = useState(existing?.registration || "");
+  const [badgeTag, setBadgeTag] = useState<PuppyRow["badge_tag"]>(seed?.badge_tag || null);
+  const [description, setDescription] = useState(seed?.description || "");
+  const [color, setColor] = useState(seed?.color || "");
+  const [registration, setRegistration] = useState(seed?.registration || "");
   const [microchip, setMicrochip] = useState(existing?.microchip || "");
-  const [vetChecked, setVetChecked] = useState(existing?.vet_checked ?? true);
-  const [vaccinated, setVaccinated] = useState(existing?.vaccinated ?? true);
-  const [deliveryAvailable, setDeliveryAvailable] = useState(existing?.delivery_available ?? true);
-  const [isFeatured, setIsFeatured] = useState(existing?.is_featured ?? false);
-  const [displayOrder, setDisplayOrder] = useState(existing?.display_order?.toString() || "0");
+  const [vetChecked, setVetChecked] = useState(seed?.vet_checked ?? true);
+  const [vaccinated, setVaccinated] = useState(seed?.vaccinated ?? true);
+  const [deliveryAvailable, setDeliveryAvailable] = useState(seed?.delivery_available ?? true);
+  const [isFeatured, setIsFeatured] = useState(seed?.is_featured ?? false);
+  const [displayOrder, setDisplayOrder] = useState(seed?.display_order?.toString() || "0");
   const [photoUrls, setPhotoUrls] = useState<string[]>(existing?.photo_urls || []);
-  const [breederId, setBreederId] = useState<string>(existing?.breeder_id || "");
-  const [cost, setCost] = useState(existing ? (existing.cost_cents / 100).toString() : "0");
-  const [bundleCost, setBundleCost] = useState(existing ? (existing.bundle_cost_cents / 100).toString() : "0");
+  const [breederId, setBreederId] = useState<string>(seed?.breeder_id || "");
+  const [cost, setCost] = useState(seed ? (seed.cost_cents / 100).toString() : "0");
+  const [bundleCost, setBundleCost] = useState(seed ? (seed.bundle_cost_cents / 100).toString() : "0");
   const [salePrice, setSalePrice] = useState(
-    existing?.sale_price_cents ? (existing.sale_price_cents / 100).toString() : ""
+    seed?.sale_price_cents ? (seed.sale_price_cents / 100).toString() : ""
   );
-  const [showOnWebsite, setShowOnWebsite] = useState(existing?.show_on_website ?? true);
+  const [showOnWebsite, setShowOnWebsite] = useState(seed?.show_on_website ?? true);
 
-  const existingLocation = existing?.location || "";
+  const existingLocation = seed?.location || "";
   const existingLocationIsKnown = PUPPY_LOCATION_OPTIONS.includes(existingLocation);
   const [locationChoice, setLocationChoice] = useState(
     existingLocation === "" ? "" : existingLocationIsKnown ? existingLocation : "Other"
@@ -114,16 +154,19 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
     };
 
     const result = existing ? await updatePuppy(existing.id, fields) : await createPuppy(fields);
-    setSaving(false);
 
     if (!result.success) {
+      setSaving(false);
       setError(result.error);
       return;
     }
 
     if (!existing) {
+      // Leave the button disabled while navigating so a second tap can't
+      // create another puppy.
       router.push(`/admin/puppies/${result.puppyId}`);
     } else {
+      setSaving(false);
       router.refresh();
     }
   }
@@ -463,10 +506,15 @@ export default function PuppyForm({ existing, breeders = [], activeSaleId = null
         />
       </div>
 
-      <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
         <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>
-          {saving ? "Saving..." : existing ? "Save changes" : "Add puppy"}
+          {saving ? "Saving..." : existing ? "Save changes" : isDuplicate ? "Create Duplicate Listing" : "Add puppy"}
         </button>
+        {cancelHref && !existing && (
+          <Link href={cancelHref} className="admin-btn">
+            Cancel
+          </Link>
+        )}
         {existing && (
           <button type="button" className="admin-btn admin-btn--danger" onClick={handleDelete} disabled={saving}>
             Delete

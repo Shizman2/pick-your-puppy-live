@@ -33,13 +33,22 @@ export default async function EditPuppyPage({ params }: { params: { id: string }
   return (
     <AdminSidebar active="puppies" unreadMessageCount={unreadMessageCount} userEmail={userEmail}>
       <div className="contacts-page">
-        <div className="contacts-page-header">
-          <h1 className="contacts-title">{puppy?.name || "Edit Puppy"}</h1>
-          <p className="contacts-subtitle">
-            <Link href="/admin/puppies" className="contacts-back-link">
-              ← Back to Puppies
+        <div className="contacts-page-header" style={{ flexWrap: "wrap", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ minWidth: 0 }}>
+            <h1 className="contacts-title">{puppy?.name || "Edit Puppy"}</h1>
+            <p className="contacts-subtitle">
+              <Link href="/admin/puppies" className="contacts-back-link">
+                ← Back to Puppies
+              </Link>
+            </p>
+          </div>
+          {puppy && (
+            // Plain navigation - nothing is written until the prefilled
+            // New Puppy form is submitted.
+            <Link href={`/admin/puppies/new?duplicateFrom=${puppy.id}`} className="admin-btn">
+              Duplicate Listing
             </Link>
-          </p>
+          )}
         </div>
 
         {loadError ? (
