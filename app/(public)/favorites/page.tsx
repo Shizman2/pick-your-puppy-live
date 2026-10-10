@@ -1,4 +1,5 @@
 import "../puppies/puppies.css";
+import "../../../components/public-site/puppyCard.css";
 import { getVisitorFavorites } from "../../../lib/favorites";
 import FavoritesGrid from "./FavoritesGrid";
 

@@ -174,13 +174,15 @@ export default function PuppyForm({
   async function handleDelete() {
     if (!existing) return;
     if (!confirm(`Delete ${existing.name}? This can't be undone.`)) return;
+    setError(null);
     setSaving(true);
     const result = await deletePuppy(existing.id);
-    setSaving(false);
     if (!result.success) {
+      setSaving(false);
       setError(result.error);
       return;
     }
+    // Stay disabled while navigating away from the deleted puppy.
     router.push("/admin/puppies");
   }
 
@@ -505,6 +507,14 @@ export default function PuppyForm({
           onChange={(e) => setDisplayOrder(e.target.value)}
         />
       </div>
+
+      {/* Repeated next to the buttons: the form is long, so on a phone the
+          top-of-form error is off screen when Save/Delete fails. */}
+      {error && (
+        <div className="inquire-error" role="alert" style={{ marginTop: 16 }}>
+          {error}
+        </div>
+      )}
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 16 }}>
         <button type="button" className="admin-btn admin-btn--primary" onClick={handleSave} disabled={saving}>

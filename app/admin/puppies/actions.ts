@@ -193,15 +193,67 @@ export async function deletePuppy(puppyId: string): Promise<ActionResult> {
   if (!auth.ok) return { success: false, error: auth.error };
 
   const admin = createAdminClient();
-  const { data: existing } = await admin.from("puppies").select("slug").eq("id", puppyId).maybeSingle();
-  const { error } = await admin.from("puppies").delete().eq("id", puppyId);
+  const { data: existing, error: fetchError } = await admin
+    .from("puppies")
+    .select("name, slug")
+    .eq("id", puppyId)
+    .maybeSingle();
+  if (fetchError) return { success: false, error: fetchError.message };
+  if (!existing) return { success: false, error: "This puppy no longer exists - it may already have been deleted." };
 
-  if (error) return { success: false, error: error.message };
+  // Business history that must never be removed (or silently unlinked) as a
+  // side effect of deleting a listing. The delete is refused instead, whatever
+  // ON DELETE rule the database has for these foreign keys. Favorites and
+  // analytics are not protected (they cascade / set null by design).
+  const protectedRefs = [
+    { table: "sales", column: "puppy_id", label: "sale", plural: "sales" },
+    { table: "generated_documents", column: "puppy_id", label: "document", plural: "documents" },
+    { table: "inquiries", column: "puppy_id", label: "inquiry", plural: "inquiries" },
+    {
+      table: "puppy_finder_options",
+      column: "converted_puppy_id",
+      label: "Puppy Finder option",
+      plural: "Puppy Finder options",
+    },
+  ];
+  const linked: string[] = [];
+  for (const ref of protectedRefs) {
+    const { count, error } = await admin
+      .from(ref.table)
+      .select("id", { count: "exact", head: true })
+      .eq(ref.column, puppyId);
+    if (error) return { success: false, error: `Couldn't check linked ${ref.label} records: ${error.message}` };
+    if (count) linked.push(`${count} ${count === 1 ? ref.label : ref.plural}`);
+  }
+  if (linked.length > 0) {
+    return {
+      success: false,
+      error: `${existing.name} can't be deleted because it has ${linked.join(", ")} linked to it, which are kept as business history. To take it off the website, uncheck "Show on website" and save instead.`,
+    };
+  }
+
+  const { data: deleted, error } = await admin.from("puppies").delete().eq("id", puppyId).select("id");
+
+  if (error) {
+    // 23503 = foreign_key_violation: something else still references this puppy.
+    if (error.code === "23503") {
+      return {
+        success: false,
+        error: `${existing.name} can't be deleted because other records still reference it. To take it off the website, uncheck "Show on website" and save instead.`,
+      };
+    }
+    return { success: false, error: error.message };
+  }
+  if (!deleted || deleted.length === 0) {
+    return { success: false, error: "Nothing was deleted - the puppy may already have been removed. Refresh to check." };
+  }
 
   revalidatePath("/admin/puppies");
+  revalidatePath(`/admin/puppies/${puppyId}`);
+  revalidatePath("/admin/dashboard");
   revalidatePath("/", "layout");
   revalidatePath("/puppies");
-  if (existing?.slug) revalidatePath(`/puppies/${existing.slug}`);
+  if (existing.slug) revalidatePath(`/puppies/${existing.slug}`);
   return { success: true };
 }
 
@@ -257,6 +309,7 @@ export async function uploadPuppyPhoto(puppyId: string, formData: FormData): Pro
   revalidatePath(`/admin/puppies/${puppyId}`);
   revalidatePath("/admin/puppies");
   revalidatePath("/puppies");
+  revalidatePath("/");
   if (puppy?.slug) revalidatePath(`/puppies/${puppy.slug}`);
   return { success: true, url: publicUrl };
 }
@@ -352,6 +405,7 @@ export async function removePuppyPhoto(puppyId: string, url: string): Promise<Ac
   revalidatePath(`/admin/puppies/${puppyId}`);
   revalidatePath("/admin/puppies");
   revalidatePath("/puppies");
+  revalidatePath("/");
   if (puppy?.slug) revalidatePath(`/puppies/${puppy.slug}`);
   return { success: true };
 }

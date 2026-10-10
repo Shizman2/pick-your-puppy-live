@@ -18,13 +18,13 @@ export interface HomepagePuppy {
   location: string | null;
 }
 
+export const HOMEPAGE_PUPPY_LIMIT = 12;
+
 /**
- * Same filter/order as /api/public-puppies (show_on_website = true,
- * ordered by display_order then name), trimmed to the fields the
- * homepage's featured strip actually renders, and capped at 4 to
- * match the current live site. Visibility is controlled entirely by
- * show_on_website - status (including "sold") only changes the badge
- * shown on the card, never whether the puppy is listed.
+ * Homepage "Available Puppies" grid: show_on_website = true, is_featured =
+ * true (admin "Featured on homepage") and not sold, ordered by display_order
+ * then name (same order as /puppies), capped at HOMEPAGE_PUPPY_LIMIT.
+ * Unfeatured or sold puppies stay on /puppies, which ignores is_featured.
  */
 export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
   const admin = createAdminClient();
@@ -35,9 +35,11 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
       "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order, location"
     )
     .eq("show_on_website", true)
+    .eq("is_featured", true)
+    .neq("status", "sold")
     .order("display_order", { ascending: true })
     .order("name", { ascending: true })
-    .limit(4);
+    .limit(HOMEPAGE_PUPPY_LIMIT);
 
   if (error || !data) return [];
 
