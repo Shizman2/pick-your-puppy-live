@@ -1,7 +1,8 @@
 import "./puppies.css";
 import "../../../components/public-site/shareButtons.css";
-import { getAllVisiblePuppiesForCards } from "../../../lib/public-data/puppies";
+import { getActivePuppiesForCards, getRecentlySoldPuppiesForCards } from "../../../lib/public-data/puppies";
 import PuppyGrid from "./PuppyGrid";
+import RecentlySoldSection from "../../../components/public-site/RecentlySoldSection";
 import ShareButtons from "../../../components/public-site/ShareButtons";
 import TrackedLink from "../../../components/public/TrackedLink";
 
@@ -12,13 +13,16 @@ export const metadata = {
 };
 
 export default async function PuppiesPage() {
-  const puppies = await getAllVisiblePuppiesForCards();
+  // Sold puppies never enter the active grid (or its search/filters/count);
+  // they appear only in Recently Found Their Homes below it.
+  const [puppies, soldPuppies] = await Promise.all([getActivePuppiesForCards(), getRecentlySoldPuppiesForCards()]);
 
   return (
     <>
       <div className="page-title">Available Puppies 🐾</div>
       <div className="page-sub">All puppies are vet-checked, vaccinated, and ready for their forever home.</div>
       <PuppyGrid puppies={puppies} />
+      <RecentlySoldSection puppies={soldPuppies} />
       <TrackedLink
         href="/puppy-finder"
         className="finder-banner-link"

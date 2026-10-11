@@ -642,3 +642,61 @@
   font-size: 18px;
   line-height: 1;
 }
+
+/* Sold detail page: dim the main photo and label it (PuppyGallery `sold`). */
+.main-photo-sold-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  border-radius: var(--pp-radius);
+  background: rgba(17, 24, 39, 0.42);
+  color: #fff;
+  text-align: center;
+  font-size: clamp(22px, 7vw, 28px);
+  font-weight: 900;
+  line-height: 1.2;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+/* Sold detail page: replaces Call the Seller / I'm Interested. */
+.sold-detail-cta {
+  margin: 20px 20px 0;
+  padding: 20px 18px;
+  border-radius: var(--pp-radius);
+  background: #fff1f5;
+  text-align: center;
+}
+.sold-detail-cta-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.3;
+  color: var(--pp-text);
+}
+.sold-detail-cta-text {
+  margin: 8px 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--pp-muted);
+}
+/* Two classes so it beats ".pp-body a { color: inherit }" from the shell. */
+.sold-detail-cta .sold-detail-cta-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 48px;
+  padding: 13px 20px;
+  border-radius: 50px;
+  background: var(--pp-blue);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  text-decoration: none;
+}

@@ -6,10 +6,13 @@ export default function PuppyGallery({
   photos,
   alt,
   location,
+  sold = false,
 }: {
   photos: string[];
   alt: string;
   location?: string | null;
+  // Sold puppies: dim the main photo and label it "Found My Forever Home!".
+  sold?: boolean;
 }) {
   const [active, setActive] = useState(0);
   const shown = photos.length > 0 ? photos : [""];
@@ -21,6 +24,15 @@ export default function PuppyGallery({
         <img src={shown[active]} alt={alt} />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img className="main-photo-watermark" src="/watermark-logo.png" alt="" />
+        {sold && (
+          <div className="main-photo-sold-overlay">
+            <span>
+              Found My
+              <br />
+              Forever Home! ❤️
+            </span>
+          </div>
+        )}
         {location && (
           <span className="main-photo-location">
             <svg viewBox="0 0 24 24" width="12" height="12" fill="none">

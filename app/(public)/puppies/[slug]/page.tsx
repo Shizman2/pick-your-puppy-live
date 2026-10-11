@@ -56,6 +56,9 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   const statusLabel = STATUS_DISPLAY_LABEL[puppy.status];
   const statusColor = STATUS_COLOR[puppy.status] || STATUS_COLOR.available;
   const puppyName = puppy.name || puppy.breed;
+  // Sold puppies keep this URL and their info, but lose price, location and
+  // every buy/contact action for this puppy (see the sold CTA below).
+  const isSold = puppy.status === "sold";
 
   return (
     <>
@@ -67,7 +70,12 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         ← Back to Puppies
       </a>
 
-      <PuppyGallery photos={puppy.photo_urls || []} alt={puppyName} location={puppy.location} />
+      <PuppyGallery
+        photos={puppy.photo_urls || []}
+        alt={puppyName}
+        location={isSold ? null : puppy.location}
+        sold={isSold}
+      />
 
       <div className="detail-info">
         <div className="detail-header">
@@ -75,18 +83,20 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
             <div className="detail-name">{puppyName}</div>
             <div className="detail-breed">{puppy.breed}</div>
           </div>
-          <div className="detail-price">
-            {puppy.sale_price_cents ? (
-              <>
-                <span style={{ textDecoration: "line-through", color: "#9CA3AF", fontWeight: 700, fontSize: 15, marginRight: 6 }}>
-                  {formatPriceFromCents(puppy.price_cents)}
-                </span>
-                {formatPriceFromCents(puppy.sale_price_cents)}
-              </>
-            ) : (
-              formatPriceFromCents(puppy.price_cents)
-            )}
-          </div>
+          {!isSold && (
+            <div className="detail-price">
+              {puppy.sale_price_cents ? (
+                <>
+                  <span style={{ textDecoration: "line-through", color: "#9CA3AF", fontWeight: 700, fontSize: 15, marginRight: 6 }}>
+                    {formatPriceFromCents(puppy.price_cents)}
+                  </span>
+                  {formatPriceFromCents(puppy.sale_price_cents)}
+                </>
+              ) : (
+                formatPriceFromCents(puppy.price_cents)
+              )}
+            </div>
+          )}
         </div>
 
         <div className="detail-favorite-row">
@@ -95,9 +105,11 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         </div>
 
         <div className="badge-row">
-          <span className="badge pp-status" style={{ background: statusColor }}>
-            {statusLabel}
-          </span>
+          {!isSold && (
+            <span className="badge pp-status" style={{ background: statusColor }}>
+              {statusLabel}
+            </span>
+          )}
           {puppy.vet_checked && <span className="badge">✅ Vet Checked</span>}
           {puppy.vaccinated && <span className="badge">💉 Vaccinated</span>}
           {puppy.delivery_available && <span className="badge">🚚 Delivery Available</span>}
@@ -135,11 +147,23 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
 
-      <div className="detail-cta">
-        <CallSellerButton phone={sellerPhone} puppyId={puppy.id} />
+      {isSold ? (
+        <div className="sold-detail-cta">
+          <h2 className="sold-detail-cta-title">❤️ This Puppy Has Found Their Home</h2>
+          <p className="sold-detail-cta-text">
+            This puppy is no longer available, but we may have another puppy that&apos;s right for you.
+          </p>
+          <a className="sold-detail-cta-btn" href="/puppies">
+            See Available Puppies
+          </a>
+        </div>
+      ) : (
+        <div className="detail-cta">
+          <CallSellerButton phone={sellerPhone} puppyId={puppy.id} />
 
-        <PuppyQuestionForm puppyId={puppy.id} puppyName={puppyName} breed={puppy.breed} slug={puppy.slug} />
-      </div>
+          <PuppyQuestionForm puppyId={puppy.id} puppyName={puppyName} breed={puppy.breed} slug={puppy.slug} />
+        </div>
+      )}
 
       <ShareButtons
         heading="Share This Puppy"

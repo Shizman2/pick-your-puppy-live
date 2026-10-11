@@ -18,11 +18,28 @@ export async function getAllVisiblePuppies(): Promise<PuppyRow[]> {
   return data as PuppyRow[];
 }
 
-/** Same list, mapped down to the lighter card shape used by both the grid and homepage. */
-export async function getAllVisiblePuppiesForCards(): Promise<HomepagePuppy[]> {
-  const rows = await getAllVisiblePuppies();
+/** Active inventory for the /puppies grid: every visible puppy except sold ones, as cards. */
+export async function getActivePuppiesForCards(): Promise<HomepagePuppy[]> {
+  const rows = (await getAllVisiblePuppies()).filter((r) => r.status !== "sold");
   const favoritesCounts = await getFavoriteCounts(rows.map((r) => r.id));
   return rows.map((row) => mapPuppyRowToCard(row, favoritesCounts[row.id] || 0));
+}
+
+export const RECENTLY_SOLD_LIMIT = 6;
+
+/** "Recently Found Their Homes" on /puppies: visible sold puppies, most recently sold first. */
+export async function getRecentlySoldPuppiesForCards(): Promise<HomepagePuppy[]> {
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("puppies")
+    .select("*")
+    .eq("show_on_website", true)
+    .eq("status", "sold")
+    .order("sold_at", { ascending: false, nullsFirst: false })
+    .limit(RECENTLY_SOLD_LIMIT);
+
+  if (error || !data) return [];
+  return (data as PuppyRow[]).map((row) => mapPuppyRowToCard(row));
 }
 
 export function mapPuppyRowToCard(row: PuppyRow, favoritesCount = 0): HomepagePuppy {
