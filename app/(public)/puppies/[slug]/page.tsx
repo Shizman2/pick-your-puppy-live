@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import "./detail.css";
 import "../../../../components/public-site/shareButtons.css";
-import { getPuppyBySlug } from "../../../../lib/public-data/puppies";
+import { getPuppyBySlug, isActiveSpotlight } from "../../../../lib/public-data/puppies";
 import { getFavoriteCount } from "../../../../lib/favorites";
 import { getSellerPhoneNumber } from "../../../../lib/content";
 import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
@@ -13,6 +13,7 @@ import BreedProfileSection from "../../../../components/public/BreedProfileSecti
 import PuppyGallery from "./PuppyGallery";
 import PuppyQuestionForm from "./PuppyQuestionForm";
 import CallSellerButton from "./CallSellerButton";
+import MeetTheParents from "./MeetTheParents";
 import ShareButtons from "../../../../components/public-site/ShareButtons";
 import BundleSection from "../../../../components/public-site/BundleSection";
 import PlacementSlot from "../../../../components/public-site/PlacementSlot";
@@ -67,6 +68,8 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   // every buy/contact action for this puppy (see the sold CTA below).
   const isSold = puppy.status === "sold";
   const badgeTag = isSold ? null : marketingBadge(puppy.badge_tag);
+  // Active Special Opportunity: show its special price, not just the normal one.
+  const specialPriceCents = isActiveSpotlight(puppy) ? (puppy.spotlight_price_cents as number) : null;
 
   return (
     <>
@@ -91,7 +94,14 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
             <div className="detail-name">{puppyName}</div>
             <div className="detail-breed">{puppy.breed}</div>
           </div>
-          {!isSold && (
+          {!isSold && specialPriceCents !== null && (
+            <div className="detail-price detail-price--special">
+              <span className="detail-price-was">{formatPriceFromCents(puppy.sale_price_cents || puppy.price_cents)}</span>
+              <span className="detail-price-special">{formatPriceFromCents(specialPriceCents)}</span>
+              <span className="detail-price-special-label">Special Price</span>
+            </div>
+          )}
+          {!isSold && specialPriceCents === null && (
             <div className="detail-price">
               {puppy.sale_price_cents ? (
                 <>
@@ -156,6 +166,8 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
       </div>
 
       <BreedProfileSection breed={breedProfile} />
+
+      <MeetTheParents motherUrl={puppy.mother_photo_url} fatherUrl={puppy.father_photo_url} />
 
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />

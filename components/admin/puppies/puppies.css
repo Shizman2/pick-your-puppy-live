@@ -137,40 +137,176 @@
 }
 
 .puppy-photo-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
   gap: 10px;
   margin-bottom: 12px;
 }
 
 .puppy-photo-thumb {
   position: relative;
-  width: 80px;
-  height: 80px;
+  aspect-ratio: 1 / 1;
   border-radius: 10px;
   overflow: hidden;
   border: 1px solid #e5e7eb;
+  background: #f3f4f6;
+}
+
+.puppy-photo-thumb.is-dragging {
+  z-index: 5;
+  opacity: 0.85;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .puppy-photo-thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* First photo = cover (photo_urls[0], used on every card). */
+.puppy-photo-cover {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #1b7bff;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Drag handle: touch-action none so a touch drag moves the photo instead
+   of scrolling; the rest of the tile still scrolls the page normally. */
+.puppy-photo-handle {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #374151;
+  font-size: 18px;
+  line-height: 1;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+.puppy-photo-handle:active {
+  cursor: grabbing;
 }
 
 .puppy-photo-remove {
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 4px;
+  right: 4px;
   background: rgba(0, 0, 0, 0.6);
   color: #fff;
   border: none;
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
   cursor: pointer;
   line-height: 1;
+}
+
+.puppy-photo-handle:disabled,
+.puppy-photo-remove:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.puppy-photo-upload-btn,
+.parent-photo-slot__actions .admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+.puppy-photo-upload-btn.is-disabled,
+.parent-photo-slot__actions .admin-btn.is-disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Parent Photos: two fixed slots, never sortable. */
+.parent-photo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.parent-photo-slot {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+}
+
+.parent-photo-slot--mother {
+  background: #fdf2f8;
+}
+
+.parent-photo-slot--father {
+  background: #eff6ff;
+}
+
+.parent-photo-slot__label {
+  font-size: 14px;
+  font-weight: 800;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.parent-photo-slot__preview {
+  aspect-ratio: 1 / 1;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px dashed #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9ca3af;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.parent-photo-slot__preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.parent-photo-slot__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.parent-photo-slot__actions .admin-btn {
+  flex: 1;
+  min-width: 0;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .puppy-checkbox-row {
@@ -181,4 +317,22 @@
   font-weight: 600;
   color: #374151;
   margin-bottom: 8px;
+}
+
+/* Puppy Spotlight / Special Opportunity section in the puppy form. */
+.spotlight-admin {
+  margin: 16px 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #f5d77a;
+  background: #fffbeb;
+}
+
+.spotlight-admin__title {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #92400e;
+  margin-bottom: 10px;
 }

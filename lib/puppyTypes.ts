@@ -24,6 +24,15 @@ export interface PuppyRow {
   registration: string | null;
   microchip: string | null;
   photo_urls: string[];
+  // Optional single Mom / Dad photos (migration 037) - never part of photo_urls.
+  mother_photo_url?: string | null;
+  father_photo_url?: string | null;
+  // Puppy Spotlight / Special Opportunity (migration 038). Separate from
+  // price_cents and sale_price_cents, which it never overwrites.
+  is_spotlight?: boolean;
+  spotlight_price_cents?: number | null;
+  spotlight_headline?: string | null;
+  spotlight_message?: string | null;
   vet_checked: boolean;
   vaccinated: boolean;
   delivery_available: boolean;

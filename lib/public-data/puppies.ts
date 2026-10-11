@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
 import { marketingBadge, type PuppyRow } from "../puppyTypes";
-import type { HomepagePuppy } from "./homepage";
+import type { HomepagePuppy, SpotlightPuppy } from "./homepage";
 import { getFavoriteCounts } from "../favorites";
 
 /** Full list for the /puppies grid — same show_on_website filter as the public API. Status (including "sold") only affects the badge, not inclusion. */
@@ -18,11 +18,32 @@ export async function getAllVisiblePuppies(): Promise<PuppyRow[]> {
   return data as PuppyRow[];
 }
 
-/** Active inventory for the /puppies grid: every visible puppy except sold ones, as cards. */
-export async function getActivePuppiesForCards(): Promise<HomepagePuppy[]> {
+/** True when this row is publicly shown as the Special Opportunity. */
+export function isActiveSpotlight(row: PuppyRow): boolean {
+  return !!row.is_spotlight && !!row.spotlight_price_cents && row.show_on_website && row.status !== "sold";
+}
+
+/**
+ * Active inventory for /puppies: every visible puppy except sold ones. The
+ * active Special Opportunity (at most one) is split out of the normal cards
+ * so it is never shown twice; turning it off simply puts it back here.
+ */
+export async function getActivePuppiesForCards(): Promise<{ puppies: HomepagePuppy[]; spotlight: SpotlightPuppy | null }> {
   const rows = (await getAllVisiblePuppies()).filter((r) => r.status !== "sold");
   const favoritesCounts = await getFavoriteCounts(rows.map((r) => r.id));
-  return rows.map((row) => mapPuppyRowToCard(row, favoritesCounts[row.id] || 0));
+  const spotlightRow = rows.find(isActiveSpotlight) || null;
+  const puppies = rows
+    .filter((row) => row !== spotlightRow)
+    .map((row) => mapPuppyRowToCard(row, favoritesCounts[row.id] || 0));
+  const spotlight: SpotlightPuppy | null = spotlightRow
+    ? {
+        ...mapPuppyRowToCard(spotlightRow, favoritesCounts[spotlightRow.id] || 0),
+        specialPriceCents: spotlightRow.spotlight_price_cents as number,
+        headline: spotlightRow.spotlight_headline?.trim() || null,
+        message: spotlightRow.spotlight_message?.trim() || null,
+      }
+    : null;
+  return { puppies, spotlight };
 }
 
 export const RECENTLY_SOLD_LIMIT = 6;

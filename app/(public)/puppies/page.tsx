@@ -15,13 +15,16 @@ export const metadata = {
 export default async function PuppiesPage() {
   // Sold puppies never enter the active grid (or its search/filters/count);
   // they appear only in Recently Found Their Homes below it.
-  const [puppies, soldPuppies] = await Promise.all([getActivePuppiesForCards(), getRecentlySoldPuppiesForCards()]);
+  const [{ puppies, spotlight }, soldPuppies] = await Promise.all([
+    getActivePuppiesForCards(),
+    getRecentlySoldPuppiesForCards(),
+  ]);
 
   return (
     <>
       <div className="page-title">Available Puppies 🐾</div>
       <div className="page-sub">All puppies are vet-checked, vaccinated, and ready for their forever home.</div>
-      <PuppyGrid puppies={puppies} />
+      <PuppyGrid puppies={puppies} spotlight={spotlight} />
       <RecentlySoldSection puppies={soldPuppies} />
       <TrackedLink
         href="/puppy-finder"

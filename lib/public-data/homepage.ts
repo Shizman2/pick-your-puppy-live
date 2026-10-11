@@ -19,6 +19,13 @@ export interface HomepagePuppy {
   badgeTag: MarketingBadgeTag | null;
 }
 
+/** The active Special Opportunity on /puppies: a card puppy plus its special offer. */
+export interface SpotlightPuppy extends HomepagePuppy {
+  specialPriceCents: number;
+  headline: string | null;
+  message: string | null;
+}
+
 export const HOMEPAGE_PUPPY_LIMIT = 12;
 
 /**

@@ -1,14 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   createPuppy,
   updatePuppy,
   deletePuppy,
-  uploadPuppyPhoto,
-  removePuppyPhoto,
   type PuppyFormFields,
 } from "../../../app/admin/puppies/actions";
 import {
@@ -21,6 +19,8 @@ import {
   PUPPY_LOCATION_OPTIONS,
   type PuppyRow,
 } from "../../../lib/puppyTypes";
+import PuppyPhotosManager from "./PuppyPhotosManager";
+import ParentPhotosField from "./ParentPhotosField";
 
 // Reusable listing fields copied into the New Puppy form when duplicating.
 // Name, status, photos, slug, sold_at, microchip and every id/timestamp are
@@ -69,7 +69,6 @@ export default function PuppyForm({
   favoritesCount = 0,
 }: PuppyFormProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const isDuplicate = !existing && !!duplicateValues;
   const seed: PuppyDuplicateValues | undefined = existing ?? duplicateValues;
 
@@ -90,7 +89,6 @@ export default function PuppyForm({
   const [deliveryAvailable, setDeliveryAvailable] = useState(seed?.delivery_available ?? true);
   const [isFeatured, setIsFeatured] = useState(seed?.is_featured ?? false);
   const [displayOrder, setDisplayOrder] = useState(seed?.display_order?.toString() || "0");
-  const [photoUrls, setPhotoUrls] = useState<string[]>(existing?.photo_urls || []);
   const [breederId, setBreederId] = useState<string>(seed?.breeder_id || "");
   const [cost, setCost] = useState(seed ? (seed.cost_cents / 100).toString() : "0");
   const [bundleCost, setBundleCost] = useState(seed ? (seed.bundle_cost_cents / 100).toString() : "0");
@@ -98,6 +96,13 @@ export default function PuppyForm({
     seed?.sale_price_cents ? (seed.sale_price_cents / 100).toString() : ""
   );
   const [showOnWebsite, setShowOnWebsite] = useState(seed?.show_on_website ?? true);
+  // Spotlight comes only from an existing puppy, never from Duplicate Listing.
+  const [isSpotlight, setIsSpotlight] = useState(existing?.is_spotlight ?? false);
+  const [spotlightPrice, setSpotlightPrice] = useState(
+    existing?.spotlight_price_cents ? (existing.spotlight_price_cents / 100).toString() : ""
+  );
+  const [spotlightHeadline, setSpotlightHeadline] = useState(existing?.spotlight_headline || "");
+  const [spotlightMessage, setSpotlightMessage] = useState(existing?.spotlight_message || "");
 
   const existingLocation = seed?.location || "";
   const existingLocationIsKnown = PUPPY_LOCATION_OPTIONS.includes(existingLocation);
@@ -107,7 +112,6 @@ export default function PuppyForm({
   const [customLocation, setCustomLocation] = useState(existingLocationIsKnown ? "" : existingLocation);
 
   const [saving, setSaving] = useState(false);
-  const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSave() {
@@ -119,6 +123,12 @@ export default function PuppyForm({
     const priceNum = parseFloat(price);
     if (isNaN(priceNum) || priceNum < 0) {
       setError("Enter a valid price.");
+      return;
+    }
+
+    const spotlightPriceNum = parseFloat(spotlightPrice);
+    if (isSpotlight && (isNaN(spotlightPriceNum) || spotlightPriceNum <= 0)) {
+      setError("Enter a Special Price to feature this puppy as a Special Opportunity.");
       return;
     }
 
@@ -152,6 +162,10 @@ export default function PuppyForm({
           : locationChoice === "Other"
           ? customLocation.trim() || null
           : locationChoice,
+      isSpotlight,
+      spotlightPriceCents: spotlightPrice.trim() && !isNaN(spotlightPriceNum) ? Math.round(spotlightPriceNum * 100) : null,
+      spotlightHeadline,
+      spotlightMessage,
     };
 
     const result = existing ? await updatePuppy(existing.id, fields) : await createPuppy(fields);
@@ -187,40 +201,6 @@ export default function PuppyForm({
     router.push("/admin/puppies");
   }
 
-  async function handlePhotoUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file || !existing) return;
-
-    const maxBytes = 8 * 1024 * 1024; // 8MB - leaves headroom under the 10MB server limit
-    if (file.size > maxBytes) {
-      setError(
-        `That photo is ${(file.size / 1024 / 1024).toFixed(1)}MB - please use one under 8MB.`
-      );
-      if (fileInputRef.current) fileInputRef.current.value = "";
-      return;
-    }
-
-    setUploadingPhoto(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    const result = await uploadPuppyPhoto(existing.id, formData);
-    setUploadingPhoto(false);
-
-    if (!result.success) {
-      setError(result.error);
-      return;
-    }
-    setPhotoUrls((prev) => [...prev, result.url]);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-  }
-
-  async function handlePhotoRemove(url: string) {
-    if (!existing) return;
-    setPhotoUrls((prev) => prev.filter((u) => u !== url));
-    await removePuppyPhoto(existing.id, url);
-    router.refresh();
-  }
-
   return (
     <div className="profile-card" style={{ maxWidth: 560 }}>
       {error && <div className="inquire-error">{error}</div>}
@@ -231,23 +211,13 @@ export default function PuppyForm({
         </p>
       )}
 
+      {existing && <PuppyPhotosManager puppyId={existing.id} initialUrls={existing.photo_urls || []} alt={name} />}
       {existing && (
-        <div className="admin-field">
-          <label className="admin-field__label">Photos</label>
-          <div className="puppy-photo-grid">
-            {photoUrls.map((url) => (
-              <div key={url} className="puppy-photo-thumb">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={url} alt={name} />
-                <button type="button" className="puppy-photo-remove" onClick={() => handlePhotoRemove(url)}>
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploadingPhoto} />
-          {uploadingPhoto && <p className="admin-hint">Uploading...</p>}
-        </div>
+        <ParentPhotosField
+          puppyId={existing.id}
+          motherUrl={existing.mother_photo_url ?? null}
+          fatherUrl={existing.father_photo_url ?? null}
+        />
       )}
       {!existing && (
         <p className="admin-hint" style={{ marginBottom: 14 }}>
@@ -485,6 +455,53 @@ export default function PuppyForm({
             ).toLocaleString()}
           </span>
         </div>
+      </div>
+
+      <div className="spotlight-admin">
+        <div className="spotlight-admin__title">Puppy Spotlight</div>
+        <label className="puppy-checkbox-row" style={{ marginBottom: 0 }}>
+          <input type="checkbox" checked={isSpotlight} onChange={(e) => setIsSpotlight(e.target.checked)} />
+          Feature as Special Opportunity
+        </label>
+        {isSpotlight && (
+          <>
+            <p className="admin-hint" style={{ margin: "8px 0 12px" }}>
+              Shown as the full-width Special Opportunity on /puppies instead of a normal card. Only one puppy can be
+              featured at a time. The normal price above is not changed.
+              {status === "sold" && " Sold puppies can't be featured - this will turn off when saved."}
+            </p>
+            <div className="puppy-form-row">
+              <div className="admin-field">
+                <label className="admin-field__label">Special Price ($, required)</label>
+                <input
+                  className="admin-input"
+                  type="number"
+                  placeholder="e.g. 500"
+                  value={spotlightPrice}
+                  onChange={(e) => setSpotlightPrice(e.target.value)}
+                />
+              </div>
+              <div className="admin-field">
+                <label className="admin-field__label">Special Headline (optional)</label>
+                <input
+                  className="admin-input"
+                  placeholder="Special Opportunity"
+                  value={spotlightHeadline}
+                  onChange={(e) => setSpotlightHeadline(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="admin-field" style={{ marginBottom: 0 }}>
+              <label className="admin-field__label">Special Message (optional)</label>
+              <textarea
+                className="admin-textarea"
+                placeholder={`Special pricing for the right family. ${name.trim() || "This puppy"} is available at a special price for a limited time.`}
+                value={spotlightMessage}
+                onChange={(e) => setSpotlightMessage(e.target.value)}
+              />
+            </div>
+          </>
+        )}
       </div>
 
       <div className="admin-field">

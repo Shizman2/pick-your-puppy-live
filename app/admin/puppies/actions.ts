@@ -57,6 +57,51 @@ export interface PuppyFormFields {
   salePriceCents: number | null;
   showOnWebsite: boolean;
   location: string | null;
+  isSpotlight: boolean;
+  spotlightPriceCents: number | null;
+  spotlightHeadline: string;
+  spotlightMessage: string;
+}
+
+// Puppy Spotlight rules shared by create/update: a special price is required,
+// a sold puppy can never stay spotlighted, and only ONE puppy may be the
+// Special Opportunity at a time (also enforced by a unique index, migration 038).
+async function spotlightColumns(
+  admin: ReturnType<typeof createAdminClient>,
+  fields: PuppyFormFields,
+  puppyId?: string
+): Promise<{ ok: true; columns: Record<string, unknown> } | { ok: false; error: string }> {
+  const isSpotlight = fields.isSpotlight && fields.status !== "sold";
+  if (isSpotlight) {
+    if (!fields.spotlightPriceCents || fields.spotlightPriceCents <= 0) {
+      return { ok: false, error: "Enter a Special Price to feature this puppy as a Special Opportunity." };
+    }
+    let query = admin.from("puppies").select("id, name").eq("is_spotlight", true).limit(1);
+    if (puppyId) query = query.neq("id", puppyId);
+    const { data: other, error } = await query.maybeSingle();
+    if (error) return { ok: false, error: error.message };
+    if (other) {
+      return {
+        ok: false,
+        error: `${other.name} is already the Special Opportunity. Turn it off on ${other.name}'s listing first - only one puppy can be featured at a time.`,
+      };
+    }
+  }
+  return {
+    ok: true,
+    columns: {
+      is_spotlight: isSpotlight,
+      spotlight_price_cents: fields.spotlightPriceCents,
+      spotlight_headline: fields.spotlightHeadline.trim() || null,
+      spotlight_message: fields.spotlightMessage.trim() || null,
+    },
+  };
+}
+
+function spotlightConflictMessage(error: { code?: string; message: string }): string {
+  return error.code === "23505" && error.message.includes("spotlight")
+    ? "Another puppy is already the Special Opportunity - only one can be featured at a time."
+    : error.message;
 }
 
 export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyResult> {
@@ -68,6 +113,8 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
   }
 
   const admin = createAdminClient();
+  const spotlight = await spotlightColumns(admin, fields);
+  if (!spotlight.ok) return { success: false, error: spotlight.error };
   const slug = await uniqueSlug(admin, fields.name, fields.breed);
 
   const { data, error } = await admin
@@ -100,11 +147,12 @@ export async function createPuppy(fields: PuppyFormFields): Promise<SavePuppyRes
       sale_price_cents: fields.salePriceCents,
       show_on_website: fields.showOnWebsite,
       location: fields.location,
+      ...spotlight.columns,
     })
     .select("id")
     .single();
 
-  if (error) return { success: false, error: error.message };
+  if (error) return { success: false, error: spotlightConflictMessage(error) };
 
   revalidatePath("/admin/puppies");
   revalidatePath("/", "layout");
@@ -121,6 +169,8 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
   }
 
   const admin = createAdminClient();
+  const spotlight = await spotlightColumns(admin, fields, puppyId);
+  if (!spotlight.ok) return { success: false, error: spotlight.error };
 
   const { data: existing } = await admin
     .from("puppies")
@@ -173,10 +223,11 @@ export async function updatePuppy(puppyId: string, fields: PuppyFormFields): Pro
       sale_price_cents: fields.salePriceCents,
       show_on_website: fields.showOnWebsite,
       location: fields.location,
+      ...spotlight.columns,
     })
     .eq("id", puppyId);
 
-  if (error) return { success: false, error: error.message };
+  if (error) return { success: false, error: spotlightConflictMessage(error) };
 
   revalidatePath("/admin/puppies");
   revalidatePath(`/admin/puppies/${puppyId}`);
@@ -407,5 +458,155 @@ export async function removePuppyPhoto(puppyId: string, url: string): Promise<Ac
   revalidatePath("/puppies");
   revalidatePath("/");
   if (puppy?.slug) revalidatePath(`/puppies/${puppy.slug}`);
+  return { success: true };
+}
+
+function revalidatePuppyPhotoPaths(puppyId: string, slug?: string | null) {
+  revalidatePath(`/admin/puppies/${puppyId}`);
+  revalidatePath("/admin/puppies");
+  revalidatePath("/puppies");
+  revalidatePath("/");
+  if (slug) revalidatePath(`/puppies/${slug}`);
+}
+
+/**
+ * Saves a new display order for a puppy's photos. photo_urls order is the
+ * source of truth everywhere (photo_urls[0] is the cover/card image), so
+ * this just rewrites the array - but only if it holds exactly the same
+ * photos as the saved row, so a stale tab can't drop or resurrect photos.
+ */
+export async function reorderPuppyPhotos(puppyId: string, orderedUrls: string[]): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+
+  const admin = createAdminClient();
+  const { data: puppy, error: fetchError } = await admin
+    .from("puppies")
+    .select("photo_urls, slug")
+    .eq("id", puppyId)
+    .maybeSingle();
+  if (fetchError) return { success: false, error: fetchError.message };
+  if (!puppy) return { success: false, error: "Puppy not found." };
+
+  const current = ((puppy.photo_urls as string[]) || []).slice().sort();
+  const proposed = orderedUrls.slice().sort();
+  if (current.length !== proposed.length || current.some((u, i) => u !== proposed[i])) {
+    return { success: false, error: "The photos changed since this page loaded. Refresh and try again." };
+  }
+
+  const { error } = await admin.from("puppies").update({ photo_urls: orderedUrls }).eq("id", puppyId);
+  if (error) return { success: false, error: error.message };
+
+  revalidatePuppyPhotoPaths(puppyId, puppy.slug);
+  return { success: true };
+}
+
+export type ParentPhotoSlot = "mother" | "father";
+const PARENT_PHOTO_COLUMN: Record<ParentPhotoSlot, "mother_photo_url" | "father_photo_url"> = {
+  mother: "mother_photo_url",
+  father: "father_photo_url",
+};
+
+// Storage path of a parent photo this puppy owns, or null for anything else
+// (so a URL that isn't ours is never deleted).
+function ownedParentPhotoPath(puppyId: string, url: string | null): string | null {
+  if (!url) return null;
+  const marker = "/object/public/puppy-photos/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  const path = decodeURIComponent(url.slice(idx + marker.length));
+  return path.startsWith(`puppies/${puppyId}/parents/`) ? path : null;
+}
+
+/**
+ * Uploads (or replaces) the single Mom or Dad photo. Kept out of
+ * photo_urls entirely. Replace order is new file -> save URL -> delete the
+ * old file, so a failure part-way never leaves the slot empty.
+ */
+export async function uploadParentPhoto(
+  puppyId: string,
+  slot: ParentPhotoSlot,
+  formData: FormData
+): Promise<UploadPhotoResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+  const column = PARENT_PHOTO_COLUMN[slot];
+  if (!column) return { success: false, error: "Unknown parent." };
+
+  const file = formData.get("file") as File | null;
+  if (!file) return { success: false, error: "No file provided." };
+
+  const admin = createAdminClient();
+  const { data: puppy, error: fetchError } = await admin
+    .from("puppies")
+    .select(`slug, ${column}`)
+    .eq("id", puppyId)
+    .maybeSingle();
+  if (fetchError) return { success: false, error: fetchError.message };
+  if (!puppy) return { success: false, error: "Puppy not found." };
+  const oldUrl = (puppy as Record<string, string | null>)[column] ?? null;
+
+  let processedBuffer: Buffer;
+  let contentType: string;
+  try {
+    const result = await resizeImageForWeb(Buffer.from(await file.arrayBuffer()));
+    processedBuffer = result.buffer;
+    contentType = result.contentType;
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? `Image processing failed: ${err.message}` : "Image processing failed." };
+  }
+
+  const filePath = `puppies/${puppyId}/parents/${slot}-${crypto.randomUUID()}.jpg`;
+  const { error: uploadError } = await admin.storage
+    .from("puppy-photos")
+    .upload(filePath, processedBuffer, { contentType });
+  if (uploadError) return { success: false, error: uploadError.message };
+
+  const {
+    data: { publicUrl },
+  } = admin.storage.from("puppy-photos").getPublicUrl(filePath);
+
+  const { error: updateError } = await admin
+    .from("puppies")
+    .update({ [column]: publicUrl })
+    .eq("id", puppyId);
+  if (updateError) {
+    await admin.storage.from("puppy-photos").remove([filePath]);
+    return { success: false, error: updateError.message };
+  }
+
+  const oldPath = ownedParentPhotoPath(puppyId, oldUrl);
+  if (oldPath) await admin.storage.from("puppy-photos").remove([oldPath]);
+
+  revalidatePuppyPhotoPaths(puppyId, (puppy as { slug?: string }).slug);
+  return { success: true, url: publicUrl };
+}
+
+export async function removeParentPhoto(puppyId: string, slot: ParentPhotoSlot): Promise<ActionResult> {
+  const auth = await requireAdminUser();
+  if (!auth.ok) return { success: false, error: auth.error };
+  const column = PARENT_PHOTO_COLUMN[slot];
+  if (!column) return { success: false, error: "Unknown parent." };
+
+  const admin = createAdminClient();
+  const { data: puppy, error: fetchError } = await admin
+    .from("puppies")
+    .select(`slug, ${column}`)
+    .eq("id", puppyId)
+    .maybeSingle();
+  if (fetchError) return { success: false, error: fetchError.message };
+  if (!puppy) return { success: false, error: "Puppy not found." };
+  const oldUrl = (puppy as Record<string, string | null>)[column] ?? null;
+
+  const { error } = await admin
+    .from("puppies")
+    .update({ [column]: null })
+    .eq("id", puppyId);
+  if (error) return { success: false, error: error.message };
+
+  const oldPath = ownedParentPhotoPath(puppyId, oldUrl);
+  if (oldPath) await admin.storage.from("puppy-photos").remove([oldPath]);
+
+  revalidatePuppyPhotoPaths(puppyId, (puppy as { slug?: string }).slug);
   return { success: true };
 }

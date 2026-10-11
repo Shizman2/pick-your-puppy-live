@@ -96,3 +96,15 @@
   font-size: 14px;
   grid-column: span 2;
 }
+
+/* "Specials 🔥" filter - only rendered while a Special Opportunity is active. */
+.filter-chip--specials {
+  color: #e11d2e;
+  background: #fff4ec;
+  border-color: #fca58a;
+}
+.filter-chip--specials.pp-active {
+  background: #e11d2e;
+  border-color: #e11d2e;
+  color: #fff;
+}

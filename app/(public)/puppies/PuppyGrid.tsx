@@ -1,45 +1,61 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { HomepagePuppy } from "../../../lib/public-data/homepage";
+import type { HomepagePuppy, SpotlightPuppy } from "../../../lib/public-data/homepage";
 import PuppyCard from "../../../components/public-site/PuppyCard";
+import SpotlightCard from "../../../components/public-site/SpotlightCard";
 
-type Filter = "all" | "yorkie" | "maltipoo" | "male" | "female" | "under800";
+type Filter = "all" | "male" | "female" | "under1000" | "specials";
 
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "yorkie", label: "Yorkie" },
-  { key: "maltipoo", label: "Maltipoo" },
-  { key: "male", label: "♂ Male" },
-  { key: "female", label: "♀ Female" },
-  { key: "under800", label: "Under $800" },
-];
+// The Special Opportunity is placed after this many normal cards (2 rows).
+const SPOTLIGHT_AFTER = 4;
+const UNDER_LIMIT_CENTS = 1000 * 100;
 
-export default function PuppyGrid({ puppies }: { puppies: HomepagePuppy[] }) {
+export default function PuppyGrid({ puppies, spotlight }: { puppies: HomepagePuppy[]; spotlight: SpotlightPuppy | null }) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
 
-  const filtered = useMemo(() => {
-    return puppies.filter((p) => {
-      const matchesSearch = search.trim() === "" || p.breed.toLowerCase().includes(search.trim().toLowerCase());
-      if (!matchesSearch) return false;
+  // "Specials" only exists while there is an active Special Opportunity.
+  const filters: { key: Filter; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "male", label: "Male" },
+    { key: "female", label: "Female" },
+    { key: "under1000", label: "Under $1,000" },
+    ...(spotlight ? [{ key: "specials" as Filter, label: "Specials 🔥" }] : []),
+  ];
+  const activeFilter: Filter = filter === "specials" && !spotlight ? "all" : filter;
 
-      switch (filter) {
-        case "yorkie":
-          return p.breed.toLowerCase().includes("yorkie");
-        case "maltipoo":
-          return p.breed.toLowerCase().includes("maltipoo");
+  // priceCents = the customer-facing price: the special price for the
+  // spotlight puppy, otherwise the sale price if set, else the normal price.
+  const matches = useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return (p: HomepagePuppy, priceCents: number, isSpecial: boolean) => {
+      if (term && !p.breed.toLowerCase().includes(term)) return false;
+      switch (activeFilter) {
         case "male":
           return p.gender === "male";
         case "female":
           return p.gender === "female";
-        case "under800":
-          return (p.salePriceCents || p.priceCents) / 100 < 800;
+        case "under1000":
+          return priceCents < UNDER_LIMIT_CENTS;
+        case "specials":
+          return isSpecial;
         default:
           return true;
       }
-    });
-  }, [puppies, search, filter]);
+    };
+  }, [search, activeFilter]);
+
+  const filtered = useMemo(
+    () => puppies.filter((p) => matches(p, p.salePriceCents || p.priceCents, false)),
+    [puppies, matches]
+  );
+  const showSpotlight = !!spotlight && matches(spotlight, spotlight.specialPriceCents, true);
+  // Unique puppies: the spotlight puppy is never also in `filtered`.
+  const count = filtered.length + (showSpotlight ? 1 : 0);
+  // After the first 2 full rows; with fewer puppies, after the last FULL row so
+  // the grid never leaves an empty slot before the full-width card.
+  const spotlightAt = Math.min(SPOTLIGHT_AFTER, filtered.length - (filtered.length % 2));
 
   return (
     <>
@@ -54,10 +70,10 @@ export default function PuppyGrid({ puppies }: { puppies: HomepagePuppy[] }) {
       </div>
 
       <div className="filter-bar">
-        {FILTERS.map((f) => (
+        {filters.map((f) => (
           <button
             key={f.key}
-            className={`filter-chip${filter === f.key ? " pp-active" : ""}`}
+            className={`filter-chip${f.key === "specials" ? " filter-chip--specials" : ""}${activeFilter === f.key ? " pp-active" : ""}`}
             onClick={() => setFilter(f.key)}
           >
             {f.label}
@@ -66,14 +82,18 @@ export default function PuppyGrid({ puppies }: { puppies: HomepagePuppy[] }) {
       </div>
 
       <div className="results-info">
-        Showing <span>{filtered.length}</span> puppies
+        Showing <span>{count}</span> {count === 1 ? "puppy" : "puppies"}
       </div>
 
       <div className="puppy-grid">
-        {filtered.map((p) => (
+        {filtered.slice(0, spotlightAt).map((p) => (
           <PuppyCard key={p.id} puppy={p} />
         ))}
-        {filtered.length === 0 && (
+        {showSpotlight && spotlight && <SpotlightCard puppy={spotlight} />}
+        {filtered.slice(spotlightAt).map((p) => (
+          <PuppyCard key={p.id} puppy={p} />
+        ))}
+        {count === 0 && (
           <div className="no-results">No puppies match your search. Try a different filter! 🐶</div>
         )}
       </div>

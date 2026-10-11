@@ -1,0 +1,173 @@
+/* Puppy Spotlight / Special Opportunity card (SpotlightCard.tsx).
+   Card = yellow/gold. Ribbon, LIMITED TIME and price = red. Name = navy.
+   CTA = yellow. */
+
+.spotlight-card {
+  grid-column: 1 / -1;
+  margin: 4px -8px;
+  display: grid;
+  grid-template-columns: 48% 1fr;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 20px;
+  border: 2px solid #f4c430;
+  background: #fff6d5;
+  box-shadow: var(--pp-shadow);
+  min-width: 0;
+}
+
+.spotlight-photo {
+  position: relative;
+  display: block;
+  min-height: 230px;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.spotlight-photo img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.spotlight-ribbon {
+  position: absolute;
+  top: 10px;
+  left: 6px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  max-width: calc(100% - 12px);
+  padding: 5px 9px 5px 7px;
+  border-radius: 6px;
+  background: #e8173f;
+  color: #fff;
+  transform: rotate(-8deg);
+  transform-origin: left top;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  text-transform: uppercase;
+}
+
+.spotlight-ribbon svg {
+  flex-shrink: 0;
+}
+
+.spotlight-ribbon-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1;
+}
+
+.spotlight-ribbon-big {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+}
+
+.spotlight-ribbon-small {
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.spotlight-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 4px 2px 2px 0;
+}
+
+/* Every part of the LIMITED TIME accent is red. */
+.spotlight-limited {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: #e11d2e;
+}
+
+.spotlight-limited svg {
+  flex-shrink: 0;
+}
+
+.spotlight-limited-line {
+  flex: 1;
+  min-width: 8px;
+  height: 2px;
+  border-radius: 2px;
+  background: #e11d2e;
+}
+
+.spotlight-limited-text {
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.spotlight-name {
+  margin: 8px 0 0;
+  font-size: clamp(21px, 6.4vw, 26px);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--pp-text);
+  overflow-wrap: anywhere;
+}
+
+.spotlight-meta {
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #4b5563;
+}
+
+.spotlight-price {
+  margin-top: 6px;
+  font-size: clamp(34px, 10.5vw, 44px);
+  font-weight: 900;
+  line-height: 1;
+  color: #e11d2e;
+  letter-spacing: -0.01em;
+}
+
+.spotlight-message {
+  margin: 8px 0 0;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75);
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1f2937;
+}
+
+.spotlight-message-accent {
+  color: #e11d2e;
+  font-weight: 800;
+}
+
+.pp-body a.spotlight-cta,
+.spotlight-cta {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 9px 12px;
+  border-radius: 50px;
+  background: #fbbf24;
+  color: #111827;
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+  box-shadow: 0 3px 10px rgba(217, 158, 6, 0.35);
+  overflow-wrap: anywhere;
+}
