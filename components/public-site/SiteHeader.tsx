@@ -1,10 +1,15 @@
 "use client";
 
+// Live (Pick Your Puppy Live webinar registration) lives in this menu, not
+// the bottom nav. Hidden until the webinars start - set to true to show it.
+const LIVE_NAV_ENABLED = false;
+
 const NAV_LINKS = [
   { label: "Home", href: "/" },
   { label: "Puppies", href: "/puppies" },
   { label: "Favorites", href: "/favorites" },
   { label: "Puppy Finder", href: "/puppy-finder" },
+  ...(LIVE_NAV_ENABLED ? [{ label: "Live", href: "/inquire?type=pypl" }] : []),
   { label: "How It Works", href: "/how-it-works" },
   { label: "FAQ", href: "/faq" },
   { label: "Partners", href: "/partners/apply" },

@@ -51,13 +51,6 @@ export default function BottomNav() {
         </svg>
         Request
       </a>
-      <a className="pp-nav-item" href="/inquire?type=pypl">
-        <svg viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="6" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" />
-          <path d="M10 10l5 3-5 3z" fill="currentColor" />
-        </svg>
-        Live
-      </a>
     </nav>
   );
 }
