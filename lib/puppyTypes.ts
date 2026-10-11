@@ -1,7 +1,10 @@
 export type PuppyGender = "male" | "female";
 export type PuppySize = "teacup" | "toy" | "mini" | "standard";
 export type PuppyStatus = "available" | "hold" | "sold" | "on_sale" | "discounted";
-export type PuppyBadgeTag = "available" | "new" | "popular";
+// Badge Tag is an optional marketing label only (NULL = none) - inventory
+// state lives in Status. Matches puppies_badge_tag_check (migration 036).
+export type PuppyBadgeTag = "new" | "popular" | "price_drop";
+export type MarketingBadgeTag = PuppyBadgeTag;
 
 export interface PuppyRow {
   id: string;
@@ -38,7 +41,17 @@ export interface PuppyRow {
 export const GENDER_OPTIONS: PuppyGender[] = ["male", "female"];
 export const SIZE_OPTIONS: PuppySize[] = ["teacup", "toy", "mini", "standard"];
 export const STATUS_OPTIONS: PuppyStatus[] = ["available", "hold", "sold", "on_sale", "discounted"];
-export const BADGE_OPTIONS: PuppyBadgeTag[] = ["available", "new", "popular"];
+export const BADGE_OPTIONS: MarketingBadgeTag[] = ["new", "popular", "price_drop"];
+export const BADGE_DISPLAY_LABEL: Record<MarketingBadgeTag, string> = {
+  new: "New",
+  popular: "Popular",
+  price_drop: "Price Drop",
+};
+
+/** The marketing badge to show publicly, or null for none/unknown values. */
+export function marketingBadge(tag: string | null | undefined): MarketingBadgeTag | null {
+  return tag && tag in BADGE_DISPLAY_LABEL ? (tag as MarketingBadgeTag) : null;
+}
 // Fixed states shown in the admin Location dropdown - "Other" (handled
 // in the admin form itself, not stored as a literal value) lets a free-
 // text location be saved without needing a matching option here.

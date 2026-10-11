@@ -16,6 +16,7 @@ import {
   SIZE_OPTIONS,
   STATUS_OPTIONS,
   BADGE_OPTIONS,
+  BADGE_DISPLAY_LABEL,
   STATUS_DISPLAY_LABEL,
   PUPPY_LOCATION_OPTIONS,
   type PuppyRow,
@@ -349,7 +350,7 @@ export default function PuppyForm({
 
       <div className="puppy-form-row">
         <div className="admin-field">
-          <label className="admin-field__label">Badge tag</label>
+          <label className="admin-field__label">Badge tag (optional marketing label)</label>
           <select
             className="admin-select"
             value={badgeTag || ""}
@@ -358,7 +359,7 @@ export default function PuppyForm({
             <option value="">None</option>
             {BADGE_OPTIONS.map((b) => (
               <option key={b} value={b}>
-                {b}
+                {BADGE_DISPLAY_LABEL[b]}
               </option>
             ))}
           </select>

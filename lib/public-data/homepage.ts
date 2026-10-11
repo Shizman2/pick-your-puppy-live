@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
-import type { PuppyRow } from "../puppyTypes";
+import { marketingBadge, type MarketingBadgeTag, type PuppyRow } from "../puppyTypes";
 import { getFavoriteCounts } from "../favorites";
 
 export interface HomepagePuppy {
@@ -16,6 +16,7 @@ export interface HomepagePuppy {
   photoUrl: string;
   favoritesCount: number;
   location: string | null;
+  badgeTag: MarketingBadgeTag | null;
 }
 
 export const HOMEPAGE_PUPPY_LIMIT = 12;
@@ -32,7 +33,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
   const { data, error } = await admin
     .from("puppies")
     .select(
-      "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order, location"
+      "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order, location, badge_tag"
     )
     .eq("show_on_website", true)
     .eq("is_featured", true)
@@ -69,6 +70,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
       photoUrl: photos[0] || "",
       favoritesCount: favoritesCounts[row.id] || 0,
       location: row.location || null,
+      badgeTag: marketingBadge(row.badge_tag),
     };
   });
 }

@@ -5,7 +5,7 @@ import { getPuppyBySlug } from "../../../../lib/public-data/puppies";
 import { getFavoriteCount } from "../../../../lib/favorites";
 import { getSellerPhoneNumber } from "../../../../lib/content";
 import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
-import { STATUS_DISPLAY_LABEL, formatPriceFromCents } from "../../../../lib/puppyTypes";
+import { STATUS_DISPLAY_LABEL, BADGE_DISPLAY_LABEL, formatPriceFromCents, marketingBadge } from "../../../../lib/puppyTypes";
 import FavoriteButton from "../../../../components/public/FavoriteButton";
 import PuppyViewTracker from "../../../../components/public/PuppyViewTracker";
 import PuppyFinderBanner from "../../../../components/public/PuppyFinderBanner";
@@ -35,6 +35,13 @@ const STATUS_COLOR: Record<string, string> = {
   discounted: "#A855F7",
 };
 
+// Same colors as the card badge in components/public-site/puppyCard.css.
+const MARKETING_BADGE_COLOR: Record<string, string> = {
+  new: "#1B7BFF",
+  popular: "#DB2777",
+  price_drop: "#DC2626",
+};
+
 export default async function PuppyDetailPage({ params }: { params: { slug: string } }) {
   const [puppy, sellerPhone] = await Promise.all([getPuppyBySlug(params.slug), getSellerPhoneNumber()]);
   if (!puppy) notFound();
@@ -59,6 +66,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   // Sold puppies keep this URL and their info, but lose price, location and
   // every buy/contact action for this puppy (see the sold CTA below).
   const isSold = puppy.status === "sold";
+  const badgeTag = isSold ? null : marketingBadge(puppy.badge_tag);
 
   return (
     <>
@@ -108,6 +116,11 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
           {!isSold && (
             <span className="badge pp-status" style={{ background: statusColor }}>
               {statusLabel}
+            </span>
+          )}
+          {badgeTag && (
+            <span className="badge pp-status" style={{ background: MARKETING_BADGE_COLOR[badgeTag] }}>
+              {BADGE_DISPLAY_LABEL[badgeTag]}
             </span>
           )}
           {puppy.vet_checked && <span className="badge">✅ Vet Checked</span>}

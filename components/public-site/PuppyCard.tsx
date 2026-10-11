@@ -1,6 +1,7 @@
 import "./puppyCard.css";
 import type { HomepagePuppy } from "../../lib/public-data/homepage";
 import FavoriteButton from "../public/FavoriteButton";
+import { BADGE_DISPLAY_LABEL } from "../../lib/puppyTypes";
 
 // The compact vertical puppy card shared by the /puppies grid and the
 // homepage Available Puppies grid, so both always render the same card.
@@ -41,6 +42,12 @@ export default function PuppyCard({ puppy: p }: { puppy: HomepagePuppy }) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={p.photoUrl} alt={p.breed} />
           <Watermark />
+          {/* Optional marketing badge (Badge Tag) - never a status. */}
+          {p.badgeTag && (
+            <span className={`pcard-marketing-badge pcard-marketing-badge--${p.badgeTag}`}>
+              {BADGE_DISPLAY_LABEL[p.badgeTag]}
+            </span>
+          )}
           {p.location && (
             <span className="pcard-location">
               <svg viewBox="0 0 24 24" width="9" height="9" fill="none">

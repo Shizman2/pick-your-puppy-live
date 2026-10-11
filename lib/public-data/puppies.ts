@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
-import type { PuppyRow } from "../puppyTypes";
+import { marketingBadge, type PuppyRow } from "../puppyTypes";
 import type { HomepagePuppy } from "./homepage";
 import { getFavoriteCounts } from "../favorites";
 
@@ -63,6 +63,7 @@ export function mapPuppyRowToCard(row: PuppyRow, favoritesCount = 0): HomepagePu
     photoUrl: photos[0] || "",
     favoritesCount,
     location: row.location || null,
+    badgeTag: marketingBadge(row.badge_tag),
   };
 }
 
