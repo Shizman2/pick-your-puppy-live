@@ -3,7 +3,6 @@ import "./detail.css";
 import "../../../../components/public-site/shareButtons.css";
 import { getPuppyBySlug, isActiveSpotlight } from "../../../../lib/public-data/puppies";
 import { getFavoriteCount } from "../../../../lib/favorites";
-import { getSellerPhoneNumber } from "../../../../lib/content";
 import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
 import { STATUS_DISPLAY_LABEL, BADGE_DISPLAY_LABEL, formatPriceFromCents, marketingBadge } from "../../../../lib/puppyTypes";
 import FavoriteButton from "../../../../components/public/FavoriteButton";
@@ -11,8 +10,7 @@ import PuppyViewTracker from "../../../../components/public/PuppyViewTracker";
 import PuppyFinderBanner from "../../../../components/public/PuppyFinderBanner";
 import BreedProfileSection from "../../../../components/public/BreedProfileSection";
 import PuppyGallery from "./PuppyGallery";
-import PuppyQuestionForm from "./PuppyQuestionForm";
-import CallSellerButton from "./CallSellerButton";
+import TrackedLink from "../../../../components/public/TrackedLink";
 import MeetTheParents from "./MeetTheParents";
 import ShareButtons from "../../../../components/public-site/ShareButtons";
 import BundleSection from "../../../../components/public-site/BundleSection";
@@ -44,7 +42,7 @@ const MARKETING_BADGE_COLOR: Record<string, string> = {
 };
 
 export default async function PuppyDetailPage({ params }: { params: { slug: string } }) {
-  const [puppy, sellerPhone] = await Promise.all([getPuppyBySlug(params.slug), getSellerPhoneNumber()]);
+  const puppy = await getPuppyBySlug(params.slug);
   if (!puppy) notFound();
 
   const [favoritesCount, breedProfile] = await Promise.all([
@@ -184,9 +182,19 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
         </div>
       ) : (
         <div className="detail-cta">
-          <CallSellerButton phone={sellerPhone} puppyId={puppy.id} />
-
-          <PuppyQuestionForm puppyId={puppy.id} puppyName={puppyName} breed={puppy.breed} slug={puppy.slug} />
+          {/* One contact CTA -> the puppy's contact page (call or message there). */}
+          <TrackedLink className="want-puppy-btn" href={`/puppies/${puppy.slug}/contact`} ctaKey="im_interested" puppyId={puppy.id}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
+              <path
+                d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1l-2 2z"
+                fill="currentColor"
+              />
+            </svg>
+            I Want This Puppy
+            <span className="want-puppy-btn-chevron" aria-hidden="true">
+              ›
+            </span>
+          </TrackedLink>
         </div>
       )}
 
@@ -200,7 +208,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_below_description" pageIdentifier={puppy.id} />
 
-      <BundleSection />
+      <BundleSection noteStyle="strip" />
 
       <PuppyFinderBanner puppyId={puppy.id} />
     </>

@@ -18,6 +18,11 @@
   scroll-behavior: smooth;
 }
 
+/* Pages without the fixed bottom nav don't reserve room for it. */
+.pp-body.pp-body--no-bottom-nav {
+  padding-bottom: 24px;
+}
+
 .pp-body img {
   display: block;
   width: 100%;

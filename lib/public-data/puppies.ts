@@ -101,3 +101,23 @@ export async function getPuppyBySlug(slug: string): Promise<PuppyRow | null> {
   if (error || !data) return null;
   return data as PuppyRow;
 }
+
+/**
+ * Real puppy-detail views in the rolling last 24 hours, from the existing
+ * first-party analytics (analytics_events, event_type "puppy_view"). Those
+ * rows already exclude bots, excluded devices and non-production hosts, and
+ * repeat views are capped at one per visitor per puppy per 30 minutes - so
+ * this is a true count, never padded. Returns 0 on any error.
+ */
+export async function getPuppyViewsLast24h(puppyId: string): Promise<number> {
+  const admin = createAdminClient();
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const { count, error } = await admin
+    .from("analytics_events")
+    .select("id", { count: "exact", head: true })
+    .eq("event_type", "puppy_view")
+    .eq("puppy_id", puppyId)
+    .gte("occurred_at", since);
+  if (error) return 0;
+  return count || 0;
+}

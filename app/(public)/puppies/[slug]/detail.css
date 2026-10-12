@@ -801,3 +801,34 @@
   text-transform: uppercase;
   color: #e11d2e;
 }
+
+/* I WANT THIS PUPPY - replaces Call the Seller + I'm Interested. Same
+   yellow/navy as the existing .puppy-finder-banner-cta. */
+.pp-body a.want-puppy-btn,
+.want-puppy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 54px;
+  padding: 15px 20px;
+  border-radius: 50px;
+  background: #fece02;
+  color: #03092a;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(254, 206, 2, 0.4);
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
+}
+.want-puppy-btn svg {
+  flex-shrink: 0;
+}
+.want-puppy-btn-chevron {
+  margin-left: 2px;
+  font-size: 22px;
+  line-height: 1;
+}
