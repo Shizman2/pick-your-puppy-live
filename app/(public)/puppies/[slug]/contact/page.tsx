@@ -28,9 +28,9 @@ function formatUpdated(iso: string) {
   return `${date} at ${time}`;
 }
 
-function WhatToExpect({ puppyName, pronoun }: { puppyName: string; pronoun: string }) {
+function WhatToExpect({ puppyName }: { puppyName: string }) {
   const steps = [
-    { title: `Confirm ${puppyName} is available`, text: `We'll let you know right away if ${pronoun}'s still available.` },
+    { title: `Confirm ${puppyName} is available`, text: `We'll let you know right away if they're still available.` },
     { title: "Ask any questions you have", text: `Get the details you need about ${puppyName}.` },
     { title: "Choose pickup or delivery", text: "We'll go over the pickup or delivery options available to you." },
   ];
@@ -118,7 +118,7 @@ export default async function PuppyContactPage({ params }: { params: { slug: str
         views24h={views24h}
       />
 
-      <WhatToExpect puppyName={puppyName} pronoun={puppy.gender === "female" ? "she" : "he"} />
+      <WhatToExpect puppyName={puppyName} />
     </>
   );
 }
