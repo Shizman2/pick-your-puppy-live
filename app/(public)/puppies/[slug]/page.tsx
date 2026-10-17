@@ -4,14 +4,15 @@ import "../../../../components/public-site/shareButtons.css";
 import { getPuppyBySlug, isActiveSpotlight } from "../../../../lib/public-data/puppies";
 import { getFavoriteCount } from "../../../../lib/favorites";
 import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
+import { getSellerPhoneNumber } from "../../../../lib/content";
 import { STATUS_DISPLAY_LABEL, BADGE_DISPLAY_LABEL, formatPriceFromCents, marketingBadge } from "../../../../lib/puppyTypes";
 import FavoriteButton from "../../../../components/public/FavoriteButton";
 import PuppyViewTracker from "../../../../components/public/PuppyViewTracker";
 import PuppyFinderBanner from "../../../../components/public/PuppyFinderBanner";
 import BreedProfileSection from "../../../../components/public/BreedProfileSection";
 import PuppyGallery from "./PuppyGallery";
-import TrackedLink from "../../../../components/public/TrackedLink";
 import MeetTheParents from "./MeetTheParents";
+import PuppyContactButtons from "./PuppyContactButtons";
 import ShareButtons from "../../../../components/public-site/ShareButtons";
 import BundleSection from "../../../../components/public-site/BundleSection";
 import PlacementSlot from "../../../../components/public-site/PlacementSlot";
@@ -45,9 +46,11 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   const puppy = await getPuppyBySlug(params.slug);
   if (!puppy) notFound();
 
-  const [favoritesCount, breedProfile] = await Promise.all([
+  const [favoritesCount, breedProfile, sellerPhone] = await Promise.all([
     getFavoriteCount(puppy.id),
     getBreedForPuppyBreedString(puppy.breed),
+    // Sold puppies show no contact buttons, so skip the lookup.
+    puppy.status === "sold" ? Promise.resolve(null) : getSellerPhoneNumber(),
   ]);
 
   let ageDisplay = "—";
@@ -136,6 +139,17 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
           {puppy.delivery_available && <span className="badge">🚚 Delivery Available</span>}
         </div>
 
+        {/* Text (primary) + Call - straight to the device, no contact page. */}
+        {!isSold && (
+          <PuppyContactButtons
+            puppyId={puppy.id}
+            name={puppy.name}
+            breed={puppy.breed}
+            gender={puppy.gender}
+            phone={sellerPhone}
+          />
+        )}
+
         <div className="quick-info-grid">
           <div className="qi-box">
             <div className="qi-label">Gender</div>
@@ -170,7 +184,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
       <PlacementSlot pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
       <PlacementPreviewOverlay pageType="puppy_detail" slot="puppy_detail_above_reserve" pageIdentifier={puppy.id} />
 
-      {isSold ? (
+      {isSold && (
         <div className="sold-detail-cta">
           <h2 className="sold-detail-cta-title">❤️ This Puppy Has Found Their Home</h2>
           <p className="sold-detail-cta-text">
@@ -179,22 +193,6 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
           <a className="sold-detail-cta-btn" href="/puppies">
             See Available Puppies
           </a>
-        </div>
-      ) : (
-        <div className="detail-cta">
-          {/* One contact CTA -> the puppy's contact page (call or message there). */}
-          <TrackedLink className="want-puppy-btn" href={`/puppies/${puppy.slug}/contact`} ctaKey="im_interested" puppyId={puppy.id}>
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true">
-              <path
-                d="M6.6 10.8c1.3 2.6 3.4 4.7 6 6l2-2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.5.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.5.1.4 0 .8-.2 1l-2 2z"
-                fill="currentColor"
-              />
-            </svg>
-            I Want This Puppy
-            <span className="want-puppy-btn-chevron" aria-hidden="true">
-              ›
-            </span>
-          </TrackedLink>
         </div>
       )}
 

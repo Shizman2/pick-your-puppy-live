@@ -33,6 +33,19 @@ export function phoneTelHref(raw: string | null | undefined): string | null {
   return digits ? `tel:${digits}` : null;
 }
 
+/** Strict E.164 for building tel:/sms: links that must not be broken: a standard US number -> "+16094406809", an already-international "+" number with 8-15 digits kept as-is, anything else -> null (caller hides the link). */
+export function phoneE164(raw: string | null | undefined): string | null {
+  if (!raw) return null;
+  const trimmed = raw.trim();
+  const tenDigits = extractUsTenDigits(trimmed);
+  if (tenDigits) return `+1${tenDigits}`;
+  if (trimmed.startsWith("+")) {
+    const digits = trimmed.replace(/\D/g, "");
+    if (digits.length >= 8 && digits.length <= 15) return `+${digits}`;
+  }
+  return null;
+}
+
 /**
  * Formats a phone number as the user types, for the shared PhoneInput
  * component (components/PhoneInput.tsx) - progressively adds dashes

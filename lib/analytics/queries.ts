@@ -676,7 +676,7 @@ export interface CtaActivityItem {
   count: number;
 }
 
-const CTA_DISPLAY_ORDER: CtaKey[] = ["see_available_puppies", "call_now", "im_interested", "puppy_finder"];
+const CTA_DISPLAY_ORDER: CtaKey[] = ["see_available_puppies", "text_us", "call_now", "im_interested", "puppy_finder"];
 
 export async function getCtaActivity(range: DateRangeKey): Promise<CtaActivityItem[]> {
   const { start, end } = getDateWindow(range);

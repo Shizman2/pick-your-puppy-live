@@ -37,7 +37,7 @@ export function setDeviceExcluded(excluded: boolean): void {
   }
 }
 
-export type TrackCtaKey = "call_now" | "im_interested" | "puppy_finder" | "see_available_puppies";
+export type TrackCtaKey = "call_now" | "text_us" | "im_interested" | "puppy_finder" | "see_available_puppies";
 
 interface TrackEventPayload {
   eventType: "page_view" | "puppy_view" | "cta_click";
@@ -97,7 +97,7 @@ export function trackEvent(payload: TrackEventPayload): void {
   });
 }
 
-/** Convenience wrapper for the four approved V1 CTA buttons/links. */
+/** Convenience wrapper for the approved CTA buttons/links. */
 export function trackCta(ctaKey: TrackCtaKey, puppyId?: string): void {
   if (typeof window === "undefined") return;
   trackEvent({ eventType: "cta_click", path: window.location.pathname, ctaKey, puppyId });

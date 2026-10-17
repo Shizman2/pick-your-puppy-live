@@ -41,7 +41,7 @@ export const ONLINE_NOW_WINDOW_SECONDS = 60 * 2;
  */
 export const PUPPY_VIEW_DEDUP_SECONDS = 60 * 30;
 
-export const CTA_KEYS = ["call_now", "im_interested", "puppy_finder", "see_available_puppies"] as const;
+export const CTA_KEYS = ["call_now", "text_us", "im_interested", "puppy_finder", "see_available_puppies"] as const;
 export type CtaKey = (typeof CTA_KEYS)[number];
 
 export const EVENT_TYPES = ["page_view", "puppy_view", "cta_click", "inquiry_submit"] as const;

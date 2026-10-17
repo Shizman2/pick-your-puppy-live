@@ -802,33 +802,86 @@
   color: #e11d2e;
 }
 
-/* I WANT THIS PUPPY - replaces Call the Seller + I'm Interested. Same
-   yellow/navy as the existing .puppy-finder-banner-cta. */
-.pp-body a.want-puppy-btn,
-.want-puppy-btn {
+/* TEXT ABOUT {NAME} (yellow, pulsing) + CALL ABOUT {NAME} (red, still) -
+   sit between the badges and the Gender/Age cards. Replaces the old
+   I WANT THIS PUPPY button. */
+.detail-contact-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 4px 0 20px;
+}
+.pp-body a.text-puppy-btn,
+.text-puppy-btn,
+.pp-body a.call-puppy-btn,
+.call-puppy-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  min-height: 54px;
-  padding: 15px 20px;
+  min-height: 56px;
+  padding: 14px 20px;
   border-radius: 50px;
-  background: #fece02;
-  color: #03092a;
-  font-size: 16px;
+  font-family: var(--pp-font);
+  font-size: 17px;
   font-weight: 900;
+  line-height: 1.15;
   letter-spacing: 0.03em;
+  text-align: center;
   text-transform: uppercase;
   text-decoration: none;
-  box-shadow: 0 4px 14px rgba(254, 206, 2, 0.4);
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0.08);
 }
-.want-puppy-btn svg {
+.text-puppy-btn svg,
+.call-puppy-btn svg {
   flex-shrink: 0;
 }
-.want-puppy-btn-chevron {
-  margin-left: 2px;
-  font-size: 22px;
-  line-height: 1;
+.text-puppy-btn:focus-visible,
+.call-puppy-btn:focus-visible {
+  outline: 3px solid #03092a;
+  outline-offset: 3px;
+}
+
+.pp-body a.text-puppy-btn,
+.text-puppy-btn {
+  background: #fece02;
+  color: #03092a;
+  box-shadow: 0 4px 14px rgba(254, 206, 2, 0.45), 0 0 0 0 rgba(254, 206, 2, 0.55);
+  /* transform + box-shadow only: never moves neighbouring elements. */
+  animation: text-puppy-pulse 2s ease-in-out infinite;
+}
+
+.pp-body a.call-puppy-btn,
+.call-puppy-btn {
+  background: #e5232f;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(229, 35, 47, 0.3);
+}
+
+/* Heartbeat: a quick swell to 1.025 with a yellow ring that spreads and
+   fades, then rest for the remainder of the 2s cycle. */
+@keyframes text-puppy-pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(254, 206, 2, 0.45), 0 0 0 0 rgba(254, 206, 2, 0.55);
+  }
+  18% {
+    transform: scale(1.025);
+    box-shadow: 0 6px 18px rgba(254, 206, 2, 0.55), 0 0 0 6px rgba(254, 206, 2, 0.3);
+  }
+  40% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(254, 206, 2, 0.45), 0 0 0 12px rgba(254, 206, 2, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(254, 206, 2, 0.45), 0 0 0 12px rgba(254, 206, 2, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pp-body a.text-puppy-btn,
+  .text-puppy-btn {
+    animation: none;
+  }
 }

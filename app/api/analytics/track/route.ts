@@ -32,7 +32,12 @@ export async function POST(request: NextRequest) {
 
   const ctaKey = typeof body.ctaKey === "string" ? body.ctaKey : null;
   const validCtaKey =
-    ctaKey === null || ctaKey === "call_now" || ctaKey === "im_interested" || ctaKey === "puppy_finder" || ctaKey === "see_available_puppies";
+    ctaKey === null ||
+    ctaKey === "call_now" ||
+    ctaKey === "text_us" ||
+    ctaKey === "im_interested" ||
+    ctaKey === "puppy_finder" ||
+    ctaKey === "see_available_puppies";
 
   let result: Awaited<ReturnType<typeof recordAnalyticsEvent>> = { recorded: false };
   try {
