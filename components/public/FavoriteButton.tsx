@@ -30,7 +30,8 @@ export default function FavoriteButton({
 }: {
   puppyId: string;
   initialCount: number;
-  size?: "card" | "detail";
+  /** "stat": the detail page's stats row - heart plus "N favorites / Saved by visitors". */
+  size?: "card" | "detail" | "stat";
 }) {
   const [isFavorited, setIsFavorited] = useState(false);
   const [count, setCount] = useState(initialCount);
@@ -80,7 +81,30 @@ export default function FavoriteButton({
     }
   }
 
-  const iconSize = size === "detail" ? 20 : 15;
+  const iconSize = size === "stat" ? 24 : size === "detail" ? 20 : 15;
+
+  if (size === "stat") {
+    return (
+      <button
+        type="button"
+        className={`favorite-btn favorite-btn--stat${isFavorited ? " is-favorited" : ""}`}
+        onClick={handleClick}
+        disabled={pending}
+        aria-pressed={isFavorited}
+        aria-label={`${count} ${count === 1 ? "favorite" : "favorites"}. ${isFavorited ? "Remove from favorites" : "Add to favorites"}`}
+      >
+        <span className="favorite-stat-icon">
+          <HeartIcon filled={isFavorited} size={iconSize} />
+        </span>
+        <span className="detail-stat-text">
+          <span className="detail-stat-value">
+            {count.toLocaleString("en-US")} {count === 1 ? "favorite" : "favorites"}
+          </span>
+          <span className="detail-stat-label">Saved by visitors</span>
+        </span>
+      </button>
+    );
+  }
 
   return (
     <button

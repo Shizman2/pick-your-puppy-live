@@ -132,6 +132,86 @@
   font-weight: 700;
   color: var(--pp-muted);
 }
+/* Views | favorites row under the badges (approved mockup). */
+.detail-stats {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  margin: 2px 0 18px;
+  padding: 2px 4px;
+}
+.detail-stats--single {
+  grid-template-columns: 1fr;
+}
+.detail-stats-divider {
+  width: 1px;
+  height: 38px;
+  background: var(--pp-border);
+}
+.detail-stat,
+.favorite-btn--stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.detail-stats .favorite-btn--stat {
+  justify-self: end;
+}
+.detail-stats--single .favorite-btn--stat {
+  justify-self: start;
+}
+.favorite-btn--stat {
+  padding: 4px;
+  margin: -4px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  font-family: var(--pp-font);
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.favorite-btn--stat:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+.favorite-btn--stat:focus-visible {
+  outline: 2px solid var(--pp-blue);
+  outline-offset: 2px;
+}
+.detail-stat-icon,
+.favorite-stat-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.detail-stat-icon--views {
+  color: var(--pp-blue);
+}
+.favorite-stat-icon {
+  color: #ef4444;
+}
+.detail-stat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.detail-stat-value {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.15;
+  color: var(--pp-text);
+  white-space: nowrap;
+}
+.detail-stat-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--pp-muted);
+  white-space: nowrap;
+}
 
 .badge-row {
   display: flex;

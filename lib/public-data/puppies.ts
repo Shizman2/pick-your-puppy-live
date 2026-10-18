@@ -110,6 +110,24 @@ export async function getPuppyBySlug(slug: string): Promise<PuppyRow | null> {
 }
 
 /**
+ * All-time puppy-detail views from the existing first-party analytics
+ * (analytics_events, event_type "puppy_view", since tracking began).
+ * These are views, not unique people: one per visitor per puppy per 30
+ * minutes, so refreshes don't add up; bots, excluded devices and
+ * non-production hosts are never recorded. Returns 0 on any error.
+ */
+export async function getPuppyViewCount(puppyId: string): Promise<number> {
+  const admin = createAdminClient();
+  const { count, error } = await admin
+    .from("analytics_events")
+    .select("id", { count: "exact", head: true })
+    .eq("event_type", "puppy_view")
+    .eq("puppy_id", puppyId);
+  if (error) return 0;
+  return count || 0;
+}
+
+/**
  * Real puppy-detail views in the rolling last 24 hours, from the existing
  * first-party analytics (analytics_events, event_type "puppy_view"). Those
  * rows already exclude bots, excluded devices and non-production hosts, and

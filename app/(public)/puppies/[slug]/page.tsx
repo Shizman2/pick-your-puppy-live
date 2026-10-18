@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import "./detail.css";
 import "../../../../components/public-site/shareButtons.css";
-import { getPuppyBySlug, isActiveSpotlight } from "../../../../lib/public-data/puppies";
+import { getPuppyBySlug, getPuppyViewCount, isActiveSpotlight } from "../../../../lib/public-data/puppies";
 import { getFavoriteCount } from "../../../../lib/favorites";
 import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
 import { getSellerPhoneNumber } from "../../../../lib/content";
@@ -47,11 +47,12 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   const puppy = await getPuppyBySlug(params.slug);
   if (!puppy) notFound();
 
-  const [favoritesCount, breedProfile, sellerPhone] = await Promise.all([
+  const [favoritesCount, breedProfile, sellerPhone, viewCount] = await Promise.all([
     getFavoriteCount(puppy.id),
     getBreedForPuppyBreedString(puppy.breed),
     // Sold puppies show no contact buttons, so skip the lookup.
     puppy.status === "sold" ? Promise.resolve(null) : getSellerPhoneNumber(),
+    getPuppyViewCount(puppy.id),
   ]);
 
   let ageDisplay = "—";
@@ -119,11 +120,6 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
           )}
         </div>
 
-        <div className="detail-favorite-row">
-          <FavoriteButton puppyId={puppy.id} initialCount={favoritesCount} size="detail" />
-          <span className="detail-favorite-label">favorited this puppy</span>
-        </div>
-
         <div className="badge-row">
           {!isSold && (
             <span className="badge pp-status" style={{ background: statusColor }}>
@@ -138,6 +134,35 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
           {puppy.vet_checked && <span className="badge">✅ Vet Checked</span>}
           {puppy.vaccinated && <span className="badge">💉 Vaccinated</span>}
           {puppy.delivery_available && <span className="badge">🚚 Delivery Available</span>}
+        </div>
+
+        {/* Views (real analytics: one per visitor per 30 min, hidden until there is one) and favorites (tap the heart to save). */}
+        <div className={`detail-stats${viewCount > 0 ? "" : " detail-stats--single"}`}>
+          {viewCount > 0 && (
+            <>
+              <div className="detail-stat">
+                <span className="detail-stat-icon detail-stat-icon--views">
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" aria-hidden="true">
+                    <path
+                      d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinejoin="round"
+                    />
+                    <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" />
+                  </svg>
+                </span>
+                <span className="detail-stat-text">
+                  <span className="detail-stat-value">
+                    {viewCount.toLocaleString("en-US")} {viewCount === 1 ? "view" : "views"}
+                  </span>
+                  <span className="detail-stat-label">Listing views</span>
+                </span>
+              </div>
+              <span className="detail-stats-divider" aria-hidden="true" />
+            </>
+          )}
+          <FavoriteButton puppyId={puppy.id} initialCount={favoritesCount} size="stat" />
         </div>
 
         {/* Text (primary) + Call - straight to the device, no contact page. */}
