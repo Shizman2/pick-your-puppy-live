@@ -38,7 +38,6 @@ export default async function ContactPage() {
       <div className="contact-info-section">
         <h2>Contact Information</h2>
         <p className="contact-info-business">The Puppy Plugs</p>
-        <p className="contact-info-operator">Operated by Sean Williams, Sole Proprietor</p>
         <p className="contact-info-line">
           Phone: <a href="tel:2677743553">267-774-3553</a>
         </p>

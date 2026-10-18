@@ -6,7 +6,8 @@ import PhoneInput from "../../../components/PhoneInput";
 // Same consent-version constant used by the "I'm Interested" form -
 // the disclosure wording here is identical, so this isn't a new
 // version of the disclosure, just a second place it's shown.
-const CONSENT_VERSION = "a2p_consent_v1";
+// v2: operator name removed from the disclosure wording (v1 named the operator).
+const CONSENT_VERSION = "a2p_consent_v2";
 
 export default function SmsOptInForm() {
   const [name, setName] = useState("");
@@ -130,8 +131,8 @@ export default function SmsOptInForm() {
             <span className="optin-consent-option-text">
               <span className="optin-consent-label">Puppy Inquiry Texts</span>
               <span className="optin-consent-disclosure">
-                I consent to receive non-marketing text messages from The Puppy Plugs, operated by Sean Williams,
-                about my puppy inquiry, including responses and service updates. Message frequency may vary. Message
+                I consent to receive non-marketing text messages from The Puppy Plugs about my puppy inquiry,
+                including responses and service updates. Message frequency may vary. Message
                 &amp; data rates may apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition
                 of purchase.
               </span>
@@ -150,8 +151,8 @@ export default function SmsOptInForm() {
             <span className="optin-consent-option-text">
               <span className="optin-consent-label">Offers &amp; Puppy Updates</span>
               <span className="optin-consent-disclosure">
-                I consent to receive marketing text messages from The Puppy Plugs, operated by Sean Williams, about
-                available puppies, special offers, and service updates. Message frequency may vary. Message &amp;
+                I consent to receive marketing text messages from The Puppy Plugs about available puppies, special
+                offers, and service updates. Message frequency may vary. Message &amp;
                 data rates may apply. Reply STOP to opt out or HELP for assistance. Consent is not a condition of
                 purchase.
               </span>

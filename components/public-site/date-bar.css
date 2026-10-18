@@ -1,0 +1,79 @@
+/* Slim navy date strip above the header (matches the approved mockup).
+   The navy background spans the full screen width; the date and link line
+   up with the 430px page column underneath. Scrolls away normally (not
+   sticky). Fixed height so nothing shifts when the date appears after load. */
+.pp-datebar {
+  width: 100%;
+  background: #03092a;
+}
+.pp-datebar *,
+.pp-datebar *::before,
+.pp-datebar *::after {
+  box-sizing: border-box;
+}
+.pp-datebar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-sizing: border-box;
+  max-width: var(--pp-max-width);
+  height: 34px;
+  margin: 0 auto;
+  padding: 0 14px;
+  color: #fff;
+  font-family: var(--pp-font);
+  font-size: 12.5px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.pp-datebar-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+}
+.pp-datebar-date > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pp-datebar-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: #fece02;
+}
+.pp-datebar a.pp-datebar-link,
+.pp-datebar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  color: #fece02;
+  font-weight: 700;
+  text-decoration: none;
+}
+.pp-datebar-link svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.pp-datebar-link:hover {
+  text-decoration: underline;
+}
+.pp-datebar-link:focus-visible {
+  outline: 2px solid #fece02;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+/* Very narrow phones: tighten so both sides still fit on one line. */
+@media (max-width: 374px) {
+  .pp-datebar-inner {
+    gap: 6px;
+    padding: 0 10px;
+    font-size: 11.5px;
+  }
+  .pp-datebar-date {
+    gap: 7px;
+  }
+}

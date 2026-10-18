@@ -18,6 +18,11 @@ function PawIcon() {
   );
 }
 
+/** Real sold_at date, in the business's (Eastern) time zone, e.g. "Oct 18". */
+function formatSoldDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { timeZone: "America/New_York", month: "short", day: "numeric" });
+}
+
 function SoldPuppyCard({ puppy: p }: { puppy: HomepagePuppy }) {
   const name = p.name || p.breed;
   return (
@@ -41,6 +46,7 @@ function SoldPuppyCard({ puppy: p }: { puppy: HomepagePuppy }) {
           <span className="sep">|</span>
           <span>{p.ageWeeks ?? "—"} wks</span>
         </div>
+        {p.soldAt && <div className="sold-card-date">Sold {formatSoldDate(p.soldAt)}</div>}
       </div>
     </a>
   );
