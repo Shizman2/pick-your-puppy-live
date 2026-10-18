@@ -1,0 +1,49 @@
+{
+  "_note": "Approved FAQ corrections (2026-10-18, revised: no pickup location, no em dashes, \"our team\" instead of personal names). Keys are faq_items ids. 'delete': true removes the row. Backup of the previous rows: backup/faq_items-before-2026-10-18.json. Not applied to the database until Sean approves.",
+  "items": {
+    "9327e135-b3fc-4bdb-b1a7-1233a28889d5": {
+      "question": "How do I reserve a puppy?",
+      "answer": "Text or call our team using the Text or Call button on the puppy's page. Our team will confirm availability and walk you through the next steps. No deposit is required if you're picking up an available puppy (pay in full with cash at pickup) or getting local delivery (pay in cash upon delivery). A deposit is only required for out-of-state delivery or Puppy Finder, and our team will confirm the amount and payment instructions."
+    },
+    "18349d0c-60b8-459b-a47b-1789fb72f684": {
+      "question": "What breeds do you carry?",
+      "answer": "Our available breeds change as new puppies are listed. See all current puppies on our Puppies page. If you don't see the breed you want, our Puppy Finder service can help you find one."
+    },
+    "bb117ebb-0924-4e8c-a75e-574397b13eaf": {
+      "question": "How much is the deposit?",
+      "answer": "It depends on your situation. No deposit is required to pick up an available puppy. You can pay in full with cash at pickup. Local delivery (less than one hour away) also needs no deposit, and you pay in cash upon delivery. A deposit is required for out-of-state delivery, and for Puppy Finder after you choose your puppy. Our team will confirm the amount and payment instructions. Deposits are paid through Cash App."
+    },
+    "f9e9e9f2-b896-40cf-b77e-66e5c3bb6be6": {
+      "question": "What payment methods do you accept?",
+      "answer": "We accept cash for puppy purchases, including payment in full at pickup or upon local delivery. When a deposit is required, we accept Cash App. Our team will confirm the amount and payment instructions."
+    },
+    "5a256b67-45dd-4994-9490-1da7dce2cc65": {
+      "question": "What if I change my mind?",
+      "answer": "We understand life happens. Deposits are non-refundable if you change your mind. In some cases, our team may be able to transfer your deposit to a different puppy. This is decided case by case and isn't guaranteed."
+    },
+    "4f536344-87d0-4a95-b44a-02751753dd60": {
+      "question": "Are the puppies vet checked?",
+      "answer": "Yes. Every puppy, including Puppy Finder puppies, receives a veterinary check, vaccinations, and deworming, and comes with health and shot records. Ask our team for any specific puppy's records."
+    },
+    "07f0ff8a-dd75-4147-bdfd-74735c1b748f": {
+      "question": "Is there a health guarantee?",
+      "answer": "Yes. Every puppy comes with our written Health Guarantee. Have your puppy examined by a licensed veterinarian within 10 days of purchase. If within 10 days a vet determines in writing that your puppy is clinically ill, or within 30 days that it has a congenital or hereditary defect affecting its health, you may return the puppy for a full refund, return it for a replacement puppy of equal value, or keep it and be reimbursed for reasonable vet fees up to the purchase price. You must notify us within 2 business days of the vet's written certification. Full terms, conditions and exclusions are in the Health Guarantee you receive at purchase."
+    },
+    "0ee8bff5-b41a-4286-9dda-fe91fc0e87f2": {
+      "question": "Do you offer delivery?",
+      "answer": "Yes. Pickup is free. Local delivery is $50 for destinations less than one hour away, with no deposit. You pay in cash upon delivery, and our team confirms whether your address qualifies. For out-of-state delivery beyond the local area, a deposit is required and our team will confirm the amount and payment instructions. We offer ground delivery to Delaware, Maryland, Pennsylvania, New Jersey, New York, and Connecticut, and flight nanny arrangements may be available for other states."
+    },
+    "27f0d1f9-cd5b-43fe-a551-86a699dd2d7d": {
+      "question": "Can I meet the puppy before buying?",
+      "answer": "Yes. Our team can arrange a video call so you can see your puppy before buying. Text or call our team to schedule it."
+    },
+    "395258ab-64ed-44b1-9ba4-4bf8c2ddef80": {
+      "question": "How are the puppies transported?",
+      "answer": "Puppies going to Delaware, Maryland, Pennsylvania, New Jersey, New York, or Connecticut travel by ground delivery. For other states, a flight nanny may be available. Our team can help arrange that and will coordinate the details and schedule with you."
+    },
+    "2ba9ea60-a47d-407c-bd72-4a3c3593df35": {
+      "delete": true,
+      "question": "this is a test"
+    }
+  }
+}

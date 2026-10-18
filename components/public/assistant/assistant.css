@@ -1,0 +1,662 @@
+/* AI Sales Assistant chat. Mobile-first: full screen on phones, a docked
+   panel inside the site column on wider screens. Uses the public tokens
+   (styles/public-tokens.css). Bottom nav is z-index 200. */
+
+/* Launcher - never auto-opens. The wrapper is the fixed-position element
+   (side, height above the bottom nav, lift above Text/Call); the button
+   inside carries the look. */
+.ppai-launcher-wrap {
+  --ppai-gutter: max(16px, calc((100vw - var(--pp-max-width)) / 2 + 16px));
+  position: fixed;
+  z-index: 210;
+  bottom: calc(var(--pp-bottom-nav-height) + 14px + env(safe-area-inset-bottom, 0px));
+  display: inline-flex;
+  /* Slides up smoothly when it moves above the puppy page's Text/Call buttons. */
+  transition: transform 0.18s ease-out;
+}
+.ppai-launcher-wrap--right {
+  right: calc(var(--ppai-gutter) + env(safe-area-inset-right, 0px));
+}
+.ppai-launcher-wrap--left {
+  left: calc(var(--ppai-gutter) + env(safe-area-inset-left, 0px));
+}
+.ppai-launcher-wrap--low {
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+}
+/* Wider screens: sit in the empty space beside the 430px page column (left
+   or right), so it never covers page content or the in-column bottom nav.
+   --ppai-w is the button's width, so it stays on screen at 768px too. */
+@media (min-width: 768px) {
+  .ppai-launcher-wrap {
+    --ppai-w: 150px;
+    --ppai-gutter: max(16px, calc((100vw - var(--pp-max-width)) / 2 - 16px - var(--ppai-w)));
+  }
+  .ppai-launcher-wrap--min {
+    --ppai-w: 52px;
+  }
+  .ppai-launcher-wrap,
+  .ppai-launcher-wrap--low {
+    bottom: 24px;
+  }
+}
+
+.ppai-launcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 9px 16px 9px 13px;
+  border: none;
+  border-radius: 50px;
+  background: var(--pp-blue);
+  color: #fff;
+  font-family: var(--pp-font);
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 0 6px 18px rgba(27, 123, 255, 0.35);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Round icon: the customer's "minimized" choice, and automatically while
+   lifted above the puppy page's Text/Call buttons (fits beside the badges). */
+.ppai-launcher--compact {
+  width: 52px;
+  min-height: 52px;
+  padding: 0;
+  justify-content: center;
+}
+.ppai-launcher--compact .ppai-launcher-label,
+.ppai-launcher--compact .ppai-launcher-badge {
+  display: none;
+}
+
+/* Small "minimize" control on the expanded pill's corner. The visible dot
+   is small; the ::before area makes the tap target 40px. */
+.ppai-launcher-min {
+  position: absolute;
+  top: -9px;
+  right: -7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #03092a;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(3, 9, 42, 0.25);
+  -webkit-tap-highlight-color: transparent;
+}
+.ppai-launcher-min::before {
+  content: "";
+  position: absolute;
+  inset: -9px;
+}
+.ppai-launcher-min:focus-visible {
+  outline: 3px solid #fece02;
+  outline-offset: 2px;
+}
+
+/* One gentle hello the first time the button appears in a visit: a small
+   pop and a single soft ring. Never repeats. */
+.ppai-launcher--hello {
+  animation: ppai-hello 1.6s ease-out 0.3s 1 both;
+}
+@keyframes ppai-hello {
+  0% {
+    box-shadow: 0 6px 18px rgba(27, 123, 255, 0.35), 0 0 0 0 rgba(27, 123, 255, 0.45);
+    scale: 1;
+  }
+  25% {
+    scale: 1.06;
+  }
+  50% {
+    scale: 1;
+    box-shadow: 0 6px 18px rgba(27, 123, 255, 0.35), 0 0 0 10px rgba(27, 123, 255, 0.18);
+  }
+  100% {
+    scale: 1;
+    box-shadow: 0 6px 18px rgba(27, 123, 255, 0.35), 0 0 0 18px rgba(27, 123, 255, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ppai-launcher-wrap {
+    transition: none;
+  }
+  .ppai-launcher--hello {
+    animation: none;
+  }
+}
+/* In-flow room at the end of the page so the floating button never sits on
+   top of the last bit of content. */
+.ppai-spacer {
+  height: 64px;
+}
+.ppai-launcher:focus-visible {
+  outline: 3px solid #03092a;
+  outline-offset: 3px;
+}
+.ppai-launcher-badge {
+  padding: 2px 7px;
+  border-radius: 50px;
+  background: #fece02;
+  color: #03092a;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Panel */
+.ppai-panel {
+  position: fixed;
+  z-index: 300;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  font-family: var(--pp-font);
+  color: var(--pp-text);
+}
+@media (min-width: 768px) {
+  .ppai-panel.ppai-panel--left {
+    right: auto;
+    left: max(16px, calc((100vw - var(--pp-max-width)) / 2));
+  }
+  .ppai-panel {
+    inset: auto;
+    right: max(16px, calc((100vw - var(--pp-max-width)) / 2));
+    bottom: 16px;
+    width: min(400px, calc(100vw - 32px));
+    height: min(680px, calc(100vh - 32px));
+    border: 1px solid var(--pp-border);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 50px rgba(3, 9, 42, 0.22);
+  }
+}
+
+.ppai-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 10px 12px 14px;
+  padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  border-bottom: 1px solid var(--pp-border);
+  background: #fff;
+}
+.pp-body img.ppai-avatar,
+.ppai-avatar {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.ppai-header-text {
+  flex: 1;
+  min-width: 0;
+}
+.ppai-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 15px;
+  font-weight: 900;
+  color: #03092a;
+}
+.ppai-title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ppai-ai-badge,
+.ppai-preview-badge {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 50px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.ppai-ai-badge {
+  background: var(--pp-blue-light);
+  color: var(--pp-blue-dark);
+}
+.ppai-preview-badge {
+  background: #fece02;
+  color: #03092a;
+}
+.ppai-subtitle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pp-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ppai-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: #03092a;
+  cursor: pointer;
+}
+.ppai-icon-btn:hover {
+  background: #f3f4f6;
+}
+.ppai-icon-btn:disabled {
+  opacity: 0.4;
+}
+
+/* "You're viewing MiMi" strip at the top of the chat on a puppy page */
+.ppai-context {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px 8px 8px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pp-muted);
+}
+.pp-body img.ppai-context-photo,
+.ppai-context-photo {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #f3f4f6;
+}
+.ppai-context-photo--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+}
+.ppai-context-text strong {
+  color: #03092a;
+  font-weight: 900;
+}
+
+/* Header options menu (move left/right, minimize/expand the button) */
+.ppai-menu-anchor {
+  position: relative;
+}
+.ppai-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  min-width: 230px;
+  padding: 6px;
+  border: 1px solid var(--pp-border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 10px 30px rgba(3, 9, 42, 0.18);
+}
+.ppai-menu-item {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #03092a;
+  font-family: var(--pp-font);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+.ppai-menu-item:hover,
+.ppai-menu-item:focus-visible {
+  background: #f3f4f6;
+  outline: none;
+}
+
+/* Messages */
+.ppai-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 16px 14px 8px;
+  background: #f7f9fc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ppai-row {
+  display: flex;
+}
+.ppai-row--user {
+  justify-content: flex-end;
+}
+.ppai-bubble {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 18px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+.ppai-bubble--assistant {
+  background: #fff;
+  color: var(--pp-text);
+  border: 1px solid var(--pp-border);
+  border-bottom-left-radius: 6px;
+}
+.ppai-bubble--user {
+  background: var(--pp-blue);
+  color: #fff;
+  border-bottom-right-radius: 6px;
+  white-space: pre-wrap;
+}
+.pp-body a.ppai-link,
+.ppai-link {
+  color: var(--pp-blue-dark);
+  text-decoration: underline;
+  font-weight: 800;
+}
+
+.ppai-typing {
+  display: inline-flex;
+  gap: 5px;
+  padding: 14px 16px;
+}
+.ppai-typing span {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #9ca3af;
+  animation: ppai-dot 1.2s ease-in-out infinite;
+}
+.ppai-typing span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.ppai-typing span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes ppai-dot {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ppai-typing span {
+    animation: none;
+  }
+}
+
+/* Puppy cards - all values come from the database */
+.ppai-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pp-body a.ppai-card,
+.ppai-card {
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid var(--pp-border);
+  border-radius: var(--pp-radius);
+  background: #fff;
+  color: var(--pp-text);
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.ppai-card-photo {
+  width: 84px;
+  height: 84px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pp-body .ppai-card-photo img,
+.ppai-card-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ppai-card-nophoto {
+  font-size: 30px;
+}
+.ppai-card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+}
+.ppai-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.ppai-card-name {
+  font-size: 16px;
+  font-weight: 900;
+  color: #03092a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ppai-card-status {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 50px;
+  background: var(--pp-status-available);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.ppai-card-status--hold {
+  background: var(--pp-status-hold);
+}
+.ppai-card-status--sale_pending {
+  background: #0d9488;
+}
+.ppai-card-status--sold {
+  background: var(--pp-status-sold);
+}
+.ppai-card-status--on_sale {
+  background: var(--pp-status-on-sale);
+}
+.ppai-card-status--discounted {
+  background: var(--pp-status-discounted);
+}
+.ppai-card-meta {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--pp-muted);
+}
+.ppai-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ppai-card-price {
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--pp-blue);
+}
+.ppai-card-price s {
+  margin-right: 6px;
+  font-size: 13px;
+  color: #9ca3af;
+}
+.ppai-card-view {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pp-blue-dark);
+}
+
+/* Text / Call options - same colors as the puppy page buttons, smaller */
+.ppai-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pp-body a.ppai-contact-text,
+.ppai-contact-text,
+.pp-body a.ppai-contact-call,
+.ppai-contact-call {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px 16px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.pp-body a.ppai-contact-text,
+.ppai-contact-text {
+  background: #fece02;
+  color: #03092a;
+}
+.pp-body a.ppai-contact-call,
+.ppai-contact-call {
+  background: #e5232f;
+  color: #fff;
+}
+
+.ppai-notice {
+  padding: 12px 14px;
+  border-radius: var(--pp-radius);
+  background: #fff8e1;
+  border: 1px solid #fde68a;
+  font-size: 14px;
+  font-weight: 700;
+  color: #78350f;
+}
+.ppai-notice p {
+  margin: 0 0 10px;
+}
+.ppai-notice p:last-child {
+  margin-bottom: 0;
+}
+
+.ppai-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.ppai-starter {
+  padding: 9px 14px;
+  border: 1.5px solid var(--pp-blue);
+  border-radius: 50px;
+  background: #fff;
+  color: var(--pp-blue-dark);
+  font-family: var(--pp-font);
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.ppai-starter:disabled {
+  opacity: 0.5;
+}
+
+/* Composer */
+.ppai-composer {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 12px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--pp-border);
+  background: #fff;
+}
+.ppai-input {
+  flex: 1;
+  min-height: 44px;
+  max-height: 120px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--pp-border);
+  border-radius: 22px;
+  font-family: var(--pp-font);
+  /* 16px stops iOS Safari from zooming into the field. */
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--pp-text);
+  resize: none;
+  field-sizing: content;
+}
+.ppai-input:focus {
+  outline: none;
+  border-color: var(--pp-blue);
+}
+.ppai-send {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--pp-blue);
+  color: #fff;
+  cursor: pointer;
+}
+.ppai-send:disabled {
+  background: #c7d2e3;
+  cursor: default;
+}
+.ppai-footer-notice {
+  padding: 12px 14px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--pp-border);
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--pp-text);
+}
+.ppai-footer-notice p {
+  margin: 0 0 10px;
+}

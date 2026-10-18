@@ -8,6 +8,7 @@ import AdminRefreshButton from "./AdminRefreshButton";
 export type AdminNavKey =
   | "dashboard"
   | "contacts"
+  | "assistant"
   | "puppies"
   | "sales"
   | "affiliates"
@@ -50,6 +51,7 @@ const NAV_ITEMS: NavItem[] = [
   { key: "breeders", label: "Breeders", href: "/admin/breeders", icon: <Icon path="M8 12a3 3 0 100-6 3 3 0 000 6zM16 12a3 3 0 100-6 3 3 0 000 6zM2 20c0-3 3-5 6-5s6 2 6 5M10 20c0-3 3-5 6-5s6 2 6 5" /> },
   { key: "breeds", label: "Breeds", href: "/admin/breeds", icon: <Icon path="M12 21c4-3 7-6 7-10a5 5 0 00-9.5-2A5 5 0 005 11c0 4 3 7 7 10zM9 8h.01M15 8h.01" /> },
   { key: "messages", label: "Messages", href: "/admin/messages", icon: <Icon path="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z" /> },
+  { key: "assistant", label: "AI Assistant", href: "/admin/assistant", icon: <Icon path="M12 3.5c-5.2 0-9.25 3.5-9.25 7.8 0 2.4 1.25 4.5 3.25 5.9l-.85 3.3 3.75-1.95c1 .3 2 .45 3.1.45 5.2 0 9.25-3.5 9.25-7.7S17.2 3.5 12 3.5zM8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01" /> },
   { key: "tasks", label: "Tasks", href: "/admin/tasks", icon: <Icon path="M9 11l3 3L22 4M3 12v7a2 2 0 002 2h14a2 2 0 002-2v-7" /> },
   { key: "pypl", label: "Pick Your Puppy Live", href: "/admin", icon: <Icon path="M12 8a4 4 0 010 8M8.5 5.5a8 8 0 000 13M15.5 5.5a8 8 0 010 13M12 12h.01" /> },
   { key: "reports", label: "Reports", href: null, icon: <Icon path="M4 20V10M12 20V4M20 20v-7" /> },
