@@ -207,6 +207,7 @@ export interface PuppyStatusBreakdown {
   total: number;
   available: number;
   hold: number;
+  salePending: number;
   sold: number;
 }
 
@@ -221,10 +222,11 @@ export async function getPuppyStatusBreakdown(): Promise<PuppyStatusBreakdown> {
     total: rows.length,
     // on_sale and discounted are still purchasable inventory - just
     // merchandised differently - so they count as Available here,
-    // same as the live website treats them (visible, not sold/hold).
+    // same as the live website treats them (visible, not sold/on hold/sale pending).
     available: rows.filter((p) => p.status === "available" || p.status === "on_sale" || p.status === "discounted")
       .length,
     hold: rows.filter((p) => p.status === "hold").length,
+    salePending: rows.filter((p) => p.status === "sale_pending").length,
     sold: rows.filter((p) => p.status === "sold").length,
   };
 }

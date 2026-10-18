@@ -3,6 +3,7 @@ import "../detail.css";
 import "./contact.css";
 import { getPuppyBySlug, getPuppyViewsLast24h } from "../../../../../lib/public-data/puppies";
 import { getSellerPhoneNumber } from "../../../../../lib/content";
+import { STATUS_DISPLAY_LABEL, isReservedStatus } from "../../../../../lib/puppyTypes";
 import PuppyContactPanel from "./PuppyContactPanel";
 
 export const revalidate = 60;
@@ -87,7 +88,8 @@ export default async function PuppyContactPage({ params }: { params: { slug: str
   }
 
   const [phone, views24h] = await Promise.all([getSellerPhoneNumber(), getPuppyViewsLast24h(puppy.id)]);
-  const onHold = puppy.status === "hold";
+  // On Hold / Sale Pending: still contactable, never shown as available now.
+  const reserved = isReservedStatus(puppy.status);
   const coverUrl = (puppy.photo_urls || []).filter(Boolean)[0] || "";
 
   return (
@@ -95,10 +97,10 @@ export default async function PuppyContactPage({ params }: { params: { slug: str
       {backLink}
 
       <div className="contact-hero">
-        <span className={`contact-status${onHold ? " contact-status--hold" : ""}`}>
-          {onHold ? "Pending Adoption" : "Available Now"}
+        <span className={`contact-status${reserved ? ` contact-status--${puppy.status === "sale_pending" ? "sale-pending" : "hold"}` : ""}`}>
+          {reserved ? STATUS_DISPLAY_LABEL[puppy.status] : "Available Now"}
         </span>
-        <h1 className="contact-title">{onHold ? `Ask About ${puppyName}` : `${puppyName} is Available!`}</h1>
+        <h1 className="contact-title">{reserved ? `Ask About ${puppyName}` : `${puppyName} is Available!`}</h1>
         {puppy.updated_at && <p className="contact-updated">Last Updated: {formatUpdated(puppy.updated_at)}</p>}
       </div>
 

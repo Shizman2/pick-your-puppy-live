@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
-import { marketingBadge, type MarketingBadgeTag, type PuppyRow } from "../puppyTypes";
+import { displayBadgeTag, type MarketingBadgeTag, type PuppyRow } from "../puppyTypes";
 import { getFavoriteCounts } from "../favorites";
 
 export interface HomepagePuppy {
@@ -17,6 +17,8 @@ export interface HomepagePuppy {
   favoritesCount: number;
   location: string | null;
   badgeTag: MarketingBadgeTag | null;
+  /** When the puppy was marked sold (Recently Sold cards only). */
+  soldAt?: string | null;
 }
 
 /** The active Special Opportunity on /puppies: a card puppy plus its special offer. */
@@ -40,7 +42,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
   const { data, error } = await admin
     .from("puppies")
     .select(
-      "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order, location, badge_tag"
+      "id, name, slug, breed, price_cents, sale_price_cents, gender, date_of_birth, status, photo_urls, display_order, location, badge_tag, created_at"
     )
     .eq("show_on_website", true)
     .eq("is_featured", true)
@@ -77,7 +79,7 @@ export async function getFeaturedPuppies(): Promise<HomepagePuppy[]> {
       photoUrl: photos[0] || "",
       favoritesCount: favoritesCounts[row.id] || 0,
       location: row.location || null,
-      badgeTag: marketingBadge(row.badge_tag),
+      badgeTag: displayBadgeTag(row.badge_tag, row.created_at),
     };
   });
 }

@@ -5,7 +5,7 @@ import { getPuppyBySlug, isActiveSpotlight } from "../../../../lib/public-data/p
 import { getFavoriteCount } from "../../../../lib/favorites";
 import { getBreedForPuppyBreedString } from "../../../../lib/breeds";
 import { getSellerPhoneNumber } from "../../../../lib/content";
-import { STATUS_DISPLAY_LABEL, BADGE_DISPLAY_LABEL, formatPriceFromCents, marketingBadge } from "../../../../lib/puppyTypes";
+import { STATUS_DISPLAY_LABEL, BADGE_DISPLAY_LABEL, formatPriceFromCents, displayBadgeTag } from "../../../../lib/puppyTypes";
 import FavoriteButton from "../../../../components/public/FavoriteButton";
 import PuppyViewTracker from "../../../../components/public/PuppyViewTracker";
 import PuppyFinderBanner from "../../../../components/public/PuppyFinderBanner";
@@ -30,6 +30,7 @@ export async function generateStaticParams() {
 const STATUS_COLOR: Record<string, string> = {
   available: "#22C55E",
   hold: "#F59E0B",
+  sale_pending: "#0D9488",
   sold: "#EF4444",
   on_sale: "#F97316",
   discounted: "#A855F7",
@@ -68,7 +69,7 @@ export default async function PuppyDetailPage({ params }: { params: { slug: stri
   // Sold puppies keep this URL and their info, but lose price, location and
   // every buy/contact action for this puppy (see the sold CTA below).
   const isSold = puppy.status === "sold";
-  const badgeTag = isSold ? null : marketingBadge(puppy.badge_tag);
+  const badgeTag = isSold ? null : displayBadgeTag(puppy.badge_tag, puppy.created_at);
   // Active Special Opportunity: show its special price, not just the normal one.
   const specialPriceCents = isActiveSpotlight(puppy) ? (puppy.spotlight_price_cents as number) : null;
 

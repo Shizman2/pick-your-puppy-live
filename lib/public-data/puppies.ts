@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "../supabase/admin";
-import { marketingBadge, type PuppyRow } from "../puppyTypes";
+import { displayBadgeTag, isReservedStatus, type PuppyRow } from "../puppyTypes";
 import type { HomepagePuppy, SpotlightPuppy } from "./homepage";
 import { getFavoriteCounts } from "../favorites";
 
@@ -18,9 +18,15 @@ export async function getAllVisiblePuppies(): Promise<PuppyRow[]> {
   return data as PuppyRow[];
 }
 
-/** True when this row is publicly shown as the Special Opportunity. */
+/** True when this row is publicly shown as the Special Opportunity. Sold, On Hold and Sale Pending puppies never are - a special price implies the puppy can be bought now. */
 export function isActiveSpotlight(row: PuppyRow): boolean {
-  return !!row.is_spotlight && !!row.spotlight_price_cents && row.show_on_website && row.status !== "sold";
+  return (
+    !!row.is_spotlight &&
+    !!row.spotlight_price_cents &&
+    row.show_on_website &&
+    row.status !== "sold" &&
+    !isReservedStatus(row.status)
+  );
 }
 
 /**
@@ -84,7 +90,8 @@ export function mapPuppyRowToCard(row: PuppyRow, favoritesCount = 0): HomepagePu
     photoUrl: photos[0] || "",
     favoritesCount,
     location: row.location || null,
-    badgeTag: marketingBadge(row.badge_tag),
+    badgeTag: displayBadgeTag(row.badge_tag, row.created_at),
+    soldAt: row.sold_at ?? null,
   };
 }
 

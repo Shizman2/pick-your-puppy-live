@@ -80,6 +80,7 @@
 
 .puppy-status-pill.available { background: #dcfce7; color: #15803d; }
 .puppy-status-pill.hold { background: #fef3c7; color: #b45309; }
+.puppy-status-pill.sale_pending { background: #ccfbf1; color: #0f766e; }
 .puppy-status-pill.sold { background: #fee2e2; color: #b91c1c; }
 .puppy-status-pill.on_sale { background: #dbeafe; color: #1d4ed8; }
 .puppy-status-pill.discounted { background: #fef3c7; color: #b45309; }

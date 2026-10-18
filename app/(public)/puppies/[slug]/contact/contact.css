@@ -18,6 +18,9 @@
 .contact-status--hold {
   background: #d97706;
 }
+.contact-status--sale-pending {
+  background: #0d9488;
+}
 .contact-title {
   margin: 8px 0 0;
   font-size: clamp(24px, 7.5vw, 30px);

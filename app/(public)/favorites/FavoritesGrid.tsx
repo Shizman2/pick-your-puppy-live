@@ -7,7 +7,8 @@ import { formatPriceFromCents } from "../../../lib/puppyTypes";
 
 const STATUS_BADGE: Record<string, { label: string; color: string }> = {
   available: { label: "Available", color: "#16A34A" },
-  hold: { label: "Pending Adoption", color: "#D97706" },
+  hold: { label: "On Hold", color: "#D97706" },
+  sale_pending: { label: "Sale Pending", color: "#0D9488" },
   sold: { label: "Sold", color: "#6B7280" },
   on_sale: { label: "On Sale", color: "#EA580C" },
   discounted: { label: "On Sale", color: "#EA580C" },

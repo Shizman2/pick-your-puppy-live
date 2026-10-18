@@ -1,13 +1,14 @@
 import type { PuppyStatusBreakdown } from "../../../lib/dashboard";
 
 export default function PuppyStatusDonut({ data }: { data: PuppyStatusBreakdown }) {
-  const { total, available, hold, sold } = data;
+  const { total, available, hold, salePending, sold } = data;
   const radius = 40;
   const circumference = 2 * Math.PI * radius;
 
   const segments = [
     { label: "Available", value: available, color: "#22c55e" },
-    { label: "Reserved (Hold)", value: hold, color: "#f59e0b" },
+    { label: "On Hold", value: hold, color: "#f59e0b" },
+    { label: "Sale Pending", value: salePending, color: "#0d9488" },
     { label: "Sold", value: sold, color: "#8B6BFF" },
   ];
 
